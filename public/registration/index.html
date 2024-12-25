@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Registration Form | DDRC</title>
+    <link
+      href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="/css/main.css" />
+    <link rel="stylesheet" href="/css/header.css" />
+    <link rel="stylesheet" href="/css/footer.css" />
+    <link rel="stylesheet" href="/registration/css/style.css" />
+    <link
+      rel="stylesheet"
+      href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css"
+    />
+  </head>
+  <body>
+    <!-- Top Bar -->
+    <div class="top-bar">
+      <div class="left-links">
+        <a href="/">Home</a>
+        <a href="/about">About</a>
+        <a href="/contact">Contact</a>
+      </div>
+      <div class="right-links">
+        <a href="/login">Login</a>
+      </div>
+    </div>
+
+    <!-- Main Header -->
+    <header class="main-header">
+      <!-- Same header as main page -->
+    </header>
+
+    <!-- Main Content -->
+    <main class="registration-container">
+      <div class="registration-content">
+        <h2>Registration Form</h2>
+        <p class="text-muted mb-4">
+          Please fill in all required fields marked with *
+        </p>
+
+        <form id="registrationForm" class="needs-validation" novalidate>
+          <!-- Form sections will be dynamically inserted here -->
+          <div class="form-sections"></div>
+
+          <div class="form-navigation mt-4">
+            <button type="button" class="btn btn-secondary" id="prevBtn">
+              Previous
+            </button>
+            <button type="button" class="btn btn-primary" id="nextBtn">
+              Next
+            </button>
+            <button
+              type="submit"
+              class="btn btn-success"
+              id="submitBtn"
+              style="display: none"
+            >
+              Submit
+            </button>
+          </div>
+
+          <div class="progress mt-3">
+            <div
+              class="progress-bar"
+              role="progressbar"
+              style="width: 0%"
+            ></div>
+          </div>
+        </form>
+      </div>
+    </main>
+
+    <!-- Footer -->
+    <footer class="main-footer">
+      <!-- Same footer as main page -->
+    </footer>
+
+    <!-- Bootstrap and Scripts -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+    <script src="/registration/js/form-renderer.js"></script>
+    <script src="/registration/js/form-validator.js"></script>
+    <script src="/registration/js/form-navigation.js"></script>
+  </body>
+</html>

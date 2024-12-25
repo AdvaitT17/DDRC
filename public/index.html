@@ -1,0 +1,313 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>DDRC - District Disability Rehabilitation Centre</title>
+    <link
+      href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="/css/main.css" />
+    <link rel="stylesheet" href="/css/header.css" />
+    <link rel="stylesheet" href="/css/footer.css" />
+  </head>
+  <body>
+    <!-- Top Bar -->
+    <div class="top-bar">
+      <div class="left-links">
+        <a href="/">Home</a>
+        <a href="/sitemap">Sitemap</a>
+      </div>
+      <div class="right-links">
+        <a href="#" class="skip-main">Skip to Main Content</a>
+        <a href="#" class="screen-reader">Screen Reader Access</a>
+        <div class="font-size-controls">
+          <button class="font-size-btn" id="decreaseFont">T-</button>
+          <button class="font-size-btn" id="defaultFont">T</button>
+          <button class="font-size-btn" id="increaseFont">T+</button>
+        </div>
+        <select class="language-select" id="languageSelect">
+          <option value="en">English</option>
+          <option value="hi">हिंदी</option>
+        </select>
+      </div>
+    </div>
+
+    <!-- Main Header -->
+    <header class="main-header">
+      <div class="logo-section">
+        <img
+          src="/images/emblem.png"
+          alt="Government of India Emblem"
+          class="emblem-logo"
+        />
+        <div class="header-text">
+          <h1>District Disability Rehabilitation Centre, Mumbai</h1>
+          <p>Department of Empowerment of Persons with Disabilities,</p>
+          <p>Ministry of Social Justice and Empowerment, Govt. of India</p>
+        </div>
+        <img src="/images/ddrc-logo.png" alt="DDRC Logo" class="ddrc-logo" />
+      </div>
+    </header>
+
+    <!-- Navigation Menu -->
+    <nav class="main-nav">
+      <a href="/" class="nav-icon">
+        <img src="/images/home-icons.png" alt="Home" />
+      </a>
+      <a href="/apply">Apply For UDID</a>
+      <a href="/track">Track Your Application</a>
+      <a href="/data">Aggregated-Data</a>
+      <a href="/reports">Pendency-Report</a>
+      <a href="/media">Media</a>
+      <a href="/faqs">FAQs</a>
+      <a href="/contact">Contact Us</a>
+
+      <!-- Add spacer to push login buttons to the right -->
+      <div class="nav-spacer"></div>
+
+      <!-- Add login buttons -->
+      <a href="/pwd-login" class="nav-login-btn">
+        <img src="/images/login.svg" alt="Login Icon" />
+        PwD login
+      </a>
+      <a href="/department-login" class="nav-login-btn">
+        <img src="/images/user-plus.svg" alt="User Icon" />
+        Department User Login
+      </a>
+    </nav>
+
+    <!-- Main Content -->
+    <main>
+      <!-- Hero Section -->
+      <section class="hero-section">
+        <div class="hero-content">
+          <h2>Some Title for the Header</h2>
+          <div class="hero-buttons">
+            <a href="/apply" class="primary-btn">APPLY NOW</a>
+            <a href="/track" class="primary-btn">TRACK YOUR APPLICATION</a>
+          </div>
+        </div>
+
+        <!-- Note section -->
+        <div class="important-note">
+          <strong>Note : </strong>As per the RPwD Rules 2017, disability
+          certificate/ UDID card can be issued by notified hospital at home
+          district as well as the hospital where the PwD is taking medical
+          treatment in connection with his/her disability.
+        </div>
+      </section>
+
+      <!-- Update the main-content section -->
+      <div class="main-content">
+        <div class="grid-layout">
+          <!-- First Row -->
+          <div class="about-section">
+            <h3>About</h3>
+            <h2>UNIQUE DISABILITY ID CARD</h2>
+            <p>
+              UDID sub scheme is being implemented with a view of creating a
+              National Database for Persons with Disabilities across the
+              country. Under the UDID project, certificates of disability and
+              Unique Disability Identity cards are issued to Persons with
+              Disabilities through competent medical authorities notified by the
+              respective State Governments/Union Territories. The project aims
+              to encourage transparency, efficiency in the system of delivering
+              the government benefits to the person with disabilities.
+            </p>
+          </div>
+
+          <div class="news-section wide">
+            <div class="news-header">
+              <h2>News & Updates</h2>
+              <a href="/news" class="view-all">View All <span>❯</span></a>
+            </div>
+            <div class="news-list">
+              <div class="news-item">
+                <span class="date">01/07/2024</span>
+                <p>
+                  Standard Operating Procedure (SOP) for appeal for
+                  re-assessment as per section 59 of the RPwD Act, 2
+                </p>
+              </div>
+              <div class="news-item">
+                <span class="date">13/06/2024</span>
+                <p>
+                  Standard Operating procedure to handle the cases where type or
+                  percentage of disability or both of P
+                </p>
+              </div>
+            </div>
+          </div>
+
+          <!-- Second Row -->
+          <div class="faq-section">
+            <div class="faq-header">
+              <h2>Frequently Asked Questions</h2>
+              <a href="/faqs" class="view-all">View All <span>❯</span></a>
+            </div>
+            <div class="accordion" id="faqAccordion">
+              <div class="accordion-item">
+                <h3 class="accordion-header">
+                  <button
+                    class="accordion-button"
+                    type="button"
+                    data-bs-toggle="collapse"
+                    data-bs-target="#faq1"
+                  >
+                    What is UDID Card?
+                  </button>
+                </h3>
+                <div
+                  id="faq1"
+                  class="accordion-collapse collapse show"
+                  data-bs-parent="#faqAccordion"
+                >
+                  <div class="accordion-body">
+                    UDID card is a unique document issued to persons with
+                    disabilities for their identification and verification.
+                  </div>
+                </div>
+              </div>
+
+              <div class="accordion-item">
+                <h3 class="accordion-header">
+                  <button
+                    class="accordion-button collapsed"
+                    type="button"
+                    data-bs-toggle="collapse"
+                    data-bs-target="#faq2"
+                  >
+                    How to apply for UDID Card?
+                  </button>
+                </h3>
+                <div
+                  id="faq2"
+                  class="accordion-collapse collapse"
+                  data-bs-parent="#faqAccordion"
+                >
+                  <div class="accordion-body">
+                    You can apply online through our portal or visit your
+                    nearest medical authority for assistance.
+                  </div>
+                </div>
+              </div>
+
+              <div class="accordion-item">
+                <h3 class="accordion-header">
+                  <button
+                    class="accordion-button collapsed"
+                    type="button"
+                    data-bs-toggle="collapse"
+                    data-bs-target="#faq3"
+                  >
+                    What documents are required?
+                  </button>
+                </h3>
+                <div
+                  id="faq3"
+                  class="accordion-collapse collapse"
+                  data-bs-parent="#faqAccordion"
+                >
+                  <div class="accordion-body">
+                    Address proof, Identity proof, Disability certificate, and
+                    Recent passport size photograph.
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="gallery-section">
+            <div class="gallery-header">
+              <div class="tabs">
+                <button class="tab active">PHOTO GALLERY</button>
+                <button class="tab">VIDEO GALLERY</button>
+              </div>
+              <a href="/gallery" class="view-all">View All <span>❯</span></a>
+            </div>
+            <div class="gallery-content">
+              <div class="gallery-grid">
+                <div class="gallery-item">
+                  <img
+                    src="/images/gallery/photo1.jpg"
+                    alt="Medical Assessment"
+                  />
+                </div>
+                <div class="gallery-item">
+                  <img
+                    src="/images/gallery/photo2.jpg"
+                    alt="Therapeutic Services"
+                  />
+                </div>
+                <div class="gallery-item">
+                  <img
+                    src="/images/gallery/photo3.jpg"
+                    alt="Assistive Devices"
+                  />
+                </div>
+                <div class="gallery-item">
+                  <img
+                    src="/images/gallery/photo4.jpg"
+                    alt="Skill Development"
+                  />
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </main>
+
+    <!-- Footer -->
+    <footer>
+      <div class="footer-content">
+        <div class="footer-section">
+          <h3>About</h3>
+          <ul>
+            <li><a href="/about-udid">Know more about UDID</a></li>
+            <li>
+              <a href="/schemes">Schemes for Persons with Disabilities</a>
+            </li>
+            <li><a href="/about-department">About Department</a></li>
+            <li><a href="/medical-camps">Medical Camps / Hospitals</a></li>
+          </ul>
+        </div>
+        <div class="footer-section">
+          <h3>Quick Access Key</h3>
+          <ul>
+            <li>H = Go to Home Page</li>
+            <li>S = Skip to main content</li>
+            <li>F = Site Search</li>
+            <li>T = Back to Top</li>
+          </ul>
+        </div>
+        <div class="footer-section">
+          <h3>Use keyboard for quick access</h3>
+          <ul>
+            <li>Internet Explorer - [Alt] + accesskey</li>
+            <li>Chrome - [Alt] + accesskey</li>
+            <li>Firefox - [Alt] [Shift] + accesskey</li>
+            <li>Safari - [Alt] + accesskey</li>
+          </ul>
+        </div>
+      </div>
+      <div class="footer-bottom">
+        <p>
+          &copy; Copyright 2024 District Disability Rehabilitation Centre,
+          Mumbai. All Rights Reserved.
+        </p>
+        <div class="footer-links">
+          <a href="/terms">Terms & Conditions</a>
+          <a href="/privacy">Privacy Policy</a>
+          <a href="/copyright">Copyright Policy</a>
+          <a href="/accessibility">Accessibility Statement</a>
+        </div>
+      </div>
+    </footer>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="/js/main.js"></script>
+  </body>
+</html>
