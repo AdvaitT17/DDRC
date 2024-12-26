@@ -3,6 +3,12 @@ const cors = require("cors");
 const path = require("path");
 require("dotenv").config();
 const formRoutes = require("./routes/formRoutes");
+const authRoutes = require("./routes/authRoutes");
+const {
+  authenticateToken,
+  requireRole,
+} = require("./middleware/authMiddleware");
+const adminRoutes = require("./routes/adminRoutes");
 
 const app = express();
 
@@ -31,52 +37,39 @@ app.use(
 );
 
 // API Routes
-app.use("/api/form", formRoutes);
-
-// Dashboard API Routes
-app.get("/api/dashboard/stats", (req, res) => {
-  res.json({
-    totalRegistrations: 2345,
-    pendingApplications: 148,
-    approvedToday: 24,
-    activeUsers: 1892,
-  });
-});
-
-app.get("/api/applications/recent", (req, res) => {
-  res.json([
-    {
-      id: "APP001",
-      applicantName: "John Doe",
-      submissionDate: "2024-01-15",
-      status: "Pending",
-    },
-    {
-      id: "APP002",
-      applicantName: "Jane Smith",
-      submissionDate: "2024-01-14",
-      status: "Approved",
-    },
-  ]);
-});
+app.use("/api/form", authenticateToken, formRoutes);
+app.use("/api/auth", authRoutes);
+app.use(
+  "/api/admin",
+  authenticateToken,
+  requireRole(["admin", "staff"]),
+  adminRoutes
+);
 
 // HTML Routes - make sure these come after API routes
-app.get(["/", "/admin", "/admin/*", "/registration"], (req, res) => {
+app.get(["/", "/registration", "/department-login"], (req, res) => {
   try {
     if (req.path === "/") {
       res.sendFile(path.join(__dirname, "../public/index.html"));
     } else if (req.path === "/registration") {
       res.sendFile(path.join(__dirname, "../public/registration/index.html"));
-    } else {
-      // For admin routes
-      const adminPath =
-        req.path === "/admin"
-          ? "../public/admin/index.html"
-          : `../public${req.path}.html`;
-      res.sendFile(path.join(__dirname, adminPath));
+    } else if (req.path === "/department-login") {
+      res.sendFile(
+        path.join(__dirname, "../public/department-login/index.html")
+      );
     }
   } catch (error) {
     console.error("Error serving HTML:", error);
+    res.status(500).send("Internal Server Error");
+  }
+});
+
+// Admin routes - serve admin HTML for all admin paths
+app.get(["/admin", "/admin/*"], (req, res) => {
+  try {
+    res.sendFile(path.join(__dirname, "../public/admin/index.html"));
+  } catch (error) {
+    console.error("Error serving admin HTML:", error);
     res.status(500).send("Internal Server Error");
   }
 });
