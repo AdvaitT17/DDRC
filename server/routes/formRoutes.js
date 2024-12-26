@@ -1,127 +1,229 @@
 const express = require("express");
 const router = express.Router();
-const formService = require("../services/formService");
 const pool = require("../config/database");
+const {
+  authenticateToken,
+  requireRole,
+} = require("../middleware/authMiddleware");
 
-// Get all sections with their fields
+// Get all form sections with their fields
 router.get("/sections", async (req, res) => {
   try {
-    const sections = await formService.getSections();
-    res.json(sections);
+    const [sections] = await pool.query(
+      `SELECT id, name, order_index 
+       FROM form_sections 
+       ORDER BY order_index`
+    );
+
+    // Get fields for all sections
+    const [fields] = await pool.query(
+      `SELECT id, section_id, name, display_name, field_type, is_required, options, order_index 
+       FROM form_fields 
+       ORDER BY order_index`
+    );
+
+    // Group fields by section
+    const sectionsWithFields = sections.map((section) => ({
+      ...section,
+      fields: fields.filter((field) => field.section_id === section.id),
+    }));
+
+    res.json(sectionsWithFields);
   } catch (error) {
-    console.error("Route error - get sections:", error);
-    res.status(500).json({
-      error: "Failed to get form sections",
-      details: error.message,
-    });
+    console.error("Error fetching form sections:", error);
+    res.status(500).json({ message: "Error fetching form sections" });
   }
 });
 
-// Add new section
-router.post("/sections", async (req, res) => {
-  try {
-    const { name } = req.body;
-    if (!name) {
-      return res.status(400).json({ error: "Section name is required" });
+// Create new section
+router.post(
+  "/sections",
+  authenticateToken,
+  requireRole(["admin"]),
+  async (req, res) => {
+    try {
+      const { name } = req.body;
+      if (!name) {
+        return res.status(400).json({ message: "Section name is required" });
+      }
+
+      // Get max order_index
+      const [maxOrder] = await pool.query(
+        "SELECT MAX(order_index) as max FROM form_sections"
+      );
+      const orderIndex = (maxOrder[0].max || 0) + 1;
+
+      const [result] = await pool.query(
+        "INSERT INTO form_sections (name, order_index) VALUES (?, ?)",
+        [name, orderIndex]
+      );
+
+      res.status(201).json({
+        id: result.insertId,
+        name,
+        order_index: orderIndex,
+      });
+    } catch (error) {
+      console.error("Error creating section:", error);
+      res.status(500).json({ message: "Error creating section" });
     }
-    const sectionId = await formService.addSection(name);
-    res.status(201).json({ id: sectionId });
-  } catch (error) {
-    console.error("Route error - add section:", error);
-    res.status(500).json({
-      error: "Failed to add section",
-      details: error.message,
-    });
   }
-});
-
-// Add field to section
-router.post("/sections/:sectionId/fields", async (req, res) => {
-  try {
-    const { sectionId } = req.params;
-    const fieldId = await formService.addField(sectionId, req.body);
-    res.status(201).json({ id: fieldId });
-  } catch (error) {
-    console.error("Route error - add field:", error);
-    res.status(500).json({
-      error: "Failed to add field",
-      details: error.message,
-    });
-  }
-});
-
-// Update field
-router.put("/fields/:id", async (req, res) => {
-  try {
-    await formService.updateField(req.params.id, req.body);
-    res.json({ success: true });
-  } catch (error) {
-    console.error("Route error - update field:", error);
-    res.status(500).json({
-      error: "Failed to update field",
-      details: error.message,
-    });
-  }
-});
+);
 
 // Delete section
-router.delete("/sections/:id", async (req, res) => {
+router.delete(
+  "/sections/:id",
+  authenticateToken,
+  requireRole(["admin"]),
+  async (req, res) => {
+    try {
+      await pool.query("DELETE FROM form_sections WHERE id = ?", [
+        req.params.id,
+      ]);
+      res.status(204).send();
+    } catch (error) {
+      console.error("Error deleting section:", error);
+      res.status(500).json({ message: "Error deleting section" });
+    }
+  }
+);
+
+// Create new field
+router.post(
+  "/fields",
+  authenticateToken,
+  requireRole(["admin"]),
+  async (req, res) => {
+    try {
+      const {
+        section_id,
+        name,
+        display_name,
+        field_type,
+        is_required,
+        options,
+      } = req.body;
+
+      // Get max order_index for the section
+      const [maxOrder] = await pool.query(
+        "SELECT MAX(order_index) as max FROM form_fields WHERE section_id = ?",
+        [section_id]
+      );
+      const orderIndex = (maxOrder[0].max || 0) + 1;
+
+      const [result] = await pool.query(
+        `INSERT INTO form_fields 
+         (section_id, name, display_name, field_type, is_required, options, order_index) 
+         VALUES (?, ?, ?, ?, ?, ?, ?)`,
+        [
+          section_id,
+          name,
+          display_name,
+          field_type,
+          is_required,
+          options ? JSON.stringify(options) : null,
+          orderIndex,
+        ]
+      );
+
+      res.status(201).json({
+        id: result.insertId,
+        section_id,
+        name,
+        display_name,
+        field_type,
+        is_required,
+        options,
+        order_index: orderIndex,
+      });
+    } catch (error) {
+      console.error("Error creating field:", error);
+      res.status(500).json({ message: "Error creating field" });
+    }
+  }
+);
+
+// Get field details
+router.get("/fields/:id", authenticateToken, async (req, res) => {
   try {
-    await formService.deleteSection(req.params.id);
-    res.json({ success: true });
+    const [fields] = await pool.query(
+      "SELECT * FROM form_fields WHERE id = ?",
+      [req.params.id]
+    );
+
+    if (fields.length === 0) {
+      return res.status(404).json({ message: "Field not found" });
+    }
+
+    const field = fields[0];
+    if (field.options) {
+      field.options = JSON.parse(field.options);
+    }
+
+    res.json(field);
   } catch (error) {
-    console.error("Route error - delete section:", error);
-    res.status(500).json({
-      error: "Failed to delete section",
-      details: error.message,
-    });
+    console.error("Error fetching field:", error);
+    res.status(500).json({ message: "Error fetching field" });
   }
 });
 
 // Delete field
-router.delete("/fields/:id", async (req, res) => {
-  try {
-    await formService.deleteField(req.params.id);
-    res.json({ success: true });
-  } catch (error) {
-    console.error("Route error - delete field:", error);
-    res.status(500).json({
-      error: "Failed to delete field",
-      details: error.message,
-    });
+router.delete(
+  "/fields/:id",
+  authenticateToken,
+  requireRole(["admin"]),
+  async (req, res) => {
+    try {
+      await pool.query("DELETE FROM form_fields WHERE id = ?", [req.params.id]);
+      res.status(204).send();
+    } catch (error) {
+      console.error("Error deleting field:", error);
+      res.status(500).json({ message: "Error deleting field" });
+    }
   }
-});
+);
 
-// Add a route to test section creation
-router.post("/test/section", async (req, res) => {
-  try {
-    const result = await pool.query(
-      "INSERT INTO form_sections (name, order_index) VALUES (?, ?)",
-      ["Test Section", 0]
-    );
-    res.json({ success: true, data: result });
-  } catch (error) {
-    console.error("Test section creation error:", error);
-    res.status(500).json({ error: "Test failed", details: error.message });
-  }
-});
+// Update field
+router.put(
+  "/fields/:id",
+  authenticateToken,
+  requireRole(["admin"]),
+  async (req, res) => {
+    try {
+      const { name, display_name, field_type, is_required, options } = req.body;
 
-// Add a test route to verify our database connection
-router.get("/test", async (req, res) => {
-  try {
-    const [result] = await pool.query("SELECT 1 as test");
-    res.json({
-      success: true,
-      message: "Database connection successful",
-      data: result,
-    });
-  } catch (error) {
-    console.error("Test route error:", error);
-    res.status(500).json({
-      error: "Test failed",
-      details: error.message,
-    });
+      const [result] = await pool.query(
+        `UPDATE form_fields 
+       SET name = ?, display_name = ?, field_type = ?, 
+           is_required = ?, options = ?
+       WHERE id = ?`,
+        [
+          name,
+          display_name,
+          field_type,
+          is_required,
+          options ? JSON.stringify(options) : null,
+          req.params.id,
+        ]
+      );
+
+      if (result.affectedRows === 0) {
+        return res.status(404).json({ message: "Field not found" });
+      }
+
+      res.json({
+        id: parseInt(req.params.id),
+        name,
+        display_name,
+        field_type,
+        is_required,
+        options,
+      });
+    } catch (error) {
+      console.error("Error updating field:", error);
+      res.status(500).json({ message: "Error updating field" });
+    }
   }
-});
+);
 
 module.exports = router;
