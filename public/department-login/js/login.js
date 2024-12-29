@@ -49,22 +49,13 @@ class LoginManager {
   async handleSubmit(e) {
     e.preventDefault();
 
-    // Basic validation
+    if (!this.form.checkValidity()) {
+      this.form.classList.add("was-validated");
+      return;
+    }
+
     const username = this.form.username.value.trim();
-    const password = this.form.password.value.trim();
-    const captchaInput = this.captchaInput.value.trim();
-
-    if (!username || !password) {
-      this.showError("Please enter both username and password");
-      return;
-    }
-
-    if (captchaInput !== this.captchaText.textContent) {
-      this.showError("Invalid captcha");
-      this.generateCaptcha();
-      this.captchaInput.value = "";
-      return;
-    }
+    const password = this.form.password.value;
 
     try {
       const response = await fetch("/api/auth/login", {
@@ -78,14 +69,11 @@ class LoginManager {
       const data = await response.json();
 
       if (response.ok) {
-        // Store the token
         localStorage.setItem("authToken", data.token);
-        // Redirect to admin dashboard
-        window.location.href = "/admin/dashboard";
+        localStorage.setItem("userInfo", JSON.stringify(data.user));
+        window.location.href = "/admin";
       } else {
-        this.showError(data.message || "Invalid credentials");
-        this.generateCaptcha();
-        this.captchaInput.value = "";
+        this.showError(data.message || "Login failed");
       }
     } catch (error) {
       console.error("Login error:", error);

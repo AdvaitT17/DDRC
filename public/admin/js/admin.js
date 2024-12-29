@@ -1,75 +1,83 @@
-document.addEventListener("DOMContentLoaded", async () => {
-  const authLoader = document.getElementById("authLoader");
-  const mainContent = document.getElementById("mainContent");
-  const logoutBtn = document.getElementById("logoutBtn");
-  const userInfo = document.getElementById("userInfo");
+async function checkAuth() {
+  const isAuth = await AuthManager.verifyAuth();
+  if (!isAuth) {
+    window.location.href = "/department-login";
+    return false;
+  }
+  const userInfo = AuthManager.getUserInfo();
+  if (userInfo.type !== "department") {
+    AuthManager.logout();
+    return false;
+  }
+  return true;
+}
+
+async function loadContent(path) {
+  if (!(await checkAuth())) return;
+
+  const contentDiv = document.getElementById("content");
 
   try {
-    // Check authentication
-    const isAuthenticated = await AuthManager.verifyAuth();
-    if (!isAuthenticated) {
-      AuthManager.redirectToLogin();
-      return;
+    let template;
+    switch (path) {
+      case "/admin/dashboard":
+        template = await fetch("/admin/templates/dashboard.html");
+        break;
+      case "/admin/forms":
+        template = await fetch("/admin/templates/forms.html");
+        break;
+      default:
+        template = await fetch("/admin/templates/404.html");
     }
 
-    // Display user info
-    const user = AuthManager.getUserInfo();
-    if (user) {
-      userInfo.textContent = `${user.full_name} (${user.role})`;
-    }
-
-    // Setup logout handler
-    logoutBtn.addEventListener("click", () => {
-      AuthManager.clearAuth();
-      AuthManager.redirectToLogin();
-    });
-
-    // Show main content
-    authLoader.style.display = "none";
-    mainContent.style.display = "block";
-
-    // Initialize page based on current path
-    const currentPath = window.location.pathname;
-    if (currentPath === "/admin/forms") {
-      await initializeFormManagement();
-    } else if (currentPath === "/admin/dashboard") {
-      await initializeDashboard();
+    if (template.ok) {
+      contentDiv.innerHTML = await template.text();
+      initializeContent(path);
     } else {
-      // Redirect to dashboard if on root admin path
-      if (currentPath === "/admin") {
-        window.location.href = "/admin/dashboard";
-      }
+      throw new Error("Failed to load content");
     }
   } catch (error) {
-    console.error("Admin initialization error:", error);
-    AuthManager.redirectToLogin();
+    console.error("Error loading content:", error);
+    contentDiv.innerHTML =
+      "<div class='alert alert-danger'>Error loading content</div>";
   }
+}
+
+function initializeContent(path) {
+  // Initialize specific functionality based on the loaded content
+  switch (path) {
+    case "/admin/dashboard":
+      initializeDashboard();
+      break;
+    case "/admin/forms":
+      initializeForms();
+      break;
+  }
+}
+
+// Add specific initialization functions for each page
+function initializeDashboard() {
+  // Initialize dashboard-specific functionality
+}
+
+function initializeForms() {
+  // Initialize forms-specific functionality
+}
+
+// Handle browser back/forward buttons
+window.addEventListener("popstate", () => {
+  loadContent(window.location.pathname);
 });
 
-async function initializeDashboard() {
-  // Dashboard initialization code
-  console.log("Initializing dashboard...");
-}
-
-async function initializeFormManagement() {
-  // Form management initialization code
-  console.log("Initializing form management...");
-}
-
-// Add some CSS for the auth loader
-const style = document.createElement("style");
-style.textContent = `
-  .auth-loader {
-    position: fixed;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    background: rgba(255, 255, 255, 0.9);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    z-index: 9999;
+// Handle internal navigation
+document.addEventListener("click", (e) => {
+  if (
+    e.target.matches("a") &&
+    e.target.href.startsWith(window.location.origin + "/admin")
+  ) {
+    e.preventDefault();
+    const path = new URL(e.target.href).pathname;
+    history.pushState(null, "", path);
+    loadContent(path);
   }
-`;
-document.head.appendChild(style);
+});

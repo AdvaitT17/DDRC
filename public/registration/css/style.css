@@ -1,0 +1,251 @@
+/* Registration form specific styles */
+.registration-container {
+  min-height: calc(100vh - 400px);
+  padding: 40px 20px;
+  background-color: var(--light-bg);
+}
+
+.registration-box {
+  max-width: 800px;
+  margin: 0 auto;
+  background: white;
+  border-radius: 8px;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+  padding: 40px;
+}
+
+.registration-header {
+  text-align: center;
+  margin-bottom: 30px;
+  border-bottom: 1px solid #eee;
+  padding-bottom: 20px;
+}
+
+.registration-header h1 {
+  color: var(--primary-color);
+  font-size: 24px;
+  margin-bottom: 10px;
+}
+
+.progress-indicator {
+  display: flex;
+  justify-content: center;
+  gap: 15px;
+  margin: 30px 0;
+}
+
+.progress-step {
+  width: 35px;
+  height: 35px;
+  border-radius: 50%;
+  background: #e9ecef;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 14px;
+  color: #6c757d;
+  position: relative;
+  border: 2px solid transparent;
+}
+
+.progress-step.active {
+  background: var(--primary-color);
+  color: white;
+  border-color: var(--primary-color);
+}
+
+.progress-step.completed {
+  background: var(--secondary-color);
+  color: white;
+  border-color: var(--secondary-color);
+}
+
+.form-section {
+  background: white;
+  padding: 30px;
+  border-radius: 8px;
+}
+
+.navigation-buttons {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 30px;
+  padding: 20px 0 0;
+  border-top: 1px solid #eee;
+}
+
+/* Form field styles */
+.form-group {
+  margin-bottom: 25px;
+}
+
+.form-label {
+  font-weight: 500;
+  color: #344767;
+  margin-bottom: 8px;
+}
+
+.form-control,
+.form-select {
+  padding: 12px 16px;
+  border: 2px solid #e0e0e0;
+  border-radius: 6px;
+  font-size: 15px;
+  transition: all 0.2s;
+}
+
+.form-control:focus,
+.form-select:focus {
+  border-color: var(--primary-color);
+  box-shadow: none;
+}
+
+.form-check {
+  margin-bottom: 10px;
+}
+
+.form-check-input:checked {
+  background-color: var(--primary-color);
+  border-color: var(--primary-color);
+}
+
+/* Add new styles to match department login */
+.auth-container {
+  min-height: calc(100vh - 400px);
+  padding: 40px 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: var(--light-bg);
+}
+
+.auth-box {
+  width: 100%;
+  max-width: 420px;
+  background: white;
+  border-radius: 8px;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+  padding: 40px;
+}
+
+.auth-header {
+  text-align: center;
+  margin-bottom: 30px;
+}
+
+.auth-header h2 {
+  color: var(--primary-color);
+  font-size: 24px;
+  margin-bottom: 8px;
+}
+
+.auth-form .form-group {
+  margin-bottom: 20px;
+}
+
+.auth-form .form-label {
+  font-weight: 500;
+  color: #344767;
+  margin-bottom: 8px;
+  display: block;
+}
+
+.auth-form .form-control {
+  width: 100%;
+  padding: 12px 16px;
+  border: 2px solid #e0e0e0;
+  border-radius: 6px;
+  font-size: 15px;
+  transition: all 0.2s;
+}
+
+.auth-form .form-control:focus {
+  border-color: var(--primary-color);
+  box-shadow: none;
+  outline: none;
+}
+
+.auth-form .btn-primary {
+  width: 100%;
+  padding: 12px;
+  font-size: 16px;
+  font-weight: 500;
+  background-color: var(--primary-color);
+  border: none;
+  border-radius: 6px;
+  transition: all 0.2s;
+}
+
+.auth-form .btn-primary:hover {
+  background: #283593;
+  transform: translateY(-1px);
+}
+
+.eye-icon {
+  width: 20px;
+  height: 20px;
+  opacity: 0.5;
+  transition: opacity 0.2s;
+}
+
+.toggle-password:hover .eye-icon {
+  opacity: 0.8;
+}
+
+.form-footer {
+  margin-top: 20px;
+  text-align: center;
+  font-size: 14px;
+}
+
+.form-footer a {
+  color: var(--primary-color);
+  text-decoration: none;
+}
+
+.form-footer a:hover {
+  text-decoration: underline;
+}
+
+.password-input {
+  position: relative;
+}
+
+.toggle-password {
+  position: absolute;
+  right: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  background: none;
+  border: none;
+  padding: 0;
+  cursor: pointer;
+}
+
+.alert {
+  padding: 12px 16px;
+  border-radius: 6px;
+  margin-bottom: 20px;
+  font-size: 14px;
+}
+
+.alert-danger {
+  background-color: #fee2e2;
+  color: #dc2626;
+  border: 1px solid #fecaca;
+}
+
+.invalid-feedback {
+  display: none;
+  color: #dc2626;
+  font-size: 13px;
+  margin-top: 4px;
+}
+
+.was-validated .form-control:invalid {
+  border-color: #dc2626;
+}
+
+.was-validated .form-control:invalid + .invalid-feedback {
+  display: block;
+}
