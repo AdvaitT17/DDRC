@@ -12,6 +12,43 @@
     <link rel="stylesheet" href="/admin/css/style.css" />
   </head>
   <body>
+    <script>
+      // Immediate auth check before showing anything
+      (async function () {
+        try {
+          const token = localStorage.getItem("authToken");
+          if (!token) {
+            window.location.href = "/department-login";
+            return;
+          }
+
+          const response = await fetch("/api/auth/verify", {
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+          });
+
+          if (!response.ok) {
+            localStorage.removeItem("authToken");
+            localStorage.removeItem("userInfo");
+            window.location.href = "/department-login";
+            return;
+          }
+
+          const userInfo = JSON.parse(localStorage.getItem("userInfo"));
+          if (!userInfo || userInfo.type !== "department") {
+            localStorage.removeItem("authToken");
+            localStorage.removeItem("userInfo");
+            window.location.href = "/department-login";
+            return;
+          }
+        } catch (error) {
+          console.error("Auth error:", error);
+          window.location.href = "/department-login";
+          return;
+        }
+      })();
+    </script>
     <!-- Add this hidden loader -->
     <div id="authLoader" class="auth-loader">
       <div class="spinner-border text-primary" role="status">
@@ -28,9 +65,31 @@
         </div>
         <div class="right-links">
           <span id="userInfo"></span>
-          <button id="logoutBtn" class="btn btn-link">Logout</button>
+          <button
+            id="logoutBtn"
+            class="btn btn-link"
+            onclick="AuthManager.logout()"
+          >
+            Logout
+          </button>
         </div>
       </div>
+      <!-- Main Header -->
+      <header class="main-header">
+        <div class="logo-section">
+          <img
+            src="/images/emblem.png"
+            alt="Government of India Emblem"
+            class="emblem-logo"
+          />
+          <div class="header-text">
+            <h1>District Disability Rehabilitation Centre, Mumbai</h1>
+            <p>Department of Empowerment of Persons with Disabilities,</p>
+            <p>Ministry of Social Justice and Empowerment, Govt. of India</p>
+          </div>
+          <img src="/images/ddrc-logo.png" alt="DDRC Logo" class="ddrc-logo" />
+        </div>
+      </header>
 
       <div class="admin-content">
         <div class="dashboard-header">
@@ -110,7 +169,19 @@
     <script src="/js/auth.js"></script>
     <script src="/admin/js/api.js"></script>
     <script src="/admin/js/init.js"></script>
-    <script src="/admin/js/admin.js"></script>
     <script src="/admin/js/dashboard.js"></script>
+    <script>
+      document.addEventListener("DOMContentLoaded", () => {
+        // Set user info
+        const userInfo = AuthManager.getUserInfo();
+        document.getElementById(
+          "userInfo"
+        ).textContent = `Welcome, ${userInfo.username}`;
+
+        // Show main content
+        document.getElementById("authLoader").style.display = "none";
+        document.getElementById("mainContent").style.display = "block";
+      });
+    </script>
   </body>
 </html>
