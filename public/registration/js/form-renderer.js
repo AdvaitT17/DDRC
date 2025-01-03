@@ -7,6 +7,12 @@ class RegistrationFormRenderer {
 
   async initialize() {
     try {
+      // Show auth loader immediately
+      document.body.style.overflow = "hidden";
+      document.getElementById("authLoader").style.display = "flex";
+      document.getElementById("mainContent").style.opacity = "0";
+      document.getElementById("mainContent").style.display = "block";
+
       // Check authentication first
       const isAuthenticated = await AuthManager.verifyAuth();
       if (!isAuthenticated) {
@@ -14,37 +20,50 @@ class RegistrationFormRenderer {
         return;
       }
 
-      // Fetch form sections and fields
-      const response = await fetch("/api/form/sections", {
-        headers: {
-          Authorization: `Bearer ${AuthManager.getAuthToken()}`,
-        },
-      });
+      // Fetch and initialize everything
+      await this.fetchAndInitialize();
 
-      if (!response.ok) {
-        throw new Error("Failed to fetch form sections");
-      }
+      // Smooth transition
+      setTimeout(() => {
+        document.getElementById("mainContent").style.opacity = "1";
+        document.getElementById("authLoader").style.opacity = "0";
+        document.body.style.overflow = "";
 
-      this.sections = await response.json();
-      if (!this.sections.length) {
-        throw new Error("No form sections found");
-      }
-
-      // Fetch saved progress if any
-      await this.loadSavedProgress();
-
-      // Render initial section
-      this.renderCurrentSection();
-      this.updateProgressIndicator();
-      this.setupNavigationButtons();
-
-      // Show main content
-      document.getElementById("authLoader").style.display = "none";
-      document.getElementById("mainContent").style.display = "block";
+        setTimeout(() => {
+          document.getElementById("authLoader").style.display = "none";
+        }, 300);
+      }, 300);
     } catch (error) {
       console.error("Error initializing form:", error);
       alert("Error loading form. Please try again later.");
     }
+  }
+
+  async fetchAndInitialize() {
+    // Fetch form sections and fields
+    const response = await fetch("/api/form/sections", {
+      headers: {
+        Authorization: `Bearer ${AuthManager.getAuthToken()}`,
+      },
+    });
+
+    if (!response.ok) {
+      throw new Error("Failed to fetch form sections");
+    }
+
+    this.sections = await response.json();
+    if (!this.sections.length) {
+      throw new Error("No form sections found");
+    }
+
+    // Fetch saved progress if any
+    await this.loadSavedProgress();
+
+    // Render initial section
+    this.renderCurrentSection();
+    this.updateProgressIndicator();
+    this.setupNavigationButtons();
+    AuthManager.initLogoutHandler();
   }
 
   async loadSavedProgress() {
@@ -71,7 +90,9 @@ class RegistrationFormRenderer {
     container.innerHTML = `
       <h2>${section.name}</h2>
       <form id="sectionForm">
-        ${this.renderFields(section.fields)}
+        <div class="form-grid">
+          ${this.renderFields(section.fields)}
+        </div>
       </form>
     `;
 
@@ -93,7 +114,22 @@ class RegistrationFormRenderer {
   }
 
   renderFields(fields) {
-    return fields.map((field) => this.renderField(field)).join("");
+    return fields
+      .map((field) => {
+        // Determine if field should be full width
+        const isFullWidth =
+          field.field_type === "textarea" ||
+          field.field_type === "radio" ||
+          field.field_type === "checkbox" ||
+          field.name.includes("address");
+
+        return `
+        <div class="form-group ${isFullWidth ? "full-width" : ""}">
+          ${this.renderField(field)}
+        </div>
+      `;
+      })
+      .join("");
   }
 
   renderField(field) {

@@ -44,13 +44,25 @@ class AuthManager {
   }
 
   static logout() {
+    const userType = this.getUserType();
     localStorage.removeItem("authToken");
     localStorage.removeItem("userInfo");
-    // Check if we're in admin section
-    if (window.location.pathname.startsWith("/admin")) {
+
+    // Redirect based on user type
+    if (userType === "department") {
       window.location.href = "/department-login";
     } else {
       window.location.href = "/login";
+    }
+  }
+
+  static initLogoutHandler() {
+    const logoutBtn = document.getElementById("logoutBtn");
+    if (logoutBtn) {
+      logoutBtn.addEventListener("click", (e) => {
+        e.preventDefault();
+        this.logout();
+      });
     }
   }
 
