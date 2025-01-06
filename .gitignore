@@ -16,6 +16,7 @@ server/scripts/
 .vscode/*
 .vscode/launch.json
 !.vscode/extensions.json
+.cursorignore
 .idea
 .DS_Store
 *.suo

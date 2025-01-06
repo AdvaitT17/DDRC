@@ -99,58 +99,77 @@ router.post("/progress", authenticateToken, async (req, res) => {
 
 // Submit form
 router.post("/submit", authenticateToken, async (req, res) => {
-  const conn = await pool.getConnection();
   try {
-    await conn.beginTransaction();
-
-    // Get the user's in-progress registration
-    const [progress] = await conn.query(
-      `SELECT id FROM registration_progress 
-       WHERE user_id = ? AND status = 'in_progress'`,
+    // Check for existing completed registration
+    const [existingReg] = await pool.query(
+      `SELECT application_id FROM registration_progress 
+       WHERE user_id = ? AND status = 'completed'`,
       [req.user.id]
     );
 
-    if (progress.length === 0) {
-      throw new Error("No registration in progress");
+    if (existingReg.length > 0) {
+      return res.status(400).json({
+        message: "You have already submitted a registration",
+        applicationId: existingReg[0].application_id,
+      });
     }
 
-    // Generate application ID (Year-Month-Sequential Number)
-    const [lastApp] = await conn.query(
-      `SELECT application_id FROM registration_progress 
-       WHERE application_id IS NOT NULL 
-       ORDER BY id DESC LIMIT 1`
-    );
+    const conn = await pool.getConnection();
+    try {
+      await conn.beginTransaction();
 
-    const date = new Date();
-    const year = date.getFullYear();
-    const month = String(date.getMonth() + 1).padStart(2, "0");
-    const lastNum = lastApp.length
-      ? parseInt(lastApp[0].application_id.split("-")[2])
-      : 0;
-    const appNum = String(lastNum + 1).padStart(4, "0");
-    const applicationId = `${year}-${month}-${appNum}`;
+      // Get the user's in-progress registration
+      const [progress] = await conn.query(
+        `SELECT id FROM registration_progress 
+         WHERE user_id = ? AND status = 'in_progress'`,
+        [req.user.id]
+      );
 
-    // Update registration status
-    await conn.query(
-      `UPDATE registration_progress 
-       SET status = 'completed', 
-           application_id = ?,
-           completed_at = CURRENT_TIMESTAMP 
-       WHERE id = ?`,
-      [applicationId, progress[0].id]
-    );
+      if (progress.length === 0) {
+        throw new Error("No registration in progress");
+      }
 
-    await conn.commit();
-    res.json({
-      message: "Form submitted successfully",
-      applicationId,
-    });
+      // Generate application ID (Year-Month-Sequential Number)
+      const [lastApp] = await conn.query(
+        `SELECT application_id FROM registration_progress 
+         WHERE application_id IS NOT NULL 
+         ORDER BY id DESC LIMIT 1`
+      );
+
+      const date = new Date();
+      const year = date.getFullYear();
+      const month = String(date.getMonth() + 1).padStart(2, "0");
+      const lastNum = lastApp.length
+        ? parseInt(lastApp[0].application_id.split("-")[2])
+        : 0;
+      const appNum = String(lastNum + 1).padStart(4, "0");
+      const applicationId = `${year}-${month}-${appNum}`;
+
+      // Update registration status
+      await conn.query(
+        `UPDATE registration_progress 
+         SET status = 'completed', 
+             application_id = ?,
+             completed_at = CURRENT_TIMESTAMP 
+         WHERE id = ?`,
+        [applicationId, progress[0].id]
+      );
+
+      await conn.commit();
+      res.json({
+        message: "Form submitted successfully",
+        applicationId,
+      });
+    } catch (error) {
+      await conn.rollback();
+      console.error("Error submitting form:", error);
+      res.status(500).json({ message: "Error submitting form" });
+    } finally {
+      conn.release();
+    }
   } catch (error) {
-    await conn.rollback();
-    console.error("Error submitting form:", error);
-    res.status(500).json({ message: "Error submitting form" });
-  } finally {
-    conn.release();
+    console.error("Error in registration submission:", error);
+    res.status(500).json({ message: "Error processing registration" });
   }
 });
 
@@ -173,6 +192,35 @@ router.get("/verify/:applicationId", authenticateToken, async (req, res) => {
   } catch (error) {
     console.error("Error verifying submission:", error);
     res.status(500).json({ message: "Error verifying submission" });
+  }
+});
+
+// Add this new route to check registration status
+router.get("/check-status", authenticateToken, async (req, res) => {
+  try {
+    const [registration] = await pool.query(
+      `SELECT application_id, status, completed_at 
+       FROM registration_progress 
+       WHERE user_id = ? AND status = 'completed'
+       ORDER BY completed_at DESC LIMIT 1`,
+      [req.user.id]
+    );
+
+    if (registration.length > 0) {
+      res.json({
+        hasRegistration: true,
+        applicationId: registration[0].application_id,
+        status: registration[0].status,
+        completedAt: registration[0].completed_at,
+      });
+    } else {
+      res.json({
+        hasRegistration: false,
+      });
+    }
+  } catch (error) {
+    console.error("Error checking registration status:", error);
+    res.status(500).json({ message: "Error checking registration status" });
   }
 });
 

@@ -1,7 +1,7 @@
 class ApplicationTracker {
   constructor() {
     this.form = document.getElementById("trackForm");
-    this.errorAlert = document.getElementById("trackError");
+    this.formContainer = document.querySelector(".track-form-container");
     this.resultDiv = document.getElementById("trackingResult");
     this.setupEventListeners();
     this.checkUrlParams();
@@ -9,6 +9,12 @@ class ApplicationTracker {
 
   setupEventListeners() {
     this.form.addEventListener("submit", (e) => this.handleSubmit(e));
+    // Listen for back button clicks
+    document.addEventListener("click", (e) => {
+      if (e.target.closest(".back-button")) {
+        this.showForm();
+      }
+    });
   }
 
   checkUrlParams() {
@@ -20,126 +26,174 @@ class ApplicationTracker {
     }
   }
 
-  showError(message) {
-    this.errorAlert.textContent = message;
-    this.errorAlert.style.display = "block";
-    this.resultDiv.style.display = "none";
-    setTimeout(() => {
-      this.errorAlert.style.display = "none";
-    }, 5000);
-  }
-
   async handleSubmit(e) {
     e.preventDefault();
+    const applicationId = this.form.applicationId.value.trim();
+    const email = this.form.email.value.trim();
 
-    if (!this.form.checkValidity()) {
-      this.form.classList.add("was-validated");
+    if (!applicationId || !email) {
+      this.showError("Please enter both Application ID and Email");
       return;
     }
 
-    const applicationId = this.form.applicationId.value.trim();
+    // Add loading state to button
+    const submitButton = this.form.querySelector('button[type="submit"]');
+    const originalText = submitButton.innerHTML;
+    submitButton.disabled = true;
+    submitButton.innerHTML = `
+      <svg class="spinner" viewBox="0 0 50 50">
+        <circle class="path" cx="25" cy="25" r="20" fill="none" stroke-width="5"></circle>
+      </svg>
+      Loading...
+    `;
 
     try {
-      const response = await fetch(`/api/track/${applicationId}`);
+      const response = await fetch(
+        `/api/track/${applicationId}?email=${encodeURIComponent(email)}`
+      );
       const data = await response.json();
 
-      if (response.ok) {
-        this.displayResult(data);
-      } else {
-        this.showError(data.message || "Application not found");
+      if (!response.ok) {
+        throw new Error(data.message || "Application not found");
       }
+
+      // Prepare the result HTML but don't show it yet
+      this.resultDiv.innerHTML = this.getResultHTML(data);
+
+      // Show result div first with opacity 0
+      this.resultDiv.classList.add("visible");
+
+      // Small delay to ensure display:block is applied
+      await new Promise((resolve) => setTimeout(resolve, 50));
+
+      // Fade out form and fade in result simultaneously
+      this.formContainer.style.opacity = "0";
+      this.resultDiv.style.opacity = "1";
+
+      // After fade out, hide form
+      await new Promise((resolve) => setTimeout(resolve, 300));
+      this.formContainer.classList.add("hidden");
     } catch (error) {
-      console.error("Error tracking application:", error);
-      this.showError("Failed to track application. Please try again.");
+      this.showError(error.message || "Failed to fetch application status");
+    } finally {
+      submitButton.disabled = false;
+      submitButton.innerHTML = originalText;
     }
   }
 
-  displayResult(data) {
-    const timeline = this.createTimeline(data.status);
-    const details = this.createDetails(data);
+  getResultHTML(data) {
+    const statusClasses = {
+      under_review: "status-under_review",
+      approved: "status-approved",
+      rejected: "status-rejected",
+    };
 
-    this.resultDiv.querySelector(".status-timeline").innerHTML = timeline;
-    this.resultDiv.querySelector(".application-details").innerHTML = details;
-    this.resultDiv.style.display = "block";
-    this.errorAlert.style.display = "none";
-  }
+    const statusText = {
+      under_review: "Under Review",
+      approved: "Approved",
+      rejected: "Rejected",
+    };
 
-  createTimeline(status) {
-    const stages = ["submitted", "under_review", "approved", "rejected"];
-    const currentIndex = stages.indexOf(status);
-
-    return stages
-      .map(
-        (stage, index) => `
-        <div class="timeline-item ${index <= currentIndex ? "completed" : ""} ${
-          status === stage ? "current" : ""
-        }">
-          <div class="timeline-point"></div>
-          <div class="timeline-content">
-            <h4>${this.formatStatus(stage)}</h4>
-            ${
-              status === stage
-                ? '<span class="current-status">Current Status</span>'
-                : ""
-            }
-          </div>
-        </div>
-      `
-      )
-      .join("");
-  }
-
-  createDetails(data) {
-    const { basicDetails } = data;
     return `
-      <div class="details-grid">
-        <div class="detail-item">
-          <label>Application ID</label>
-          <span>${data.applicationId}</span>
+      <div class="track-box ${statusClasses[data.status]}">
+        <div class="track-header">
+          <h2>Application Details</h2>
+          <p>Your application has been successfully submitted</p>
         </div>
-        <div class="detail-item">
-          <label>Applicant Name</label>
-          <span>${basicDetails.name}</span>
-        </div>
-        <div class="detail-item">
-          <label>Email</label>
-          <span>${basicDetails.email}</span>
-        </div>
-        <div class="detail-item">
-          <label>Phone</label>
-          <span>${basicDetails.phone}</span>
-        </div>
-        <div class="detail-item">
-          <label>Disability Type</label>
-          <span>${basicDetails.disability_type}</span>
-        </div>
-        <div class="detail-item">
-          <label>Submitted On</label>
-          <span>${new Date(data.submittedAt).toLocaleDateString()}</span>
-        </div>
-        <div class="detail-item">
-          <label>Last Updated</label>
-          <span>${new Date(data.lastUpdated).toLocaleDateString()}</span>
-        </div>
-        <div class="detail-item">
-          <label>Status</label>
-          <span class="status-badge ${data.status}">${this.formatStatus(
-      data.status
-    )}</span>
+
+        <div class="track-content">
+          <div class="info-box">
+            <div class="info-item">
+              <label>Application ID</label>
+              <span>${data.applicationId}</span>
+            </div>
+            <div class="info-item">
+              <label>Applicant Name</label>
+              <span>${data.applicantName}</span>
+            </div>
+            <div class="info-item">
+              <label>Submitted On</label>
+              <span>${data.submittedDate}</span>
+            </div>
+            <div class="info-item">
+              <label>Status</label>
+              <span class="status-badge">
+                ${data.statusIcon}
+                ${statusText[data.status] || "Under Review"}
+              </span>
+            </div>
+          </div>
+          
+          <button class="back-button btn" onclick="this.closest('.track-box').querySelector('.back-button').click()">
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
+            </svg>
+            Back to Search
+          </button>
         </div>
       </div>
     `;
   }
 
-  formatStatus(status) {
-    return status
-      .split("_")
-      .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
-      .join(" ");
+  showError(message) {
+    // Prepare error HTML
+    this.resultDiv.innerHTML = `
+      <div class="error-box">
+        <div class="track-header">
+          <h2>Unable to Find Application</h2>
+        </div>
+        <div class="track-content">
+          <div class="alert alert-danger">
+            ${message}
+          </div>
+          <button class="back-button btn" onclick="this.closest('.error-box').querySelector('.back-button').click()">
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
+            </svg>
+            Back to Search
+          </button>
+        </div>
+      </div>
+    `;
+
+    // Show result div first with opacity 0
+    this.resultDiv.classList.add("visible");
+
+    // Small delay to ensure display:block is applied
+    setTimeout(() => {
+      // Fade out form and fade in result simultaneously
+      this.formContainer.style.opacity = "0";
+      this.resultDiv.style.opacity = "1";
+
+      // After fade out, hide form
+      setTimeout(() => {
+        this.formContainer.classList.add("hidden");
+      }, 300);
+    }, 50);
+  }
+
+  showForm() {
+    // Show form container first
+    this.formContainer.classList.remove("hidden");
+
+    // Small delay to ensure display:block is applied
+    setTimeout(() => {
+      // Fade in form
+      this.formContainer.style.opacity = "1";
+      // Fade out result
+      this.resultDiv.style.opacity = "0";
+
+      // After fade out, hide and reset
+      setTimeout(() => {
+        this.resultDiv.classList.remove("visible");
+        this.form.reset();
+        window.history.pushState({}, "", window.location.pathname);
+      }, 300);
+    }, 50);
   }
 }
 
-// Initialize tracker
+// Initialize on page load
 document.addEventListener("DOMContentLoaded", () => {
   new ApplicationTracker();
 });

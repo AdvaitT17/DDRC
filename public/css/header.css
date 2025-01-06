@@ -240,3 +240,44 @@
   background-color: #e06810 !important;
   color: white;
 }
+
+/* Divyangjan login button styles */
+.main-nav a.nav-login-btn[href="/login"] {
+  position: relative;
+  overflow: hidden;
+  background-color: var(--primary-color) !important;
+  transition: none !important;
+}
+
+/* Override all hover states */
+.main-nav a.nav-login-btn[href="/login"]:hover,
+.main-nav a.nav-login-btn[href="/login"]:active,
+.main-nav a.nav-login-btn[href="/login"]:focus {
+  background-color: var(--primary-color) !important;
+}
+
+.main-nav a.nav-login-btn[href="/login"]::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: -100%; /* Extend much further */
+  width: 200%; /* Double width to ensure coverage */
+  height: 100%;
+  background: linear-gradient(
+    120deg,
+    transparent 0%,
+    rgba(255, 255, 255, 0.2) 50%,
+    transparent 100%
+  );
+  transform: translateX(-100%);
+  transition: transform 0.5s ease;
+}
+
+.main-nav a.nav-login-btn[href="/login"]:hover::before {
+  transform: translateX(100%);
+}
+
+/* Department login button - keep original transition */
+.main-nav a.nav-login-btn[href="/department-login"] {
+  transition: background-color 0.3s ease;
+}

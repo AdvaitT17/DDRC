@@ -20,7 +20,21 @@ class RegistrationFormRenderer {
         return;
       }
 
-      // Fetch and initialize everything
+      // Check if user has already submitted a registration
+      const response = await fetch("/api/registration/check-status", {
+        headers: {
+          Authorization: `Bearer ${AuthManager.getAuthToken()}`,
+        },
+      });
+
+      const data = await response.json();
+      if (data.hasRegistration) {
+        // Redirect to a page showing their existing application
+        window.location.href = `/track?id=${data.applicationId}`;
+        return;
+      }
+
+      // Continue with form initialization if no existing registration
       await this.fetchAndInitialize();
 
       // Smooth transition
