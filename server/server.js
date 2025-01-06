@@ -55,6 +55,7 @@ app.use(
   },
   adminRoutes
 );
+app.use("/api/track", require("./routes/trackingRoutes"));
 
 // HTML Routes - make sure these come after API routes
 app.get(
