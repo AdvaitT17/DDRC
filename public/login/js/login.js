@@ -54,20 +54,20 @@ class LoginHandler {
         localStorage.setItem("authToken", data.token);
         localStorage.setItem("userInfo", JSON.stringify(data.user));
 
-        // Check registration status
-        const progressResponse = await fetch("/api/registration/progress", {
-          headers: {
-            Authorization: `Bearer ${data.token}`,
-          },
-        });
-
-        if (progressResponse.ok) {
-          const progressData = await progressResponse.json();
-          if (progressData.status === "completed") {
-            window.location.href = `/track?id=${progressData.applicationId}`;
-          } else {
-            window.location.href = "/registration/form";
+        // Check registration status after successful login
+        const regStatusResponse = await fetch(
+          "/api/registration/check-status",
+          {
+            headers: {
+              Authorization: `Bearer ${data.token}`,
+            },
           }
+        );
+        const regStatus = await regStatusResponse.json();
+
+        // Redirect based on registration status
+        if (regStatus.hasRegistration) {
+          window.location.href = "/dashboard";
         } else {
           window.location.href = "/registration/form";
         }

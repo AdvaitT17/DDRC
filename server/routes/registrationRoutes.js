@@ -199,28 +199,24 @@ router.get("/verify/:applicationId", authenticateToken, async (req, res) => {
 router.get("/check-status", authenticateToken, async (req, res) => {
   try {
     const [registration] = await pool.query(
-      `SELECT application_id, status, completed_at 
+      `SELECT application_id, status 
        FROM registration_progress 
        WHERE user_id = ? AND status = 'completed'
        ORDER BY completed_at DESC LIMIT 1`,
       [req.user.id]
     );
 
-    if (registration.length > 0) {
-      res.json({
-        hasRegistration: true,
-        applicationId: registration[0].application_id,
-        status: registration[0].status,
-        completedAt: registration[0].completed_at,
-      });
-    } else {
-      res.json({
-        hasRegistration: false,
-      });
-    }
+    res.json({
+      hasRegistration: registration.length > 0,
+      applicationId: registration[0]?.application_id || null,
+      status: registration[0]?.status || null,
+    });
   } catch (error) {
     console.error("Error checking registration status:", error);
-    res.status(500).json({ message: "Error checking registration status" });
+    res.status(500).json({
+      message: "Error checking registration status",
+      hasRegistration: false,
+    });
   }
 });
 

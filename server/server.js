@@ -12,6 +12,10 @@ const {
 const adminRoutes = require("./routes/adminRoutes");
 const registrationRoutes = require("./routes/registrationRoutes");
 const jwt = require("jsonwebtoken");
+const dashboardRoutes = require("./routes/dashboardRoutes");
+const {
+  requireCompletedRegistration,
+} = require("./middleware/registrationMiddleware");
 
 const app = express();
 
@@ -56,6 +60,12 @@ app.use(
   adminRoutes
 );
 app.use("/api/track", require("./routes/trackingRoutes"));
+app.use(
+  "/api/dashboard",
+  authenticateToken,
+  requireCompletedRegistration,
+  dashboardRoutes
+);
 
 // HTML Routes - make sure these come after API routes
 app.get(
@@ -68,8 +78,35 @@ app.get(
     "/login",
     "/track",
   ],
-  (req, res) => {
+  async (req, res) => {
     try {
+      // For registration form, check auth and registration status
+      if (req.path === "/registration/form") {
+        const authHeader = req.headers["authorization"];
+        const token = authHeader && authHeader.split(" ")[1];
+
+        if (token) {
+          try {
+            const decoded = jwt.verify(token, process.env.JWT_SECRET);
+            // Check if user has completed registration
+            const [registration] = await pool.query(
+              `SELECT id FROM registration_progress 
+               WHERE user_id = ? AND status = 'completed'
+               LIMIT 1`,
+              [decoded.id]
+            );
+
+            if (registration.length > 0) {
+              // If registration is complete, redirect to dashboard
+              return res.redirect("/dashboard");
+            }
+          } catch (err) {
+            console.error("Token verification error:", err);
+          }
+        }
+      }
+
+      // Serve appropriate HTML file based on path
       if (req.path === "/") {
         res.sendFile(path.join(__dirname, "../public/index.html"));
       } else if (req.path === "/registration") {
@@ -140,6 +177,21 @@ app.use((req, res) => {
 app.use((err, req, res, next) => {
   console.error("Server Error:", err.stack);
   res.status(500).json({ error: "Something went wrong!" });
+});
+
+// Serve dashboard pages
+app.get("/dashboard", (req, res) => {
+  res.sendFile(path.join(__dirname, "../public/dashboard/index.html"));
+});
+
+app.get("/dashboard/profile", (req, res) => {
+  res.sendFile(path.join(__dirname, "../public/dashboard/profile/index.html"));
+});
+
+app.get("/dashboard/documents", (req, res) => {
+  res.sendFile(
+    path.join(__dirname, "../public/dashboard/documents/index.html")
+  );
 });
 
 const PORT = process.env.PORT || 3000;

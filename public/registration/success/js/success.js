@@ -7,10 +7,6 @@ document.addEventListener("DOMContentLoaded", async () => {
       return;
     }
 
-    // Get application ID from URL
-    const pathParts = window.location.pathname.split("/");
-    const urlApplicationId = pathParts[pathParts.length - 1];
-
     // Check if coming from a fresh submission
     const wasSubmitted = sessionStorage.getItem("registrationSubmitted");
     const storedAppId = sessionStorage.getItem("applicationId");
@@ -22,27 +18,9 @@ document.addEventListener("DOMContentLoaded", async () => {
       sessionStorage.removeItem("registrationSubmitted");
       sessionStorage.removeItem("applicationId");
     } else {
-      // Not a fresh submission, verify if this application belongs to user
-      const response = await fetch("/api/registration/check-status", {
-        headers: {
-          Authorization: `Bearer ${AuthManager.getAuthToken()}`,
-        },
-      });
-
-      const data = await response.json();
-      if (data.hasRegistration && data.applicationId === urlApplicationId) {
-        // Valid application ID - show the success message
-        document.getElementById("applicationId").textContent =
-          data.applicationId;
-      } else {
-        // Invalid or no registration - redirect to tracking page or form
-        if (data.hasRegistration) {
-          window.location.href = `/track?id=${data.applicationId}`;
-        } else {
-          window.location.href = "/registration/form";
-        }
-        return;
-      }
+      // Not a fresh submission - redirect to dashboard
+      window.location.href = "/dashboard";
+      return;
     }
 
     // Show main content and hide loader
