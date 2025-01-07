@@ -28,205 +28,242 @@
     </style>
   </head>
   <body>
-    <!-- Top Bar -->
-    <div class="top-bar">
-      <div class="left-links">
-        <a href="/">Home</a>
-        <a href="/sitemap">Sitemap</a>
-      </div>
-      <div class="right-links">
-        <div class="font-size-controls">
-          <button class="font-size-btn" id="decreaseFont">T-</button>
-          <button class="font-size-btn" id="defaultFont">T</button>
-          <button class="font-size-btn" id="increaseFont">T+</button>
-        </div>
-        <select class="language-select" id="languageSelect">
-          <option value="en">English</option>
-          <option value="hi">हिंदी</option>
-        </select>
-      </div>
+    <!-- Auth check loader -->
+    <div id="authLoader" class="auth-loader">
+      <div class="spinner"></div>
     </div>
 
-    <!-- Main Header -->
-    <header class="main-header">
-      <div class="logo-section">
-        <img
-          src="/images/emblem.png"
-          alt="Government of India Emblem"
-          class="emblem-logo"
-        />
-        <div class="header-text">
-          <h1>District Disability Rehabilitation Centre, Mumbai</h1>
-          <p>Department of Empowerment of Persons with Disabilities,</p>
-          <p>Ministry of Social Justice and Empowerment, Govt. of India</p>
+    <!-- Main content will be hidden until auth check -->
+    <div id="mainContent" style="display: none">
+      <!-- Top Bar -->
+      <div class="top-bar">
+        <div class="left-links">
+          <a href="/">Home</a>
+          <a href="/sitemap">Sitemap</a>
         </div>
-        <img src="/images/ddrc-logo.png" alt="DDRC Logo" class="ddrc-logo" />
+        <div class="right-links">
+          <div class="font-size-controls">
+            <button class="font-size-btn" id="decreaseFont">T-</button>
+            <button class="font-size-btn" id="defaultFont">T</button>
+            <button class="font-size-btn" id="increaseFont">T+</button>
+          </div>
+          <select class="language-select" id="languageSelect">
+            <option value="en">English</option>
+            <option value="hi">हिंदी</option>
+          </select>
+        </div>
       </div>
-    </header>
-    <!-- Navigation Menu -->
-    <nav class="main-nav">
-      <a href="/" class="nav-icon">
-        <img src="/images/home-icons.png" alt="Home" />
-      </a>
-      <a href="/apply">Apply For UDID</a>
-      <a href="/track">Track Your Application</a>
-      <a href="/data">Aggregated-Data</a>
-      <a href="/reports">Pendency-Report</a>
-      <a href="/media">Media</a>
-      <a href="/faqs">FAQs</a>
-      <a href="/contact">Contact Us</a>
 
-      <!-- Add spacer to push login buttons to the right -->
-      <div class="nav-spacer"></div>
-
-      <!-- Add login buttons -->
-      <a href="/login" class="nav-login-btn">
-        <img src="/images/login.svg" alt="Login Icon" />
-        Divyangjan Login
-      </a>
-      <a href="/department-login" class="nav-login-btn">
-        <img src="/images/user-plus.svg" alt="User Icon" />
-        Department User Login
-      </a>
-    </nav>
-
-    <!-- Main Content -->
-    <main class="auth-container">
-      <div class="auth-box">
-        <div class="auth-header">
-          <h2>Create Account</h2>
-          <p>Register to avail DDRC services</p>
+      <!-- Main Header -->
+      <header class="main-header">
+        <div class="logo-section">
+          <img
+            src="/images/emblem.png"
+            alt="Government of India Emblem"
+            class="emblem-logo"
+          />
+          <div class="header-text">
+            <h1>District Disability Rehabilitation Centre, Mumbai</h1>
+            <p>Department of Empowerment of Persons with Disabilities,</p>
+            <p>Ministry of Social Justice and Empowerment, Govt. of India</p>
+          </div>
+          <img src="/images/ddrc-logo.png" alt="DDRC Logo" class="ddrc-logo" />
         </div>
+      </header>
+      <!-- Navigation Menu -->
+      <nav class="main-nav">
+        <a href="/" class="nav-icon">
+          <img src="/images/home-icons.png" alt="Home" />
+        </a>
+        <a href="/apply">Apply For UDID</a>
+        <a href="/track">Track Your Application</a>
+        <a href="/data">Aggregated-Data</a>
+        <a href="/reports">Pendency-Report</a>
+        <a href="/media">Media</a>
+        <a href="/faqs">FAQs</a>
+        <a href="/contact">Contact Us</a>
 
-        <form id="signupForm" class="auth-form" novalidate>
-          <div
-            class="alert alert-danger"
-            style="display: none"
-            id="signupError"
-          ></div>
+        <!-- Add spacer to push login buttons to the right -->
+        <div class="nav-spacer"></div>
 
-          <div class="form-group">
-            <label for="email">Email</label>
-            <input
-              type="email"
-              class="form-control"
-              id="email"
-              name="email"
-              required
-            />
-            <div class="invalid-feedback">Please enter a valid email</div>
+        <!-- Add login buttons -->
+        <a href="/login" class="nav-login-btn">
+          <img src="/images/login.svg" alt="Login Icon" />
+          Divyangjan Login
+        </a>
+        <a href="/department-login" class="nav-login-btn">
+          <img src="/images/user-plus.svg" alt="User Icon" />
+          Department User Login
+        </a>
+      </nav>
+
+      <!-- Main Content -->
+      <main class="auth-container">
+        <div class="auth-box">
+          <div class="auth-header">
+            <h2>Create Account</h2>
+            <p>Register to avail DDRC services</p>
           </div>
 
-          <div class="form-group">
-            <label for="phone">Phone Number</label>
-            <input
-              type="tel"
-              class="form-control"
-              id="phone"
-              name="phone"
-              required
-            />
-            <div class="invalid-feedback">
-              Please enter a valid phone number
+          <form id="signupForm" class="auth-form" novalidate>
+            <div
+              class="alert alert-danger"
+              style="display: none"
+              id="signupError"
+            ></div>
+
+            <div class="form-group">
+              <label for="email">Email</label>
+              <input
+                type="email"
+                class="form-control"
+                id="email"
+                name="email"
+                required
+              />
+              <div class="invalid-feedback">Please enter a valid email</div>
             </div>
-          </div>
 
-          <div class="form-group">
-            <label for="password">Password</label>
-            <div class="password-input">
+            <div class="form-group">
+              <label for="phone">Phone Number</label>
+              <input
+                type="tel"
+                class="form-control"
+                id="phone"
+                name="phone"
+                required
+              />
+              <div class="invalid-feedback">
+                Please enter a valid phone number
+              </div>
+            </div>
+
+            <div class="form-group">
+              <label for="password">Password</label>
+              <div class="password-input">
+                <input
+                  type="password"
+                  class="form-control"
+                  id="password"
+                  name="password"
+                  required
+                />
+                <button type="button" class="toggle-password">
+                  <img src="/images/eye.svg" alt="" class="eye-icon" />
+                </button>
+              </div>
+              <div class="invalid-feedback">
+                Password must be at least 8 characters
+              </div>
+            </div>
+
+            <div class="form-group">
+              <label for="confirmPassword">Confirm Password</label>
               <input
                 type="password"
                 class="form-control"
-                id="password"
-                name="password"
+                id="confirmPassword"
+                name="confirmPassword"
                 required
               />
-              <button type="button" class="toggle-password">
-                <img src="/images/eye.svg" alt="" class="eye-icon" />
-              </button>
+              <div class="invalid-feedback">Passwords do not match</div>
             </div>
-            <div class="invalid-feedback">
-              Password must be at least 8 characters
+
+            <button type="submit" class="btn btn-primary w-100">
+              Create Account
+            </button>
+
+            <div class="form-footer">
+              Already have an account? <a href="/login">Login here</a>
             </div>
+          </form>
+        </div>
+      </main>
+
+      <!-- Footer -->
+      <footer>
+        <div class="footer-content">
+          <div class="footer-section">
+            <h3>About</h3>
+            <ul>
+              <li><a href="/about-udid">Know more about DDRC</a></li>
+              <li>
+                <a href="/schemes">Schemes for Persons with Disabilities</a>
+              </li>
+              <li><a href="/about-department">About Department</a></li>
+              <li><a href="/medical-camps">Medical Camps / Hospitals</a></li>
+            </ul>
           </div>
-
-          <div class="form-group">
-            <label for="confirmPassword">Confirm Password</label>
-            <input
-              type="password"
-              class="form-control"
-              id="confirmPassword"
-              name="confirmPassword"
-              required
-            />
-            <div class="invalid-feedback">Passwords do not match</div>
+          <div class="footer-section">
+            <h3>Quick Access Key</h3>
+            <ul>
+              <li>H = Go to Home Page</li>
+              <li>S = Skip to main content</li>
+              <li>F = Site Search</li>
+              <li>T = Back to Top</li>
+            </ul>
           </div>
-
-          <button type="submit" class="btn btn-primary w-100">
-            Create Account
-          </button>
-
-          <div class="form-footer">
-            Already have an account? <a href="/login">Login here</a>
+          <div class="footer-section">
+            <h3>Use keyboard for quick access</h3>
+            <ul>
+              <li>Internet Explorer - [Alt] + accesskey</li>
+              <li>Chrome - [Alt] + accesskey</li>
+              <li>Firefox - [Alt] [Shift] + accesskey</li>
+              <li>Safari - [Alt] + accesskey</li>
+            </ul>
           </div>
-        </form>
-      </div>
-    </main>
-
-    <!-- Footer -->
-    <footer>
-      <div class="footer-content">
-        <div class="footer-section">
-          <h3>About</h3>
-          <ul>
-            <li><a href="/about-udid">Know more about DDRC</a></li>
-            <li>
-              <a href="/schemes">Schemes for Persons with Disabilities</a>
-            </li>
-            <li><a href="/about-department">About Department</a></li>
-            <li><a href="/medical-camps">Medical Camps / Hospitals</a></li>
-          </ul>
         </div>
-        <div class="footer-section">
-          <h3>Quick Access Key</h3>
-          <ul>
-            <li>H = Go to Home Page</li>
-            <li>S = Skip to main content</li>
-            <li>F = Site Search</li>
-            <li>T = Back to Top</li>
-          </ul>
+        <div class="footer-bottom">
+          <p>
+            &copy; Copyright 2024 District Disability Rehabilitation Centre,
+            Mumbai. All Rights Reserved.
+          </p>
+          <div class="footer-links">
+            <a href="/terms">Terms & Conditions</a>
+            <a href="/privacy">Privacy Policy</a>
+            <a href="/copyright">Copyright Policy</a>
+            <a href="/accessibility">Accessibility Statement</a>
+          </div>
         </div>
-        <div class="footer-section">
-          <h3>Use keyboard for quick access</h3>
-          <ul>
-            <li>Internet Explorer - [Alt] + accesskey</li>
-            <li>Chrome - [Alt] + accesskey</li>
-            <li>Firefox - [Alt] [Shift] + accesskey</li>
-            <li>Safari - [Alt] + accesskey</li>
-          </ul>
-        </div>
-      </div>
-      <div class="footer-bottom">
-        <p>
-          &copy; Copyright 2024 District Disability Rehabilitation Centre,
-          Mumbai. All Rights Reserved.
-        </p>
-        <div class="footer-links">
-          <a href="/terms">Terms & Conditions</a>
-          <a href="/privacy">Privacy Policy</a>
-          <a href="/copyright">Copyright Policy</a>
-          <a href="/accessibility">Accessibility Statement</a>
-        </div>
-      </div>
-    </footer>
+      </footer>
+    </div>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
     <script src="/js/auth.js"></script>
-    <script src="/registration/js/signup.js"></script>
     <script>
+      // Check auth status before showing registration page
       document.addEventListener("DOMContentLoaded", async () => {
-        await AuthManager.checkAuthAndRedirect();
+        try {
+          const isAuth = await AuthManager.verifyAuth();
+          if (isAuth) {
+            // Check registration status
+            const response = await fetch("/api/registration/check-status", {
+              headers: {
+                Authorization: `Bearer ${AuthManager.getAuthToken()}`,
+              },
+            });
+            const data = await response.json();
+
+            // Redirect based on registration status
+            if (data.hasRegistration) {
+              window.location.href = "/dashboard";
+            } else {
+              window.location.href = "/registration/form";
+            }
+            return;
+          }
+
+          // Show registration form if not authenticated
+          document.getElementById("authLoader").style.display = "none";
+          document.getElementById("mainContent").style.display = "block";
+        } catch (error) {
+          console.error("Auth check error:", error);
+          // Show registration form on error
+          document.getElementById("authLoader").style.display = "none";
+          document.getElementById("mainContent").style.display = "block";
+        }
       });
     </script>
+    <script src="/registration/js/signup.js"></script>
   </body>
 </html>

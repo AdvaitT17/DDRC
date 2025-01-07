@@ -29,8 +29,8 @@ class RegistrationFormRenderer {
 
       const data = await response.json();
       if (data.hasRegistration) {
-        // Redirect to a page showing their existing application
-        window.location.href = `/track?id=${data.applicationId}`;
+        // Redirect to dashboard instead of track
+        window.location.href = "/dashboard";
         return;
       }
 

@@ -4,26 +4,15 @@ class ApplicationTracker {
     this.formContainer = document.querySelector(".track-form-container");
     this.resultDiv = document.getElementById("trackingResult");
     this.setupEventListeners();
-    this.checkUrlParams();
   }
 
   setupEventListeners() {
     this.form.addEventListener("submit", (e) => this.handleSubmit(e));
-    // Listen for back button clicks
     document.addEventListener("click", (e) => {
       if (e.target.closest(".back-button")) {
         this.showForm();
       }
     });
-  }
-
-  checkUrlParams() {
-    const params = new URLSearchParams(window.location.search);
-    const applicationId = params.get("id");
-    if (applicationId) {
-      this.form.applicationId.value = applicationId;
-      this.handleSubmit(new Event("submit"));
-    }
   }
 
   async handleSubmit(e) {
@@ -175,6 +164,11 @@ class ApplicationTracker {
   showForm() {
     // Show form container first
     this.formContainer.classList.remove("hidden");
+
+    // Reset submit button state
+    const submitButton = this.form.querySelector('button[type="submit"]');
+    submitButton.disabled = false;
+    submitButton.innerHTML = "Track Status"; // Reset button text
 
     // Small delay to ensure display:block is applied
     setTimeout(() => {

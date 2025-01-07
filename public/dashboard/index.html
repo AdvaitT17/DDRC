@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>User Dashboard - DDRC</title>
+    <link
+      href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="/css/main.css" />
+    <link rel="stylesheet" href="/css/header.css" />
+    <link rel="stylesheet" href="/dashboard/css/style.css" />
+  </head>
+  <body>
+    <!-- Auth Loader -->
+    <div id="authLoader" class="auth-loader">
+      <div class="spinner"></div>
+    </div>
+
+    <!-- Main content will be hidden until auth check -->
+    <div id="mainContent" style="display: none">
+      <!-- Top Bar -->
+      <div class="top-bar">
+        <div class="left-links">
+          <a href="/">Home</a>
+          <a href="/sitemap">Sitemap</a>
+        </div>
+        <div class="right-links">
+          <a href="#" class="skip-main">Skip to Main Content</a>
+          <a href="#" class="screen-reader">Screen Reader Access</a>
+          <div class="font-size-controls">
+            <button class="font-size-btn" id="decreaseFont">T-</button>
+            <button class="font-size-btn" id="defaultFont">T</button>
+            <button class="font-size-btn" id="increaseFont">T+</button>
+          </div>
+          <select class="language-select" id="languageSelect">
+            <option value="en">English</option>
+            <option value="hi">हिंदी</option>
+          </select>
+        </div>
+      </div>
+
+      <!-- Main Header -->
+      <header class="main-header">
+        <div class="logo-section">
+          <img
+            src="/images/emblem.png"
+            alt="Government of India Emblem"
+            class="emblem-logo"
+          />
+          <div class="header-text">
+            <h1>District Disability Rehabilitation Centre, Mumbai</h1>
+            <p>Department of Empowerment of Persons with Disabilities,</p>
+            <p>Ministry of Social Justice and Empowerment, Govt. of India</p>
+          </div>
+          <img src="/images/ddrc-logo.png" alt="DDRC Logo" class="ddrc-logo" />
+        </div>
+      </header>
+
+      <!-- Navigation Menu -->
+      <nav class="main-nav">
+        <a href="/" class="nav-icon">
+          <img src="/images/home-icons.png" alt="Home" />
+        </a>
+        <a href="/profile">Profile</a>
+        <a href="/documents">Documents</a>
+
+        <!-- Add spacer to push user info and logout to the right -->
+        <div class="nav-spacer"></div>
+
+        <span id="userInfo" class="nav-user-info"></span>
+        <a href="#" id="logoutBtn" class="nav-logout-btn">
+          <img src="/images/logout.svg" alt="Logout" />
+          Logout
+        </a>
+      </nav>
+
+      <!-- Dashboard Content -->
+      <div class="dashboard-container">
+        <!-- Application Status Card -->
+        <div class="status-card">
+          <div class="status-header">
+            <h2>Application Status</h2>
+            <span class="application-id"
+              >Application ID: <strong id="applicationId">-</strong></span
+            >
+          </div>
+          <div class="status-timeline">
+            <div class="timeline-item active completed">
+              <div class="timeline-icon"></div>
+              <div class="timeline-content">
+                <h3>Submitted</h3>
+                <p id="submittedDate">-</p>
+              </div>
+            </div>
+            <div class="timeline-item" id="reviewStep">
+              <div class="timeline-icon">⋯</div>
+              <div class="timeline-content">
+                <h3>Under Review</h3>
+                <p>Application is being processed</p>
+              </div>
+            </div>
+            <div class="timeline-item" id="completedStep">
+              <div class="timeline-icon">⋯</div>
+              <div class="timeline-content">
+                <h3>Completed</h3>
+                <p>Final status will be updated here</p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Quick Actions -->
+        <div class="actions-grid">
+          <div class="action-card">
+            <h3>Download Application</h3>
+            <p>Get a copy of your submitted application</p>
+            <button class="btn-primary" id="downloadBtn">
+              <img src="/images/download.svg" alt="Download" />
+              Download PDF
+            </button>
+          </div>
+          <div class="action-card">
+            <h3>Update Profile</h3>
+            <p>Manage your personal information</p>
+            <a href="/dashboard/profile" class="btn-primary">
+              <img src="/images/user.svg" alt="Profile" />
+              View Profile
+            </a>
+          </div>
+          <div class="action-card">
+            <h3>Support</h3>
+            <p>Need help? Contact our support team</p>
+            <a href="/contact" class="btn-primary">
+              <img src="/images/help.svg" alt="Help" />
+              Get Help
+            </a>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Scripts -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="/js/auth.js"></script>
+    <script src="/dashboard/js/dashboard.js"></script>
+  </body>
+</html>

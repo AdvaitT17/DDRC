@@ -67,40 +67,66 @@ class AuthManager {
   }
 
   static async checkAuthAndRedirect() {
-    const isAuth = await this.verifyAuth();
     const currentPath = window.location.pathname;
-    const userType = this.getUserType();
 
-    if (isAuth) {
-      // Redirect authenticated users based on their type
-      if (userType === "applicant") {
-        if (
-          ["/login", "/registration", "/department-login"].includes(currentPath)
-        ) {
-          window.location.href = "/registration/form";
-          return false;
+    try {
+      const isAuth = await this.verifyAuth();
+
+      if (isAuth) {
+        // User is authenticated
+        const userType = this.getUserType();
+
+        if (userType === "applicant") {
+          // Check registration status
+          const response = await fetch("/api/registration/check-status", {
+            headers: {
+              Authorization: `Bearer ${this.getAuthToken()}`,
+            },
+          });
+          const data = await response.json();
+
+          // Handle public routes for authenticated users
+          if (["/login", "/registration"].includes(currentPath)) {
+            if (data.hasRegistration) {
+              window.location.href = "/dashboard";
+            } else {
+              window.location.href = "/registration/form";
+            }
+            return false;
+          }
+
+          // Handle protected routes based on registration status
+          if (data.hasRegistration) {
+            if (currentPath === "/registration/form") {
+              window.location.href = "/dashboard";
+              return false;
+            }
+          } else {
+            if (currentPath === "/dashboard") {
+              window.location.href = "/registration/form";
+              return false;
+            }
+          }
         }
-      } else if (userType === "department") {
+      } else {
+        // User is not authenticated - redirect to login for protected routes
         if (
-          ["/login", "/registration", "/department-login"].includes(currentPath)
+          currentPath.startsWith("/dashboard") ||
+          currentPath === "/registration/form"
         ) {
-          window.location.href = "/admin/dashboard";
+          window.location.href = "/login";
           return false;
         }
       }
-    } else {
-      // Redirect unauthenticated users trying to access protected pages
-      if (
-        currentPath.startsWith("/admin") ||
-        ["/registration/form"].includes(currentPath)
-      ) {
-        window.location.href = currentPath.startsWith("/admin")
-          ? "/department-login"
-          : "/login";
-        return false;
+
+      return true;
+    } catch (error) {
+      console.error("Auth check error:", error);
+      // For any errors, redirect to login
+      if (currentPath !== "/login") {
+        window.location.href = "/login";
       }
+      return false;
     }
-
-    return true;
   }
 }
