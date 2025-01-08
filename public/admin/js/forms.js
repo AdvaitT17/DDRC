@@ -10,7 +10,6 @@ async function initializeFormManagement() {
     // Initialize event listeners
     initializeFormEventListeners();
   } catch (error) {
-    console.error("Error initializing form management:", error);
     // Show error message to user
   }
 }
@@ -120,7 +119,6 @@ async function saveSection() {
     modal.hide();
     document.getElementById("sectionName").value = "";
   } catch (error) {
-    console.error("Error saving section:", error);
     alert("Failed to save section. Please try again.");
   }
 }
@@ -189,7 +187,6 @@ async function saveField() {
     modalInstance.hide();
     resetFieldForm();
   } catch (error) {
-    console.error("Error saving field:", error);
     alert(`Failed to ${fieldId ? "update" : "save"} field. Please try again.`);
   }
 }
@@ -233,7 +230,6 @@ function addSectionEventListeners() {
         // Refresh sections
         await initializeFormManagement();
       } catch (error) {
-        console.error("Error deleting section:", error);
         alert("Failed to delete section. Please try again.");
       }
     });
@@ -259,7 +255,6 @@ function addSectionEventListeners() {
         // Refresh sections
         await initializeFormManagement();
       } catch (error) {
-        console.error("Error deleting field:", error);
         alert("Failed to delete field. Please try again.");
       }
     });
@@ -293,7 +288,6 @@ function addSectionEventListeners() {
         // Show modal
         new bootstrap.Modal(modal).show();
       } catch (error) {
-        console.error("Error fetching field:", error);
         alert("Failed to load field data");
       }
     });

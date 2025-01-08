@@ -52,7 +52,7 @@ class SignupHandler {
       const data = await response.json();
 
       if (response.ok) {
-        localStorage.setItem("authToken", data.token);
+        AuthManager.setAuth(data.token, { ...data.user, type: "applicant" });
         window.location.href = "/registration/form";
       } else {
         this.showError(data.message || "Registration failed");

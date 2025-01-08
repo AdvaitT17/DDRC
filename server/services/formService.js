@@ -4,11 +4,9 @@ class FormService {
   // Get all sections with their fields
   async getSections() {
     try {
-      console.log("Fetching all sections...");
       const [sections] = await pool.query(
         "SELECT * FROM form_sections ORDER BY order_index"
       );
-      console.log("Found sections:", sections);
 
       for (let section of sections) {
         const [fields] = await pool.query(
@@ -16,7 +14,6 @@ class FormService {
           [section.id]
         );
         section.fields = fields;
-        console.log(`Fields for section ${section.id}:`, fields);
       }
 
       return sections;
@@ -29,7 +26,6 @@ class FormService {
   // Add a new section
   async addSection(name) {
     try {
-      console.log("Adding new section:", name);
       const [maxOrder] = await pool.query(
         "SELECT COALESCE(MAX(order_index), -1) as max_order FROM form_sections"
       );
@@ -39,7 +35,6 @@ class FormService {
         "INSERT INTO form_sections (name, order_index) VALUES (?, ?)",
         [name, newOrder]
       );
-      console.log("Section added with ID:", result.insertId);
 
       return result.insertId;
     } catch (error) {
@@ -51,8 +46,6 @@ class FormService {
   // Add a new field to a section
   async addField(sectionId, fieldData) {
     try {
-      console.log("Adding field to section:", sectionId, fieldData);
-
       // Parse sectionId as integer
       const sectionIdInt = parseInt(sectionId, 10);
       if (isNaN(sectionIdInt)) {
@@ -89,7 +82,6 @@ class FormService {
           newOrder,
         ]
       );
-      console.log("Field added with ID:", result.insertId);
 
       return result.insertId;
     } catch (error) {

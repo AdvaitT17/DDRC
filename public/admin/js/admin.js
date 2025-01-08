@@ -1,12 +1,16 @@
 async function checkAuth() {
   const isAuth = await AuthManager.verifyAuth();
+
   if (!isAuth) {
-    window.location.href = "/department-login";
+    window.location.replace("/department-login");
     return false;
   }
+
   const userInfo = AuthManager.getUserInfo();
-  if (userInfo.type !== "department") {
-    AuthManager.logout();
+
+  if (userInfo?.type !== "department") {
+    AuthManager.clearAuth();
+    window.location.replace("/department-login");
     return false;
   }
   return true;
@@ -37,7 +41,6 @@ async function loadContent(path) {
       throw new Error("Failed to load content");
     }
   } catch (error) {
-    console.error("Error loading content:", error);
     contentDiv.innerHTML =
       "<div class='alert alert-danger'>Error loading content</div>";
   }
@@ -81,3 +84,10 @@ document.addEventListener("click", (e) => {
     loadContent(path);
   }
 });
+
+function setupLogout() {
+  document.getElementById("logoutBtn")?.addEventListener("click", (e) => {
+    e.preventDefault();
+    AuthManager.logout();
+  });
+}

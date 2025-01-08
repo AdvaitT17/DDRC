@@ -167,7 +167,6 @@ class RegistrationFormRenderer {
   }
 
   renderInputField(field) {
-    console.log("Rendering input field:", JSON.stringify(field, null, 2));
     return `
       <div class="mb-3">
         <label for="${field.name}" class="form-label">

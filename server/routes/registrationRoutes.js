@@ -36,7 +36,6 @@ router.get("/progress", authenticateToken, async (req, res) => {
       }, {}),
     });
   } catch (error) {
-    console.error("Error fetching progress:", error);
     res.status(500).json({ message: "Error fetching progress" });
   }
 });
@@ -76,8 +75,6 @@ router.post("/progress", authenticateToken, async (req, res) => {
 
     // Save form responses using field IDs
     for (const [fieldId, value] of Object.entries(formData)) {
-      console.log(`Saving response - Field ID: ${fieldId}, Value: ${value}`);
-
       await conn.query(
         `INSERT INTO registration_responses (registration_id, field_id, value)
          VALUES (?, ?, ?)
@@ -162,7 +159,6 @@ router.post("/submit", authenticateToken, async (req, res) => {
       });
     } catch (error) {
       await conn.rollback();
-      console.error("Error submitting form:", error);
       res.status(500).json({ message: "Error submitting form" });
     } finally {
       conn.release();
