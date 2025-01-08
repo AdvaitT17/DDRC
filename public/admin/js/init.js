@@ -1,34 +1,37 @@
 // Shared initialization for all admin pages
 async function initializeAdminPage() {
   try {
-    // Check authentication
-    const isAuthenticated = await AuthManager.verifyAuth();
-    if (!isAuthenticated) {
-      AuthManager.redirectToLogin();
-      return false;
+    // Check admin session
+    if (!(await AuthManager.handleAdminAuth())) {
+      return;
     }
 
     // Show main content
     document.getElementById("authLoader").style.display = "none";
     document.getElementById("mainContent").style.display = "block";
 
-    // Setup user info and logout
-    const user = AuthManager.getUserInfo();
-    if (user) {
+    // Set user info in header
+    const userInfo = AuthManager.getUserInfo();
+    if (userInfo?.username) {
       document.getElementById(
         "userInfo"
-      ).textContent = `${user.full_name} (${user.role})`;
+      ).textContent = `Welcome, ${userInfo.full_name}`;
     }
 
-    document.getElementById("logoutBtn").addEventListener("click", () => {
-      AuthManager.clearAuth();
-      AuthManager.redirectToLogin();
-    });
-
-    return true;
+    // Initialize page-specific content if needed
+    const path = window.location.pathname;
+    switch (path) {
+      case "/admin/dashboard":
+        initializeDashboard();
+        break;
+      case "/admin/forms":
+        initializeFormManagement();
+        break;
+    }
   } catch (error) {
-    console.error("Admin initialization error:", error);
-    AuthManager.redirectToLogin();
-    return false;
+    window.location.replace("/department-login");
   }
 }
+
+// Initialize when DOM is ready
+document.addEventListener("DOMContentLoaded", initializeAdminPage);

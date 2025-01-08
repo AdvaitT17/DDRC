@@ -12,6 +12,14 @@ class DashboardManager {
         return;
       }
 
+      // Verify user type is applicant
+      const userInfo = AuthManager.getUserInfo();
+      if (userInfo?.type !== "applicant") {
+        AuthManager.clearAuth();
+        window.location.href = "/login";
+        return;
+      }
+
       // Check registration status
       const response = await fetch("/api/registration/check-status", {
         headers: {
@@ -38,7 +46,6 @@ class DashboardManager {
       // Load dashboard data
       await this.loadDashboardData();
     } catch (error) {
-      console.error("Auth error:", error);
       window.location.href = "/login";
     }
   }
@@ -68,9 +75,7 @@ class DashboardManager {
 
       const data = await response.json();
       this.updateDashboard(data);
-    } catch (error) {
-      console.error("Error loading dashboard:", error);
-    }
+    } catch (error) {}
   }
 
   updateDashboard(data) {

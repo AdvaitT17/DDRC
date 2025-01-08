@@ -94,17 +94,8 @@ class RegistrationFormHandler {
     const fieldData = {};
     const fields = form.elements;
 
-    console.log("Form elements length:", fields.length);
-
     for (let field of fields) {
       if (!field.name) continue;
-
-      console.log("Processing field:", {
-        name: field.name,
-        type: field.type,
-        value: field.value,
-        fieldId: field.dataset.fieldId,
-      });
 
       const fieldId = field.dataset.fieldId;
       if (!fieldId) {
@@ -128,7 +119,6 @@ class RegistrationFormHandler {
       }
     }
 
-    console.log("Collected form data:", JSON.stringify(fieldData, null, 2));
     return fieldData;
   }
 }

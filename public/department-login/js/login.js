@@ -54,30 +54,64 @@ class LoginManager {
       return;
     }
 
+    // Verify captcha
+    const captchaInput = this.captchaInput.value.trim();
+    if (captchaInput !== this.captchaText.textContent) {
+      this.showError("Invalid captcha");
+      this.generateCaptcha();
+      this.captchaInput.value = "";
+      return;
+    }
+
     const username = this.form.username.value.trim();
     const password = this.form.password.value;
 
+    // Disable form while processing
+    const submitButton = this.form.querySelector('button[type="submit"]');
+    const originalText = submitButton.innerHTML;
+    submitButton.disabled = true;
+    submitButton.innerHTML = "Processing...";
+
     try {
-      const response = await fetch("/api/auth/login", {
+      const response = await fetch("/api/auth/department/login", {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ username, password }),
       });
 
       const data = await response.json();
 
       if (response.ok) {
-        localStorage.setItem("authToken", data.token);
-        localStorage.setItem("userInfo", JSON.stringify(data.user));
-        window.location.href = "/admin";
+        // Verify data structure
+        if (!data.token || !data.user || !data.user.type) {
+          this.showError("Invalid server response");
+          return;
+        }
+
+        // Set auth with verification
+        AuthManager.setAuth(data.token, data.user);
+
+        // Verify storage before redirect
+        const storedToken = localStorage.getItem("departmentAuthToken");
+        const storedUser = localStorage.getItem("departmentUserInfo");
+
+        if (!storedToken || !storedUser) {
+          this.showError("Failed to store authentication data");
+          return;
+        }
+
+        setTimeout(() => {
+          window.location.href = "/admin/dashboard";
+        }, 100);
       } else {
         this.showError(data.message || "Login failed");
+        this.generateCaptcha();
+        this.captchaInput.value = "";
       }
     } catch (error) {
-      console.error("Login error:", error);
       this.showError("An error occurred. Please try again later.");
+      this.generateCaptcha();
+      this.captchaInput.value = "";
     }
   }
 }

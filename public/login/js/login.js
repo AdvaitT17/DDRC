@@ -42,17 +42,14 @@ class LoginHandler {
     try {
       const response = await fetch("/api/auth/login", {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ email, password }),
       });
 
       const data = await response.json();
 
       if (response.ok) {
-        localStorage.setItem("authToken", data.token);
-        localStorage.setItem("userInfo", JSON.stringify(data.user));
+        AuthManager.setAuth(data.token, { ...data.user, type: "applicant" });
 
         // Check registration status after successful login
         const regStatusResponse = await fetch(

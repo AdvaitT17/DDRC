@@ -23,9 +23,7 @@ class DashboardManager {
       document.getElementById("approvedToday").textContent =
         stats.approvedToday;
       document.getElementById("activeUsers").textContent = stats.activeUsers;
-    } catch (error) {
-      console.error("Error loading stats:", error);
-    }
+    } catch (error) {}
   }
 
   async loadRecentApplications() {
@@ -48,9 +46,7 @@ class DashboardManager {
       tbody.querySelectorAll(".status-update").forEach((btn) => {
         btn.addEventListener("click", (e) => this.handleStatusUpdate(e));
       });
-    } catch (error) {
-      console.error("Error loading applications:", error);
-    }
+    } catch (error) {}
   }
 
   createApplicationRow(app) {
@@ -114,7 +110,6 @@ class DashboardManager {
       // Reload stats as they might have changed
       this.loadStats();
     } catch (error) {
-      console.error("Error updating status:", error);
       alert("Failed to update application status");
     }
   }

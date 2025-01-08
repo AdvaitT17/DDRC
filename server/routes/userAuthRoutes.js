@@ -28,9 +28,9 @@ router.post("/signup", async (req, res) => {
       token,
       user: {
         id: user.id,
-        username: user.username,
         email: user.email,
         phone: user.phone,
+        type: "applicant",
       },
     });
   } catch (error) {

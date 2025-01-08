@@ -14,165 +14,201 @@
     <link rel="stylesheet" href="/track/css/style.css" />
   </head>
   <body>
-    <!-- Top Bar -->
-    <div class="top-bar">
-      <div class="left-links">
-        <a href="/">Home</a>
-        <a href="/sitemap">Sitemap</a>
-      </div>
-      <div class="right-links">
-        <div class="font-size-controls">
-          <button class="font-size-btn" id="decreaseFont">T-</button>
-          <button class="font-size-btn" id="defaultFont">T</button>
-          <button class="font-size-btn" id="increaseFont">T+</button>
-        </div>
-        <select class="language-select" id="languageSelect">
-          <option value="en">English</option>
-          <option value="hi">हिंदी</option>
-        </select>
-      </div>
+    <!-- Auth check loader -->
+    <div id="authLoader" class="auth-loader">
+      <div class="spinner"></div>
     </div>
 
-    <!-- Main Header -->
-    <header class="main-header">
-      <div class="logo-section">
-        <img
-          src="/images/emblem.png"
-          alt="Government of India Emblem"
-          class="emblem-logo"
-        />
-        <div class="header-text">
-          <h1>District Disability Rehabilitation Centre, Mumbai</h1>
-          <p>Department of Empowerment of Persons with Disabilities,</p>
-          <p>Ministry of Social Justice and Empowerment, Govt. of India</p>
+    <!-- Main content will be hidden until auth check -->
+    <div id="mainContent" style="display: none">
+      <!-- Top Bar -->
+      <div class="top-bar">
+        <div class="left-links">
+          <a href="/">Home</a>
+          <a href="/sitemap">Sitemap</a>
         </div>
-        <img src="/images/ddrc-logo.png" alt="DDRC Logo" class="ddrc-logo" />
-      </div>
-    </header>
-    <!-- Navigation Menu -->
-    <nav class="main-nav">
-      <a href="/" class="nav-icon">
-        <img src="/images/home-icons.png" alt="Home" />
-      </a>
-      <a href="/apply">Apply For UDID</a>
-      <a href="/track">Track Your Application</a>
-      <a href="/data">Aggregated-Data</a>
-      <a href="/reports">Pendency-Report</a>
-      <a href="/media">Media</a>
-      <a href="/faqs">FAQs</a>
-      <a href="/contact">Contact Us</a>
-
-      <!-- Add spacer to push login buttons to the right -->
-      <div class="nav-spacer"></div>
-
-      <!-- Add login buttons -->
-      <a href="/login" class="nav-login-btn">
-        <img src="/images/login.svg" alt="Login Icon" />
-        Divyangjan Login
-      </a>
-      <a href="/department-login" class="nav-login-btn">
-        <img src="/images/user-plus.svg" alt="User Icon" />
-        Department User Login
-      </a>
-    </nav>
-
-    <!-- Track Form -->
-    <div class="track-container">
-      <div class="track-form-container">
-        <div class="track-box">
-          <div class="track-header">
-            <h2>Track Your Application</h2>
-            <p>
-              Enter your application ID and registered email to check the status
-            </p>
+        <div class="right-links">
+          <div class="font-size-controls">
+            <button class="font-size-btn" id="decreaseFont">T-</button>
+            <button class="font-size-btn" id="defaultFont">T</button>
+            <button class="font-size-btn" id="increaseFont">T+</button>
           </div>
-
-          <form id="trackForm" class="track-form">
-            <div class="form-group">
-              <label for="applicationId" class="form-label"
-                >Application ID</label
-              >
-              <input
-                type="text"
-                class="form-control"
-                id="applicationId"
-                name="applicationId"
-                placeholder="Enter your application ID"
-                required
-              />
-              <div class="form-text">Example: 2024-01-0001</div>
-            </div>
-            <div class="form-group">
-              <label for="email" class="form-label">Email Address</label>
-              <input
-                type="email"
-                class="form-control"
-                id="email"
-                name="email"
-                placeholder="Enter your registered email"
-                required
-              />
-            </div>
-            <button type="submit" class="btn btn-primary">Track Status</button>
-          </form>
+          <select class="language-select" id="languageSelect">
+            <option value="en">English</option>
+            <option value="hi">हिंदी</option>
+          </select>
         </div>
       </div>
 
-      <div id="trackingResult"></div>
+      <!-- Main Header -->
+      <header class="main-header">
+        <div class="logo-section">
+          <img
+            src="/images/emblem.png"
+            alt="Government of India Emblem"
+            class="emblem-logo"
+          />
+          <div class="header-text">
+            <h1>District Disability Rehabilitation Centre, Mumbai</h1>
+            <p>Department of Empowerment of Persons with Disabilities,</p>
+            <p>Ministry of Social Justice and Empowerment, Govt. of India</p>
+          </div>
+          <img src="/images/ddrc-logo.png" alt="DDRC Logo" class="ddrc-logo" />
+        </div>
+      </header>
+      <!-- Navigation Menu -->
+      <nav class="main-nav">
+        <a href="/" class="nav-icon">
+          <img src="/images/home-icons.png" alt="Home" />
+        </a>
+        <a href="/apply">Apply For UDID</a>
+        <a href="/track">Track Your Application</a>
+        <a href="/data">Aggregated-Data</a>
+        <a href="/reports">Pendency-Report</a>
+        <a href="/media">Media</a>
+        <a href="/faqs">FAQs</a>
+        <a href="/contact">Contact Us</a>
+
+        <!-- Add spacer to push login buttons to the right -->
+        <div class="nav-spacer"></div>
+
+        <!-- Add login buttons -->
+        <a href="/login" class="nav-login-btn">
+          <img src="/images/login.svg" alt="Login Icon" />
+          Divyangjan Login
+        </a>
+        <a href="/department-login" class="nav-login-btn">
+          <img src="/images/user-plus.svg" alt="User Icon" />
+          Department User Login
+        </a>
+      </nav>
+
+      <!-- Track Form -->
+      <div class="track-container">
+        <div class="track-form-container">
+          <div class="track-box">
+            <div class="track-header">
+              <h2>Track Your Application</h2>
+              <p>
+                Enter your application ID and registered email to check the
+                status
+              </p>
+            </div>
+
+            <form id="trackForm" class="track-form">
+              <div class="form-group">
+                <label for="applicationId" class="form-label"
+                  >Application ID</label
+                >
+                <input
+                  type="text"
+                  class="form-control"
+                  id="applicationId"
+                  name="applicationId"
+                  placeholder="Enter your application ID"
+                  required
+                />
+                <div class="form-text">Example: 2024-01-0001</div>
+              </div>
+              <div class="form-group">
+                <label for="email" class="form-label">Email Address</label>
+                <input
+                  type="email"
+                  class="form-control"
+                  id="email"
+                  name="email"
+                  placeholder="Enter your registered email"
+                  required
+                />
+              </div>
+              <button type="submit" class="btn btn-primary">
+                Track Status
+              </button>
+            </form>
+          </div>
+        </div>
+
+        <div id="trackingResult"></div>
+      </div>
+      <!-- Footer -->
+      <footer>
+        <div class="footer-content">
+          <div class="footer-section">
+            <h3>About</h3>
+            <ul>
+              <li><a href="/about-udid">Know more about DDRC</a></li>
+              <li>
+                <a href="/schemes">Schemes for Persons with Disabilities</a>
+              </li>
+              <li><a href="/about-department">About Department</a></li>
+              <li><a href="/medical-camps">Medical Camps / Hospitals</a></li>
+            </ul>
+          </div>
+          <div class="footer-section">
+            <h3>Quick Access Key</h3>
+            <ul>
+              <li>H = Go to Home Page</li>
+              <li>S = Skip to main content</li>
+              <li>F = Site Search</li>
+              <li>T = Back to Top</li>
+            </ul>
+          </div>
+          <div class="footer-section">
+            <h3>Use keyboard for quick access</h3>
+            <ul>
+              <li>Internet Explorer - [Alt] + accesskey</li>
+              <li>Chrome - [Alt] + accesskey</li>
+              <li>Firefox - [Alt] [Shift] + accesskey</li>
+              <li>Safari - [Alt] + accesskey</li>
+            </ul>
+          </div>
+        </div>
+        <div class="footer-bottom">
+          <p>
+            &copy; Copyright 2024 District Disability Rehabilitation Centre,
+            Mumbai. All Rights Reserved.
+          </p>
+          <div class="footer-links">
+            <a href="/terms">Terms & Conditions</a>
+            <a href="/privacy">Privacy Policy</a>
+            <a href="/copyright">Copyright Policy</a>
+            <a href="/accessibility">Accessibility Statement</a>
+          </div>
+        </div>
+      </footer>
     </div>
-    <!-- Footer -->
-    <footer>
-      <div class="footer-content">
-        <div class="footer-section">
-          <h3>About</h3>
-          <ul>
-            <li><a href="/about-udid">Know more about DDRC</a></li>
-            <li>
-              <a href="/schemes">Schemes for Persons with Disabilities</a>
-            </li>
-            <li><a href="/about-department">About Department</a></li>
-            <li><a href="/medical-camps">Medical Camps / Hospitals</a></li>
-          </ul>
-        </div>
-        <div class="footer-section">
-          <h3>Quick Access Key</h3>
-          <ul>
-            <li>H = Go to Home Page</li>
-            <li>S = Skip to main content</li>
-            <li>F = Site Search</li>
-            <li>T = Back to Top</li>
-          </ul>
-        </div>
-        <div class="footer-section">
-          <h3>Use keyboard for quick access</h3>
-          <ul>
-            <li>Internet Explorer - [Alt] + accesskey</li>
-            <li>Chrome - [Alt] + accesskey</li>
-            <li>Firefox - [Alt] [Shift] + accesskey</li>
-            <li>Safari - [Alt] + accesskey</li>
-          </ul>
-        </div>
-      </div>
-      <div class="footer-bottom">
-        <p>
-          &copy; Copyright 2024 District Disability Rehabilitation Centre,
-          Mumbai. All Rights Reserved.
-        </p>
-        <div class="footer-links">
-          <a href="/terms">Terms & Conditions</a>
-          <a href="/privacy">Privacy Policy</a>
-          <a href="/copyright">Copyright Policy</a>
-          <a href="/accessibility">Accessibility Statement</a>
-        </div>
-      </div>
-    </footer>
 
-    <!-- Scripts -->
-    <script src="/track/js/track.js"></script>
+    <script src="/js/auth.js"></script>
     <script>
-      document.addEventListener("DOMContentLoaded", () => {
-        new ApplicationTracker();
+      // Check auth status before showing track page
+      document.addEventListener("DOMContentLoaded", async () => {
+        try {
+          const isAuth = await AuthManager.verifyAuth();
+          if (isAuth) {
+            // Check registration status
+            const response = await fetch("/api/registration/check-status", {
+              headers: {
+                Authorization: `Bearer ${AuthManager.getAuthToken()}`,
+              },
+            });
+            const data = await response.json();
+
+            // If authenticated, redirect to dashboard regardless of registration status
+            window.location.href = "/dashboard";
+            return;
+          }
+
+          // Show track form if not authenticated
+          document.getElementById("authLoader").style.display = "none";
+          document.getElementById("mainContent").style.display = "block";
+        } catch (error) {
+          console.error("Auth check error:", error);
+          // Show track form on error
+          document.getElementById("authLoader").style.display = "none";
+          document.getElementById("mainContent").style.display = "block";
+        }
       });
     </script>
+    <script src="/track/js/track.js"></script>
   </body>
 </html>

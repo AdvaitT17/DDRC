@@ -1,59 +1,101 @@
 class AuthManager {
   static getAuthToken() {
-    return localStorage.getItem("authToken");
+    try {
+      const userType = this.getCurrentUserType();
+      const token = localStorage.getItem(`${userType}AuthToken`);
+      return token;
+    } catch (error) {
+      return null;
+    }
   }
 
   static getUserInfo() {
-    const userInfo = localStorage.getItem("userInfo");
+    const userType = this.getCurrentUserType();
+    const userInfo = localStorage.getItem(`${userType}UserInfo`);
     return userInfo ? JSON.parse(userInfo) : null;
   }
 
-  static getUserType() {
-    const userInfo = this.getUserInfo();
-    return userInfo?.type || null;
+  static getCurrentUserType() {
+    try {
+      const path = window.location.pathname;
+      const type =
+        path.includes("/department") || path.includes("/admin")
+          ? "department"
+          : "applicant";
+      return type;
+    } catch (error) {
+      return "applicant"; // default fallback
+    }
   }
 
-  static isAuthenticated() {
-    return !!this.getAuthToken();
+  static setAuth(token, userInfo) {
+    try {
+      if (!token || !userInfo || !userInfo.type) {
+        return;
+      }
+
+      const userType = userInfo.type;
+
+      // Store token
+      localStorage.setItem(`${userType}AuthToken`, token);
+
+      // Store user info
+      localStorage.setItem(`${userType}UserInfo`, JSON.stringify(userInfo));
+
+      // Verify storage
+      const storedToken = localStorage.getItem(`${userType}AuthToken`);
+      const storedUserInfo = localStorage.getItem(`${userType}UserInfo`);
+    } catch (error) {}
+  }
+
+  static clearAuth() {
+    const userType = this.getCurrentUserType();
+    localStorage.removeItem(`${userType}AuthToken`);
+    localStorage.removeItem(`${userType}UserInfo`);
   }
 
   static async verifyAuth() {
-    const token = this.getAuthToken();
-    if (!token) return false;
-
     try {
+      const token = this.getAuthToken();
+      if (!token) return false;
+
       const response = await fetch("/api/auth/verify", {
         headers: {
           Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
         },
       });
 
       if (!response.ok) {
-        this.logout();
+        this.clearAuth();
         return false;
       }
 
       const data = await response.json();
-      localStorage.setItem("userInfo", JSON.stringify(data.user));
+
+      // Update stored user info with latest from server
+      if (data.user) {
+        const userType = this.getCurrentUserType();
+        localStorage.setItem(`${userType}UserInfo`, JSON.stringify(data.user));
+      }
+
       return true;
     } catch (error) {
-      console.error("Auth verification error:", error);
-      this.logout();
+      this.clearAuth();
       return false;
     }
   }
 
-  static logout() {
-    const userType = this.getUserType();
-    localStorage.removeItem("authToken");
-    localStorage.removeItem("userInfo");
+  static redirectToLogin() {
+    const userType = this.getCurrentUserType();
+    window.location.href =
+      userType === "department" ? "/department-login" : "/login";
+  }
 
-    // Redirect based on user type
-    if (userType === "department") {
-      window.location.href = "/department-login";
-    } else {
-      window.location.href = "/login";
-    }
+  static logout() {
+    const userType = this.getCurrentUserType();
+    this.clearAuth();
+    this.redirectToLogin();
   }
 
   static initLogoutHandler() {
@@ -66,67 +108,34 @@ class AuthManager {
     }
   }
 
-  static async checkAuthAndRedirect() {
-    const currentPath = window.location.pathname;
-
+  static async checkAdminSession() {
     try {
       const isAuth = await this.verifyAuth();
+      if (!isAuth) return false;
 
-      if (isAuth) {
-        // User is authenticated
-        const userType = this.getUserType();
-
-        if (userType === "applicant") {
-          // Check registration status
-          const response = await fetch("/api/registration/check-status", {
-            headers: {
-              Authorization: `Bearer ${this.getAuthToken()}`,
-            },
-          });
-          const data = await response.json();
-
-          // Handle public routes for authenticated users
-          if (["/login", "/registration"].includes(currentPath)) {
-            if (data.hasRegistration) {
-              window.location.href = "/dashboard";
-            } else {
-              window.location.href = "/registration/form";
-            }
-            return false;
-          }
-
-          // Handle protected routes based on registration status
-          if (data.hasRegistration) {
-            if (currentPath === "/registration/form") {
-              window.location.href = "/dashboard";
-              return false;
-            }
-          } else {
-            if (currentPath === "/dashboard") {
-              window.location.href = "/registration/form";
-              return false;
-            }
-          }
-        }
-      } else {
-        // User is not authenticated - redirect to login for protected routes
-        if (
-          currentPath.startsWith("/dashboard") ||
-          currentPath === "/registration/form"
-        ) {
-          window.location.href = "/login";
-          return false;
-        }
-      }
-
-      return true;
+      const userInfo = this.getUserInfo();
+      return userInfo?.type === "department";
     } catch (error) {
-      console.error("Auth check error:", error);
-      // For any errors, redirect to login
-      if (currentPath !== "/login") {
-        window.location.href = "/login";
-      }
       return false;
     }
+  }
+
+  static async handleAdminAuth() {
+    const isAdminSession = await this.checkAdminSession();
+    const path = window.location.pathname;
+
+    // If on login page with valid session, redirect to dashboard
+    if (path === "/department-login" && isAdminSession) {
+      window.location.replace("/admin/dashboard");
+      return false;
+    }
+
+    // If on admin pages without valid session, redirect to login
+    if (path.startsWith("/admin") && !isAdminSession) {
+      window.location.replace("/department-login");
+      return false;
+    }
+
+    return true;
   }
 }

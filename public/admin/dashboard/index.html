@@ -12,48 +12,9 @@
     <link rel="stylesheet" href="/admin/css/style.css" />
   </head>
   <body>
-    <script>
-      // Immediate auth check before showing anything
-      (async function () {
-        try {
-          const token = localStorage.getItem("authToken");
-          if (!token) {
-            window.location.href = "/department-login";
-            return;
-          }
-
-          const response = await fetch("/api/auth/verify", {
-            headers: {
-              Authorization: `Bearer ${token}`,
-            },
-          });
-
-          if (!response.ok) {
-            localStorage.removeItem("authToken");
-            localStorage.removeItem("userInfo");
-            window.location.href = "/department-login";
-            return;
-          }
-
-          const userInfo = JSON.parse(localStorage.getItem("userInfo"));
-          if (!userInfo || userInfo.type !== "department") {
-            localStorage.removeItem("authToken");
-            localStorage.removeItem("userInfo");
-            window.location.href = "/department-login";
-            return;
-          }
-        } catch (error) {
-          console.error("Auth error:", error);
-          window.location.href = "/department-login";
-          return;
-        }
-      })();
-    </script>
-    <!-- Add this hidden loader -->
+    <!-- Auth check loader -->
     <div id="authLoader" class="auth-loader">
-      <div class="spinner-border text-primary" role="status">
-        <span class="visually-hidden">Loading...</span>
-      </div>
+      <div class="spinner"></div>
     </div>
 
     <!-- Main content will be hidden until auth check -->
@@ -170,18 +131,5 @@
     <script src="/admin/js/api.js"></script>
     <script src="/admin/js/init.js"></script>
     <script src="/admin/js/dashboard.js"></script>
-    <script>
-      document.addEventListener("DOMContentLoaded", () => {
-        // Set user info
-        const userInfo = AuthManager.getUserInfo();
-        document.getElementById(
-          "userInfo"
-        ).textContent = `Welcome, ${userInfo.username}`;
-
-        // Show main content
-        document.getElementById("authLoader").style.display = "none";
-        document.getElementById("mainContent").style.display = "block";
-      });
-    </script>
   </body>
 </html>
