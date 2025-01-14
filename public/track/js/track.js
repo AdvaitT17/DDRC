@@ -21,7 +21,7 @@ class ApplicationTracker {
     const email = this.form.email.value.trim();
 
     if (!applicationId || !email) {
-      this.showError("Please enter both Application ID and Email");
+      this.showError("Please enter both Application ID and Email address");
       return;
     }
 
@@ -43,10 +43,18 @@ class ApplicationTracker {
       const data = await response.json();
 
       if (!response.ok) {
-        throw new Error(data.message || "Application not found");
+        let errorMessage;
+        if (response.status === 404) {
+          errorMessage =
+            "No application found with this ID and email combination. Please check and try again.";
+        } else {
+          errorMessage =
+            "Failed to fetch application status. Please try again later.";
+        }
+        throw new Error(errorMessage);
       }
 
-      // Prepare the result HTML but don't show it yet
+      // Prepare the result HTML
       this.resultDiv.innerHTML = this.getResultHTML(data);
 
       // Show result div first with opacity 0
@@ -71,49 +79,55 @@ class ApplicationTracker {
   }
 
   getResultHTML(data) {
-    const statusClasses = {
-      under_review: "status-under_review",
-      approved: "status-approved",
-      rejected: "status-rejected",
+    const statusConfig = {
+      pending: {
+        class: "status-pending",
+        title: "Application Pending",
+        description:
+          "Your application has been submitted and is pending review.",
+      },
+      under_review: {
+        class: "status-review",
+        title: "Under Review",
+        description:
+          "Your application is currently being reviewed by our team.",
+      },
+      approved: {
+        class: "status-approved",
+        title: "Approved",
+        description: "Congratulations! Your application has been approved.",
+      },
+      rejected: {
+        class: "status-rejected",
+        title: "Rejected",
+        description:
+          "Your application has been rejected. Please contact support for more information.",
+      },
     };
 
-    const statusText = {
-      under_review: "Under Review",
-      approved: "Approved",
-      rejected: "Rejected",
-    };
+    const status = statusConfig[data.status] || statusConfig.pending;
 
     return `
-      <div class="track-box ${statusClasses[data.status]}">
+      <div class="track-result">
         <div class="track-header">
-          <h2>Application Details</h2>
-          <p>Your application has been successfully submitted</p>
+          <h2>Application Status</h2>
         </div>
-
         <div class="track-content">
-          <div class="info-box">
-            <div class="info-item">
-              <label>Application ID</label>
-              <span>${data.applicationId}</span>
+          <div class="status-box ${status.class}">
+            <div class="status-icon">
+              ${data.statusIcon}
             </div>
-            <div class="info-item">
-              <label>Applicant Name</label>
-              <span>${data.applicantName}</span>
-            </div>
-            <div class="info-item">
-              <label>Submitted On</label>
-              <span>${data.submittedDate}</span>
-            </div>
-            <div class="info-item">
-              <label>Status</label>
-              <span class="status-badge">
-                ${data.statusIcon}
-                ${statusText[data.status] || "Under Review"}
-              </span>
+            <div class="status-details">
+              <h3>${status.title}</h3>
+              <p>${status.description}</p>
             </div>
           </div>
-          
-          <button class="back-button btn" onclick="this.closest('.track-box').querySelector('.back-button').click()">
+          <div class="application-info">
+            <p><strong>Application ID:</strong> ${data.applicationId}</p>
+            <p><strong>Applicant Name:</strong> ${data.applicantName}</p>
+            <p><strong>Submitted On:</strong> ${data.submittedDate}</p>
+          </div>
+          <button class="back-button btn">
             <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
             </svg>
@@ -125,40 +139,15 @@ class ApplicationTracker {
   }
 
   showError(message) {
-    // Prepare error HTML
-    this.resultDiv.innerHTML = `
-      <div class="error-box">
-        <div class="track-header">
-          <h2>Unable to Find Application</h2>
-        </div>
-        <div class="track-content">
-          <div class="alert alert-danger">
-            ${message}
-          </div>
-          <button class="back-button btn" onclick="this.closest('.error-box').querySelector('.back-button').click()">
-            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
-            </svg>
-            Back to Search
-          </button>
-        </div>
-      </div>
-    `;
+    const errorDiv = document.getElementById("trackError");
+    if (!errorDiv) return;
 
-    // Show result div first with opacity 0
-    this.resultDiv.classList.add("visible");
+    errorDiv.textContent = message;
+    errorDiv.style.display = "block";
 
-    // Small delay to ensure display:block is applied
     setTimeout(() => {
-      // Fade out form and fade in result simultaneously
-      this.formContainer.style.opacity = "0";
-      this.resultDiv.style.opacity = "1";
-
-      // After fade out, hide form
-      setTimeout(() => {
-        this.formContainer.classList.add("hidden");
-      }, 300);
-    }, 50);
+      errorDiv.style.display = "none";
+    }, 5000);
   }
 
   showForm() {
@@ -168,7 +157,7 @@ class ApplicationTracker {
     // Reset submit button state
     const submitButton = this.form.querySelector('button[type="submit"]');
     submitButton.disabled = false;
-    submitButton.innerHTML = "Track Status"; // Reset button text
+    submitButton.innerHTML = "Track Status";
 
     // Small delay to ensure display:block is applied
     setTimeout(() => {

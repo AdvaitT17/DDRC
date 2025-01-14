@@ -58,7 +58,7 @@ const authenticateToken = async (req, res, next) => {
 
 const requireRole = (roles) => {
   return (req, res, next) => {
-    if (!req.user || !roles.includes(req.user.role)) {
+    if (!req.user || (roles.includes("admin") && req.user.role !== "admin")) {
       return res.status(403).json({ message: "Forbidden" });
     }
     next();

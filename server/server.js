@@ -16,6 +16,7 @@ const dashboardRoutes = require("./routes/dashboardRoutes");
 const {
   requireCompletedRegistration,
 } = require("./middleware/registrationMiddleware");
+const userManagementRoutes = require("./routes/userManagementRoutes");
 
 const app = express();
 
@@ -66,6 +67,7 @@ app.use(
   requireCompletedRegistration,
   dashboardRoutes
 );
+app.use("/api/admin", userManagementRoutes);
 
 // HTML Routes - make sure these come after API routes
 app.get(

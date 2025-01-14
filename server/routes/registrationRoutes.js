@@ -1,7 +1,24 @@
 const express = require("express");
 const router = express.Router();
+const multer = require("multer");
+const { uploadsDir, generateUniqueFilename } = require("../config/upload");
 const { authenticateToken } = require("../middleware/authMiddleware");
 const pool = require("../config/database");
+
+// Configure multer for file uploads
+const storage = multer.diskStorage({
+  destination: uploadsDir,
+  filename: (req, file, cb) => {
+    cb(null, generateUniqueFilename(file.originalname));
+  },
+});
+
+const upload = multer({
+  storage,
+  limits: {
+    fileSize: 50 * 1024 * 1024, // 50MB max file size
+  },
+});
 
 // Get registration progress
 router.get("/progress", authenticateToken, async (req, res) => {
@@ -40,9 +57,8 @@ router.get("/progress", authenticateToken, async (req, res) => {
   }
 });
 
-// Save section progress
-router.post("/progress", authenticateToken, async (req, res) => {
-  const { sectionId, formData } = req.body;
+// Save section progress with file upload support
+router.post("/progress", authenticateToken, upload.any(), async (req, res) => {
   const conn = await pool.getConnection();
 
   try {
@@ -58,29 +74,39 @@ router.post("/progress", authenticateToken, async (req, res) => {
     let progressId;
     if (progress.length === 0) {
       const [result] = await conn.query(
-        `INSERT INTO registration_progress (user_id, current_section_id) 
-         VALUES (?, ?)`,
-        [req.user.id, sectionId]
+        `INSERT INTO registration_progress (user_id) VALUES (?)`,
+        [req.user.id]
       );
       progressId = result.insertId;
     } else {
       progressId = progress[0].id;
-      await conn.query(
-        `UPDATE registration_progress 
-         SET current_section_id = ? 
-         WHERE id = ?`,
-        [sectionId, progressId]
-      );
     }
 
-    // Save form responses using field IDs
-    for (const [fieldId, value] of Object.entries(formData)) {
+    // Handle file uploads
+    const files = req.files || [];
+    for (const file of files) {
+      const fieldId = file.fieldname.replace("file_", "");
       await conn.query(
         `INSERT INTO registration_responses (registration_id, field_id, value)
          VALUES (?, ?, ?)
          ON DUPLICATE KEY UPDATE value = ?`,
-        [parseInt(progressId), parseInt(fieldId), value, value]
+        [progressId, fieldId, file.filename, file.filename]
       );
+    }
+
+    // Handle other form fields
+    for (const [key, value] of Object.entries(req.body)) {
+      if (!key.startsWith("file_")) {
+        // Handle array values (like checkbox groups)
+        const finalValue = Array.isArray(value) ? value.join(",") : value;
+
+        await conn.query(
+          `INSERT INTO registration_responses (registration_id, field_id, value)
+           VALUES (?, ?, ?)
+           ON DUPLICATE KEY UPDATE value = ?`,
+          [progressId, key, finalValue, finalValue]
+        );
+      }
     }
 
     await conn.commit();

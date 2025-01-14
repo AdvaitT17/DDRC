@@ -14,7 +14,16 @@ router.get("/:applicationId", async (req, res) => {
         rp.application_id,
         rp.service_status,
         rp.completed_at,
-        ru.username as applicant_name
+        CONCAT(
+          (SELECT value 
+           FROM registration_responses 
+           WHERE registration_id = rp.id 
+           AND field_id = 1), ' ',
+          (SELECT value 
+           FROM registration_responses 
+           WHERE registration_id = rp.id 
+           AND field_id = 3)
+        ) as applicant_name
        FROM registration_progress rp
        JOIN registered_users ru ON rp.user_id = ru.id
        WHERE rp.application_id = ? 
@@ -34,9 +43,9 @@ router.get("/:applicationId", async (req, res) => {
     res.json({
       applicationId: application.application_id,
       applicantName: application.applicant_name,
-      status: application.service_status || "under_review",
+      status: application.service_status || "pending",
       submittedDate: new Date(application.completed_at).toLocaleDateString(),
-      statusIcon: getStatusIcon(application.service_status || "under_review"),
+      statusIcon: getStatusIcon(application.service_status || "pending"),
     });
   } catch (error) {
     console.error("Error:", error);
@@ -46,6 +55,8 @@ router.get("/:applicationId", async (req, res) => {
 
 function getStatusIcon(status) {
   switch (status) {
+    case "pending":
+      return `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#6b7280" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>`;
     case "under_review":
       return `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#f59e0b" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>`;
     case "approved":

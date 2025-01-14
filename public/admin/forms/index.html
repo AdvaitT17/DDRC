@@ -23,6 +23,8 @@
         <div class="left-links">
           <a href="/admin/dashboard">Dashboard</a>
           <a href="/admin/forms" class="active">Form Management</a>
+          <a href="/admin/logbook">Logs</a>
+          <a href="/admin/users">Users</a>
         </div>
         <div class="right-links">
           <span id="userInfo"></span>
@@ -168,6 +170,7 @@
                 <option value="select">Dropdown</option>
                 <option value="radio">Radio Buttons</option>
                 <option value="checkbox">Checkboxes</option>
+                <option value="file">File Upload</option>
               </select>
             </div>
             <div class="mb-3">
@@ -195,6 +198,36 @@
                 <small class="form-text text-muted"
                   >Enter each option on a new line</small
                 >
+              </div>
+            </div>
+            <!-- File upload configuration -->
+            <div class="file-size-container" style="display: none">
+              <div class="mb-3">
+                <label for="maxFileSize" class="form-label"
+                  >Maximum File Size (MB)</label
+                >
+                <input
+                  type="number"
+                  class="form-control"
+                  id="maxFileSize"
+                  min="1"
+                  max="50"
+                  value="5"
+                />
+              </div>
+              <div class="mb-3">
+                <label for="allowedTypes" class="form-label"
+                  >Allowed File Types</label
+                >
+                <input
+                  type="text"
+                  class="form-control"
+                  id="allowedTypes"
+                  placeholder="e.g., .pdf,.jpg,.png"
+                />
+                <div class="form-text">
+                  Enter comma-separated file extensions
+                </div>
               </div>
             </div>
           </div>

@@ -17,7 +17,8 @@ router.get("/sections", async (req, res) => {
 
     // Get fields for all sections
     const [fields] = await pool.query(
-      `SELECT id, section_id, name, display_name, field_type, is_required, options, order_index 
+      `SELECT id, section_id, name, display_name, field_type, is_required, 
+              options, order_index, max_file_size, allowed_types
        FROM form_fields 
        ORDER BY order_index`
     );
@@ -90,50 +91,55 @@ router.delete(
 
 // Create new field
 router.post(
-  "/fields",
+  "/sections/:sectionId/fields",
   authenticateToken,
   requireRole(["admin"]),
   async (req, res) => {
     try {
       const {
-        section_id,
         name,
         display_name,
         field_type,
         is_required,
         options,
+        max_file_size,
+        allowed_types,
       } = req.body;
 
-      // Get max order_index for the section
+      // Get max order_index
       const [maxOrder] = await pool.query(
-        "SELECT MAX(order_index) as max FROM form_fields WHERE section_id = ?",
-        [section_id]
+        "SELECT COALESCE(MAX(order_index), -1) as max FROM form_fields WHERE section_id = ?",
+        [req.params.sectionId]
       );
-      const orderIndex = (maxOrder[0].max || 0) + 1;
+      const orderIndex = maxOrder[0].max + 1;
 
       const [result] = await pool.query(
         `INSERT INTO form_fields 
-         (section_id, name, display_name, field_type, is_required, options, order_index) 
-         VALUES (?, ?, ?, ?, ?, ?, ?)`,
+         (section_id, name, display_name, field_type, is_required, options, order_index, max_file_size, allowed_types) 
+         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
         [
-          section_id,
+          req.params.sectionId,
           name,
           display_name,
           field_type,
           is_required,
-          options ? JSON.stringify(options) : null,
+          // Store options as a JSON string if it's an array, otherwise store as is
+          Array.isArray(options) ? JSON.stringify(options) : options,
           orderIndex,
+          field_type === "file" ? max_file_size : null,
+          field_type === "file" ? allowed_types : null,
         ]
       );
 
-      res.status(201).json({
+      res.json({
         id: result.insertId,
-        section_id,
         name,
         display_name,
         field_type,
         is_required,
         options,
+        max_file_size,
+        allowed_types,
         order_index: orderIndex,
       });
     } catch (error) {
@@ -190,12 +196,25 @@ router.put(
   requireRole(["admin"]),
   async (req, res) => {
     try {
-      const { name, display_name, field_type, is_required, options } = req.body;
+      const {
+        name,
+        display_name,
+        field_type,
+        is_required,
+        options,
+        max_file_size,
+        allowed_types,
+      } = req.body;
 
       const [result] = await pool.query(
         `UPDATE form_fields 
-       SET name = ?, display_name = ?, field_type = ?, 
-           is_required = ?, options = ?
+       SET name = ?, 
+           display_name = ?, 
+           field_type = ?, 
+           is_required = ?, 
+           options = ?,
+           max_file_size = ?,
+           allowed_types = ?
        WHERE id = ?`,
         [
           name,
@@ -203,6 +222,8 @@ router.put(
           field_type,
           is_required,
           options ? JSON.stringify(options) : null,
+          field_type === "file" ? max_file_size : null,
+          field_type === "file" ? allowed_types : null,
           req.params.id,
         ]
       );
@@ -218,6 +239,8 @@ router.put(
         field_type,
         is_required,
         options,
+        max_file_size,
+        allowed_types,
       });
     } catch (error) {
       console.error("Error updating field:", error);

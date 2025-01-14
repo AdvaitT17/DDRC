@@ -23,6 +23,8 @@
         <div class="left-links">
           <a href="/admin/dashboard" class="active">Dashboard</a>
           <a href="/admin/forms">Form Management</a>
+          <a href="/admin/logbook">Logs</a>
+          <a href="/admin/users">Users</a>
         </div>
         <div class="right-links">
           <span id="userInfo"></span>
@@ -85,14 +87,6 @@
               <div class="stat-value" id="approvedToday">Loading...</div>
             </div>
           </div>
-
-          <div class="stat-card">
-            <div class="stat-icon">📊</div>
-            <div class="stat-info">
-              <h3>Active Users</h3>
-              <div class="stat-value" id="activeUsers">Loading...</div>
-            </div>
-          </div>
         </div>
 
         <!-- Recent Applications -->
@@ -112,14 +106,132 @@
                   <th>Application ID</th>
                   <th>Applicant Name</th>
                   <th>Submission Date</th>
-                  <th>Status</th>
-                  <th>Action</th>
+                  <th>Type of Disability</th>
                 </tr>
               </thead>
               <tbody id="recentApplications">
                 <!-- Will be populated by JavaScript -->
               </tbody>
             </table>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Application Details Modal -->
+    <div class="modal fade" id="applicationModal" tabindex="-1">
+      <div class="modal-dialog modal-dialog-centered modal-xl">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title">Application Details</h5>
+            <button
+              type="button"
+              class="btn-close"
+              data-bs-dismiss="modal"
+            ></button>
+          </div>
+          <div class="modal-body">
+            <div class="application-header mb-4">
+              <div class="d-flex justify-content-between align-items-center">
+                <div>
+                  <h6 class="text-muted mb-1">Application ID</h6>
+                  <h4 id="modalApplicationId"></h4>
+                </div>
+                <div class="text-end">
+                  <h6 class="text-muted mb-1">Submitted On</h6>
+                  <h5 id="modalSubmissionDate"></h5>
+                </div>
+              </div>
+              <div class="application-status mt-3">
+                <span class="status-badge" id="modalStatus"></span>
+                <div class="status-info" id="statusInfo">
+                  <small class="text-muted">
+                    Last updated by <span id="lastUpdatedBy">-</span> on
+                    <span id="lastUpdatedAt">-</span>
+                  </small>
+                </div>
+              </div>
+            </div>
+            <div class="application-sections row" id="modalFormData">
+              <!-- Will be populated by JavaScript -->
+            </div>
+          </div>
+          <div class="modal-footer">
+            <div class="action-buttons">
+              <button
+                type="button"
+                class="btn btn-success"
+                id="approveBtn"
+                onclick="dashboardManager.updateStatus('approved')"
+              >
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  width="16"
+                  height="16"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="2"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                >
+                  <polyline points="20 6 9 17 4 12"></polyline>
+                </svg>
+                Approve
+              </button>
+              <button
+                type="button"
+                class="btn btn-danger"
+                id="rejectBtn"
+                onclick="dashboardManager.updateStatus('rejected')"
+              >
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  width="16"
+                  height="16"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="2"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                >
+                  <line x1="18" y1="6" x2="6" y2="18"></line>
+                  <line x1="6" y1="6" x2="18" y2="18"></line>
+                </svg>
+                Reject
+              </button>
+              <button
+                type="button"
+                class="btn btn-warning"
+                id="undoBtn"
+                onclick="dashboardManager.undoStatus()"
+                style="display: none"
+              >
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  width="16"
+                  height="16"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="2"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                >
+                  <path d="M3 7v6h6"></path>
+                  <path d="M21 17a9 9 0 00-9-9 9 9 0 00-6 2.3L3 13"></path>
+                </svg>
+                Undo Decision
+              </button>
+            </div>
+            <button
+              type="button"
+              class="btn btn-secondary"
+              data-bs-dismiss="modal"
+            >
+              Close
+            </button>
           </div>
         </div>
       </div>

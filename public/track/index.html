@@ -89,13 +89,14 @@
           <div class="track-box">
             <div class="track-header">
               <h2>Track Your Application</h2>
-              <p>
-                Enter your application ID and registered email to check the
-                status
-              </p>
+              <p>Enter your application details below to check the status</p>
             </div>
-
-            <form id="trackForm" class="track-form">
+            <div
+              id="trackError"
+              class="alert alert-danger"
+              style="display: none"
+            ></div>
+            <form id="trackForm" class="track-form" novalidate>
               <div class="form-group">
                 <label for="applicationId" class="form-label"
                   >Application ID</label
@@ -165,8 +166,12 @@
         </div>
         <div class="footer-bottom">
           <p>
-            &copy; Copyright 2024 District Disability Rehabilitation Centre,
-            Mumbai. All Rights Reserved.
+            &copy; Copyright
+            <script>
+              document.write(new Date().getFullYear());
+            </script>
+            District Disability Rehabilitation Centre, Mumbai. All Rights
+            Reserved.
           </p>
           <div class="footer-links">
             <a href="/terms">Terms & Conditions</a>

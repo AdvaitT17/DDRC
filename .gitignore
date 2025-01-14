@@ -12,6 +12,8 @@ dist-ssr
 *.local
 database
 server/scripts/
+server/uploads/
+uploads/
 
 .vscode/*
 .vscode/launch.json
