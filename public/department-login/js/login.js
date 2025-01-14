@@ -54,19 +54,19 @@ class LoginManager {
       return;
     }
 
-    // Verify captcha
-    const captchaInput = this.captchaInput.value.trim();
-    if (captchaInput !== this.captchaText.textContent) {
-      this.showError("Invalid captcha");
+    const username = this.form.username.value.trim();
+    const password = this.form.password.value;
+    const captchaInput = this.form.captchaInput.value.trim();
+    const captchaText = document.getElementById("captcha").textContent;
+
+    // Validate captcha first
+    if (captchaInput !== captchaText) {
+      this.showError("Invalid captcha code");
       this.generateCaptcha();
       this.captchaInput.value = "";
       return;
     }
 
-    const username = this.form.username.value.trim();
-    const password = this.form.password.value;
-
-    // Disable form while processing
     const submitButton = this.form.querySelector('button[type="submit"]');
     const originalText = submitButton.innerHTML;
     submitButton.disabled = true;
@@ -85,6 +85,8 @@ class LoginManager {
         // Verify data structure
         if (!data.token || !data.user || !data.user.type) {
           this.showError("Invalid server response");
+          submitButton.disabled = false;
+          submitButton.innerHTML = originalText;
           return;
         }
 
@@ -97,6 +99,8 @@ class LoginManager {
 
         if (!storedToken || !storedUser) {
           this.showError("Failed to store authentication data");
+          submitButton.disabled = false;
+          submitButton.innerHTML = originalText;
           return;
         }
 
@@ -107,11 +111,15 @@ class LoginManager {
         this.showError(data.message || "Login failed");
         this.generateCaptcha();
         this.captchaInput.value = "";
+        submitButton.disabled = false;
+        submitButton.innerHTML = originalText;
       }
     } catch (error) {
       this.showError("An error occurred. Please try again later.");
       this.generateCaptcha();
       this.captchaInput.value = "";
+      submitButton.disabled = false;
+      submitButton.innerHTML = originalText;
     }
   }
 }

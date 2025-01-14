@@ -29,11 +29,16 @@ function initializeFormEventListeners() {
   // Field type change
   document.getElementById("fieldType").addEventListener("change", (e) => {
     const optionsContainer = document.querySelector(".field-options-container");
+    const fileSizeContainer = document.querySelector(".file-size-container");
+
     optionsContainer.style.display = ["select", "radio", "checkbox"].includes(
       e.target.value
     )
       ? "block"
       : "none";
+
+    fileSizeContainer.style.display =
+      e.target.value === "file" ? "block" : "none";
   });
 
   // Save Field button
@@ -76,6 +81,13 @@ function renderFields(fields) {
         ${
           field.is_required
             ? '<span class="required-badge">Required</span>'
+            : ""
+        }
+        ${
+          field.field_type === "file"
+            ? `<span class="file-info">
+                 (Max: ${field.max_file_size}MB, Types: ${field.allowed_types})
+               </span>`
             : ""
         }
       </div>
@@ -124,70 +136,64 @@ async function saveSection() {
 }
 
 async function saveField() {
-  const modal = document.getElementById("fieldModal");
-  const sectionId = modal.dataset.sectionId;
-  const fieldId = modal.dataset.fieldId;
+  const form = document.getElementById("fieldModal");
+  const fieldName = form.querySelector("#fieldName").value.trim();
+  const displayName = form.querySelector("#displayName").value.trim();
+  const fieldType = form.querySelector("#fieldType").value;
+  const isRequired = form.querySelector("#required").checked;
+  const sectionId = form.dataset.sectionId;
+  const fieldId = form.dataset.fieldId;
 
-  const fieldData = {
-    section_id: parseInt(sectionId),
-    name: document
-      .getElementById("fieldName")
-      .value.trim()
-      .toLowerCase()
-      .replace(/\s+/g, "_"),
-    display_name: document.getElementById("displayName").value.trim(),
-    field_type: document.getElementById("fieldType").value,
-    is_required: document.getElementById("required").checked,
+  let fieldData = {
+    name: fieldName,
+    display_name: displayName,
+    field_type: fieldType,
+    is_required: isRequired,
   };
 
-  // Validate required fields
-  if (!fieldData.name || !fieldData.display_name) {
-    alert("Please fill in all required fields");
-    return;
+  // Add options for select/radio/checkbox fields
+  if (["select", "radio", "checkbox"].includes(fieldType)) {
+    const options = form
+      .querySelector("#options")
+      .value.split("\n")
+      .map((opt) => opt.trim())
+      .filter((opt) => opt);
+    fieldData.options = options;
   }
 
-  // Handle options for select, radio, and checkbox fields
-  if (["select", "radio", "checkbox"].includes(fieldData.field_type)) {
-    const optionsText = document.getElementById("options").value.trim();
-    if (!optionsText) {
-      alert("Please enter options for this field type");
-      return;
-    }
-    fieldData.options = optionsText
-      .split("\n")
-      .map((opt) => opt.trim())
-      .filter(Boolean);
+  // Add file configuration for file type fields
+  if (fieldType === "file") {
+    fieldData.max_file_size =
+      parseInt(form.querySelector("#maxFileSize").value) || 5;
+    fieldData.allowed_types =
+      form.querySelector("#allowedTypes").value.trim() ||
+      ".pdf,.jpg,.jpeg,.png";
   }
 
   try {
-    const url = fieldId ? `/api/form/fields/${fieldId}` : "/api/form/fields";
-
-    const method = fieldId ? "PUT" : "POST";
+    const url = fieldId
+      ? `/api/form/fields/${fieldId}`
+      : `/api/form/sections/${sectionId}/fields`;
 
     const response = await fetchWithAuth(url, {
-      method,
-      headers: {
-        "Content-Type": "application/json",
-      },
+      method: fieldId ? "PUT" : "POST",
       body: JSON.stringify(fieldData),
     });
 
-    if (!response.ok) {
-      throw new Error(`Failed to ${fieldId ? "update" : "create"} field`);
+    if (!response.ok) throw new Error("Failed to save field");
+
+    // Refresh form sections
+    const sectionsResponse = await fetchWithAuth("/api/form/sections");
+    if (sectionsResponse.ok) {
+      const sections = await sectionsResponse.json();
+      renderFormSections(sections);
     }
 
-    // Refresh sections
-    await initializeFormManagement();
-
-    // Reset modal title
-    modal.querySelector(".modal-title").textContent = "Add Field";
-
-    // Close modal and reset form
-    const modalInstance = bootstrap.Modal.getInstance(modal);
-    modalInstance.hide();
-    resetFieldForm();
+    // Close modal
+    bootstrap.Modal.getInstance(form).hide();
   } catch (error) {
-    alert(`Failed to ${fieldId ? "update" : "save"} field. Please try again.`);
+    console.error("Error saving field:", error);
+    alert("Failed to save field");
   }
 }
 
@@ -264,31 +270,19 @@ function addSectionEventListeners() {
   document.querySelectorAll(".edit-field-btn").forEach((btn) => {
     btn.addEventListener("click", async (e) => {
       const fieldId = e.target.closest(".field-item").dataset.fieldId;
-      const sectionId = e.target.closest(".section-item").dataset.sectionId;
-
       try {
         const response = await fetchWithAuth(`/api/form/fields/${fieldId}`);
-        if (!response.ok) {
-          throw new Error("Failed to fetch field data");
-        }
+        if (!response.ok) throw new Error("Failed to fetch field");
 
         const field = await response.json();
-
-        // Set the section ID and field ID on the modal
         const modal = document.getElementById("fieldModal");
-        modal.dataset.sectionId = sectionId;
         modal.dataset.fieldId = fieldId;
-
-        // Update modal title
-        modal.querySelector(".modal-title").textContent = "Edit Field";
-
-        // Populate form fields
+        modal.dataset.sectionId = field.section_id;
         populateFieldForm(field);
-
-        // Show modal
         new bootstrap.Modal(modal).show();
       } catch (error) {
-        alert("Failed to load field data");
+        console.error("Error editing field:", error);
+        alert("Failed to edit field");
       }
     });
   });
@@ -313,11 +307,37 @@ function populateFieldForm(field) {
   form.querySelector("#required").checked = field.is_required;
 
   const optionsContainer = form.querySelector(".field-options-container");
+  const fileSizeContainer = form.querySelector(".file-size-container");
+
   if (["select", "radio", "checkbox"].includes(field.field_type)) {
     optionsContainer.style.display = "block";
-    form.querySelector("#options").value = field.options.join("\n");
+    fileSizeContainer.style.display = "none";
+
+    // Safely parse options or use the string value
+    let optionsValue = field.options;
+    try {
+      if (field.options && typeof field.options === "string") {
+        // Try to parse as JSON first
+        optionsValue = JSON.parse(field.options);
+      }
+    } catch (e) {
+      // If parsing fails, split by comma
+      optionsValue = field.options ? field.options.split(",") : [];
+    }
+
+    // Convert to newline-separated string
+    form.querySelector("#options").value = Array.isArray(optionsValue)
+      ? optionsValue.join("\n")
+      : optionsValue;
+  } else if (field.field_type === "file") {
+    optionsContainer.style.display = "none";
+    fileSizeContainer.style.display = "block";
+    form.querySelector("#maxFileSize").value = field.max_file_size || 5;
+    form.querySelector("#allowedTypes").value =
+      field.allowed_types || ".pdf,.jpg,.jpeg,.png";
   } else {
     optionsContainer.style.display = "none";
+    fileSizeContainer.style.display = "none";
   }
 }
 

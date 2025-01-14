@@ -67,21 +67,27 @@ router.post("/department/login", async (req, res) => {
   try {
     const { username, password } = req.body;
 
-    // Validate department user
+    // Basic validation
+    if (!username || !password) {
+      return res
+        .status(400)
+        .json({ message: "Please enter both username and password" });
+    }
+
     const [users] = await pool.query(
-      "SELECT id, username, password, role, full_name, email, is_active FROM users WHERE username = ?",
+      "SELECT * FROM users WHERE username = ? AND is_active = TRUE",
       [username]
     );
 
-    if (users.length === 0 || !users[0].is_active) {
-      return res.status(401).json({ message: "Invalid credentials" });
+    if (users.length === 0) {
+      return res.status(401).json({ message: "Invalid username or password" });
     }
 
     const user = users[0];
     const validPassword = await bcrypt.compare(password, user.password);
 
     if (!validPassword) {
-      return res.status(401).json({ message: "Invalid credentials" });
+      return res.status(401).json({ message: "Invalid username or password" });
     }
 
     // Remove password from user object

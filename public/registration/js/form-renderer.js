@@ -161,12 +161,25 @@ class RegistrationFormRenderer {
         return this.renderRadioField(field);
       case "checkbox":
         return this.renderCheckboxField(field);
+      case "file":
+        return this.renderFileField(field);
       default:
         return "";
     }
   }
 
   renderInputField(field) {
+    let validationAttrs = "";
+
+    if (field.field_type === "tel") {
+      validationAttrs = `
+        pattern="[0-9]{10}"
+        minlength="10"
+        maxlength="10"
+        title="Please enter a valid 10-digit phone number"
+      `;
+    }
+
     return `
       <div class="mb-3">
         <label for="${field.name}" class="form-label">
@@ -180,10 +193,15 @@ class RegistrationFormRenderer {
           data-field-id="${field.id}"
           name="${field.name}"
           ${field.is_required ? "required" : ""}
+          ${validationAttrs}
           value="${this.savedResponses[field.name] || ""}"
         />
         <div class="invalid-feedback">
-          This field is required
+          ${
+            field.field_type === "tel"
+              ? "Please enter a valid 10-digit phone number"
+              : "This field is required"
+          }
         </div>
       </div>
     `;
@@ -294,6 +312,36 @@ class RegistrationFormRenderer {
             .join("")}
         </div>
         <div class="invalid-feedback">Please select at least one option</div>
+      </div>
+    `;
+  }
+
+  renderFileField(field) {
+    const allowedTypes = field.allowed_types || ".pdf,.jpg,.jpeg,.png";
+    const maxSize = (field.max_file_size || 5) * 1024 * 1024; // Convert MB to bytes
+
+    return `
+      <div class="mb-3">
+        <label class="form-label">
+          ${field.display_name}
+          ${field.is_required ? '<span class="text-danger">*</span>' : ""}
+        </label>
+        <input
+          type="file"
+          class="form-control"
+          id="${field.name}"
+          name="${field.name}"
+          data-field-id="${field.id}"
+          accept="${allowedTypes}"
+          data-max-size="${maxSize}"
+          ${field.is_required ? "required" : ""}
+        >
+        <div class="form-text">
+          Maximum file size: ${field.max_file_size || 5}MB
+          <br>
+          Allowed types: ${allowedTypes}
+        </div>
+        <div class="invalid-feedback">Please select a valid file</div>
       </div>
     `;
   }
