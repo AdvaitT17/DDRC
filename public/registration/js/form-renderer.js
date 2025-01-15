@@ -87,9 +87,22 @@ class RegistrationFormRenderer {
           Authorization: `Bearer ${AuthManager.getAuthToken()}`,
         },
       });
+
       if (response.ok) {
         const progress = await response.json();
-        this.savedResponses = progress.responses || {};
+        // Map responses by field ID instead of field name
+        const responses = progress.responses || {};
+        this.savedResponses = {};
+
+        // Convert field names to field IDs in saved responses
+        this.sections.forEach((section) => {
+          section.fields.forEach((field) => {
+            if (responses[field.name] !== undefined) {
+              this.savedResponses[field.id] = responses[field.name];
+            }
+          });
+        });
+
         this.currentSectionIndex = progress.currentSectionIndex || 0;
       }
     } catch (error) {
@@ -101,30 +114,69 @@ class RegistrationFormRenderer {
     const section = this.sections[this.currentSectionIndex];
     const container = document.querySelector(".form-section");
 
+    // Clear previous content
     container.innerHTML = `
       <h2>${section.name}</h2>
       <form id="sectionForm">
         <div class="form-grid">
-          ${this.renderFields(section.fields)}
+          ${section.fields.map((field) => this.renderField(field)).join("")}
         </div>
       </form>
     `;
 
-    // Populate saved values
-    this.populateSavedValues(section.fields);
+    // Populate saved values after rendering the form
+    this.populateSavedValues();
   }
 
-  populateSavedValues(fields) {
-    fields.forEach((field) => {
-      const input = document.getElementById(field.name);
-      if (input && this.savedResponses[field.name]) {
-        if (field.field_type === "checkbox") {
-          input.checked = this.savedResponses[field.name] === "true";
-        } else {
-          input.value = this.savedResponses[field.name];
+  async populateSavedValues() {
+    try {
+      // Get current section's fields
+      const currentSection = this.sections[this.currentSectionIndex];
+      const form = document.getElementById("sectionForm");
+
+      currentSection.fields.forEach((field) => {
+        const savedValue = this.savedResponses[field.id];
+        if (!savedValue) return;
+
+        const input = form.querySelector(`[data-field-id="${field.id}"]`);
+        if (!input) return;
+
+        switch (field.field_type) {
+          case "checkbox":
+            // Handle multiple checkboxes
+            const values = savedValue.split(",");
+            const checkboxes = form.querySelectorAll(
+              `[data-field-id="${field.id}"]`
+            );
+            checkboxes.forEach((checkbox) => {
+              checkbox.checked = values.includes(checkbox.value);
+            });
+            break;
+
+          case "radio":
+            const radio = form.querySelector(
+              `[data-field-id="${field.id}"][value="${savedValue}"]`
+            );
+            if (radio) radio.checked = true;
+            break;
+
+          case "file":
+            // For file inputs, we might want to show the filename
+            if (savedValue) {
+              const fileInfo = document.createElement("div");
+              fileInfo.className = "file-info";
+              fileInfo.textContent = `Current file: ${savedValue}`;
+              input.parentNode.appendChild(fileInfo);
+            }
+            break;
+
+          default:
+            input.value = savedValue;
         }
-      }
-    });
+      });
+    } catch (error) {
+      console.error("Error populating saved values:", error);
+    }
   }
 
   renderFields(fields) {
@@ -194,7 +246,7 @@ class RegistrationFormRenderer {
           name="${field.name}"
           ${field.is_required ? "required" : ""}
           ${validationAttrs}
-          value="${this.savedResponses[field.name] || ""}"
+          value="${this.savedResponses[field.id] || ""}"
         />
         <div class="invalid-feedback">
           ${
@@ -227,7 +279,7 @@ class RegistrationFormRenderer {
             .map(
               (option) => `
             <option value="${option}" ${
-                this.savedResponses[field.name] === option ? "selected" : ""
+                this.savedResponses[field.id] === option ? "selected" : ""
               }>${option}</option>
           `
             )
@@ -261,7 +313,7 @@ class RegistrationFormRenderer {
                 name="${field.name}"
                 value="${option}"
                 ${field.is_required ? "required" : ""}
-                ${this.savedResponses[field.name] === option ? "checked" : ""}
+                ${this.savedResponses[field.id] === option ? "checked" : ""}
               />
               <label class="form-check-label" for="${field.name}_${option}">
                 ${option}
@@ -298,7 +350,7 @@ class RegistrationFormRenderer {
                 value="${option}"
                 ${field.is_required ? "required" : ""}
                 ${
-                  this.savedResponses[field.name]?.includes(option)
+                  this.savedResponses[field.id]?.includes(option)
                     ? "checked"
                     : ""
                 }

@@ -17,13 +17,56 @@ class RegistrationFormHandler {
   }
 
   async handleNext() {
+    // Save current values before validation
+    this.saveCurrentValues();
+
     if (await this.validateAndSaveCurrentSection()) {
       this.renderer.moveToNextSection();
     }
   }
 
   async handlePrev() {
+    // Save current values before moving back
+    this.saveCurrentValues();
     this.renderer.moveToPreviousSection();
+  }
+
+  // Add this new method to save current values
+  saveCurrentValues() {
+    const form = document.getElementById("sectionForm");
+    const fields = form.elements;
+
+    for (let field of fields) {
+      if (!field.name) continue;
+
+      const fieldId = field.dataset.fieldId;
+      if (!fieldId) continue;
+
+      if (field.type === "checkbox") {
+        // Handle checkbox groups
+        const checkboxes = form.querySelectorAll(
+          `[data-field-id="${fieldId}"]`
+        );
+        const values = [];
+        checkboxes.forEach((checkbox) => {
+          if (checkbox.checked) {
+            values.push(checkbox.value);
+          }
+        });
+        if (values.length > 0) {
+          this.renderer.savedResponses[fieldId] = values.join(",");
+        }
+      } else if (field.type === "radio") {
+        if (field.checked) {
+          this.renderer.savedResponses[fieldId] = field.value;
+        }
+      } else if (field.type === "file") {
+        // Skip file inputs as they can't maintain their state
+        continue;
+      } else {
+        this.renderer.savedResponses[fieldId] = field.value;
+      }
+    }
   }
 
   async handleSubmit(e) {
