@@ -4,6 +4,8 @@ const multer = require("multer");
 const { uploadsDir, generateUniqueFilename } = require("../config/upload");
 const { authenticateToken } = require("../middleware/authMiddleware");
 const pool = require("../config/database");
+const path = require("path");
+const fs = require("fs");
 
 // Configure multer for file uploads
 const storage = multer.diskStorage({
@@ -31,7 +33,10 @@ router.get("/progress", authenticateToken, async (req, res) => {
     );
 
     if (progress.length === 0) {
-      return res.json({ currentSectionIndex: 0, responses: {} });
+      return res.json({
+        currentSectionId: null,
+        responses: {},
+      });
     }
 
     // Fetch saved responses with field names
@@ -44,7 +49,7 @@ router.get("/progress", authenticateToken, async (req, res) => {
     );
 
     res.json({
-      currentSectionIndex: progress[0].current_section_index,
+      currentSectionId: progress[0].current_section_id,
       status: progress[0].status,
       applicationId: progress[0].application_id,
       responses: responses.reduce((acc, curr) => {
@@ -59,38 +64,47 @@ router.get("/progress", authenticateToken, async (req, res) => {
 
 // Save section progress with file upload support
 router.post("/progress", authenticateToken, upload.any(), async (req, res) => {
-  const conn = await pool.getConnection();
-
   try {
-    await conn.beginTransaction();
+    const formData = req.body;
+    const currentSectionId = formData.current_section_id;
+    delete formData.current_section_id; // Remove from formData to not save as response
 
-    // Get or create progress record
-    let [progress] = await conn.query(
+    // Get or create registration progress
+    const [progress] = await pool.query(
       `SELECT id FROM registration_progress 
-       WHERE user_id = ? AND status = 'in_progress'`,
+       WHERE user_id = ? 
+       ORDER BY id DESC LIMIT 1`,
       [req.user.id]
     );
 
-    let progressId;
+    let registrationId;
     if (progress.length === 0) {
-      const [result] = await conn.query(
-        `INSERT INTO registration_progress (user_id) VALUES (?)`,
-        [req.user.id]
+      // Create new registration progress
+      const [result] = await pool.query(
+        `INSERT INTO registration_progress (user_id, current_section_id) VALUES (?, ?)`,
+        [req.user.id, currentSectionId]
       );
-      progressId = result.insertId;
+      registrationId = result.insertId;
     } else {
-      progressId = progress[0].id;
+      registrationId = progress[0].id;
+      // Update current section
+      await pool.query(
+        `UPDATE registration_progress 
+         SET current_section_id = ?
+         WHERE id = ?`,
+        [currentSectionId, registrationId]
+      );
     }
 
     // Handle file uploads
     const files = req.files || [];
     for (const file of files) {
       const fieldId = file.fieldname.replace("file_", "");
-      await conn.query(
+      await pool.query(
         `INSERT INTO registration_responses (registration_id, field_id, value)
          VALUES (?, ?, ?)
          ON DUPLICATE KEY UPDATE value = ?`,
-        [progressId, fieldId, file.filename, file.filename]
+        [registrationId, fieldId, file.filename, file.filename]
       );
     }
 
@@ -100,23 +114,19 @@ router.post("/progress", authenticateToken, upload.any(), async (req, res) => {
         // Handle array values (like checkbox groups)
         const finalValue = Array.isArray(value) ? value.join(",") : value;
 
-        await conn.query(
+        await pool.query(
           `INSERT INTO registration_responses (registration_id, field_id, value)
            VALUES (?, ?, ?)
            ON DUPLICATE KEY UPDATE value = ?`,
-          [progressId, key, finalValue, finalValue]
+          [registrationId, key, finalValue, finalValue]
         );
       }
     }
 
-    await conn.commit();
     res.json({ message: "Progress saved successfully" });
   } catch (error) {
-    await conn.rollback();
     console.error("Error saving progress:", error);
     res.status(500).json({ message: "Error saving progress" });
-  } finally {
-    conn.release();
   }
 });
 
@@ -239,6 +249,95 @@ router.get("/check-status", authenticateToken, async (req, res) => {
       message: "Error checking registration status",
       hasRegistration: false,
     });
+  }
+});
+
+// Add file upload endpoint
+router.post(
+  "/upload-file",
+  authenticateToken,
+  upload.single("file"),
+  async (req, res) => {
+    try {
+      const { fieldId } = req.body;
+      const file = req.file;
+
+      if (!file) {
+        return res.status(400).json({ message: "No file uploaded" });
+      }
+
+      // Get current registration progress
+      const [progress] = await pool.query(
+        `SELECT id FROM registration_progress 
+         WHERE user_id = ? 
+         ORDER BY id DESC LIMIT 1`,
+        [req.user.id]
+      );
+
+      if (progress.length === 0) {
+        // Create new registration progress
+        const [result] = await pool.query(
+          `INSERT INTO registration_progress (user_id) VALUES (?)`,
+          [req.user.id]
+        );
+        var registrationId = result.insertId;
+      } else {
+        var registrationId = progress[0].id;
+      }
+
+      // Save file info to database
+      await pool.query(
+        `INSERT INTO registration_responses (registration_id, field_id, value) 
+         VALUES (?, ?, ?) 
+         ON DUPLICATE KEY UPDATE value = ?`,
+        [registrationId, fieldId, file.filename, file.filename]
+      );
+
+      res.json({
+        fileName: file.filename,
+        message: "File uploaded successfully",
+      });
+    } catch (error) {
+      console.error("File upload error:", error);
+      res.status(500).json({ message: "Error uploading file" });
+    }
+  }
+);
+
+// Add file delete endpoint
+router.delete("/delete-file/:fieldId", authenticateToken, async (req, res) => {
+  try {
+    const { fieldId } = req.params;
+
+    // Get file name from database
+    const [files] = await pool.query(
+      `SELECT rr.value 
+       FROM registration_responses rr
+       JOIN registration_progress rp ON rr.registration_id = rp.id
+       WHERE rp.user_id = ? AND rr.field_id = ?`,
+      [req.user.id, fieldId]
+    );
+
+    if (files.length > 0) {
+      // Delete file from storage
+      const filePath = path.join(uploadsDir, files[0].value);
+      if (fs.existsSync(filePath)) {
+        fs.unlinkSync(filePath);
+      }
+
+      // Remove from database
+      await pool.query(
+        `DELETE rr FROM registration_responses rr
+         JOIN registration_progress rp ON rr.registration_id = rp.id
+         WHERE rp.user_id = ? AND rr.field_id = ?`,
+        [req.user.id, fieldId]
+      );
+    }
+
+    res.json({ message: "File deleted successfully" });
+  } catch (error) {
+    console.error("File delete error:", error);
+    res.status(500).json({ message: "Error deleting file" });
   }
 });
 

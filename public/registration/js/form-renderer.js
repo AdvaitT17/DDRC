@@ -103,7 +103,15 @@ class RegistrationFormRenderer {
           });
         });
 
-        this.currentSectionIndex = progress.currentSectionIndex || 0;
+        // Find section index based on current_section_id
+        if (progress.currentSectionId) {
+          const sectionIndex = this.sections.findIndex(
+            (section) => section.id === progress.currentSectionId
+          );
+          this.currentSectionIndex = sectionIndex !== -1 ? sectionIndex : 0;
+        } else {
+          this.currentSectionIndex = 0;
+        }
       }
     } catch (error) {
       console.error("Error loading saved progress:", error);
@@ -378,22 +386,47 @@ class RegistrationFormRenderer {
           ${field.display_name}
           ${field.is_required ? '<span class="text-danger">*</span>' : ""}
         </label>
-        <input
-          type="file"
-          class="form-control"
-          id="${field.name}"
-          name="${field.name}"
-          data-field-id="${field.id}"
-          accept="${allowedTypes}"
-          data-max-size="${maxSize}"
-          ${field.is_required ? "required" : ""}
-        >
-        <div class="form-text">
-          Maximum file size: ${field.max_file_size || 5}MB
-          <br>
-          Allowed types: ${allowedTypes}
+        <div class="file-upload-container">
+          <div class="file-input-wrapper ${
+            this.savedResponses[field.id] ? "hidden" : ""
+          }">
+            <input
+              type="file"
+              class="form-control"
+              id="${field.name}"
+              name="${field.name}"
+              data-field-id="${field.id}"
+              accept="${allowedTypes}"
+              data-max-size="${maxSize}"
+              ${
+                field.is_required && !this.savedResponses[field.id]
+                  ? "required"
+                  : ""
+              }
+              onchange="handleFileUpload(this)"
+            >
+            <div class="form-text">
+              Maximum file size: ${field.max_file_size || 5}MB
+              <br>
+              Allowed types: ${allowedTypes}
+            </div>
+            <div class="invalid-feedback">Please select a valid file</div>
+          </div>
+          <div class="file-preview ${
+            this.savedResponses[field.id] ? "" : "hidden"
+          }" id="preview_${field.id}">
+            <div class="file-info">
+              <span class="file-name">${
+                this.savedResponses[field.id] || ""
+              }</span>
+              <button type="button" class="btn btn-link text-danger" onclick="handleFileDelete('${
+                field.id
+              }')">
+                <img src="/images/cross.svg" alt="Remove file" width="16" height="16">
+              </button>
+            </div>
+          </div>
         </div>
-        <div class="invalid-feedback">Please select a valid file</div>
       </div>
     `;
   }
@@ -455,6 +488,8 @@ class RegistrationFormRenderer {
 // Initialize form when page loads
 document.addEventListener("DOMContentLoaded", async () => {
   const formRenderer = new RegistrationFormRenderer();
+  // Make formRenderer globally accessible
+  window.formRenderer = formRenderer;
   await formRenderer.initialize();
   new RegistrationFormHandler(formRenderer);
 });
