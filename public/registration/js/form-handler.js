@@ -122,6 +122,10 @@ class RegistrationFormHandler {
 
     try {
       const formData = this.collectFormData();
+      formData.append(
+        "current_section_id",
+        this.renderer.getCurrentSectionId()
+      );
 
       const response = await fetch("/api/registration/progress", {
         method: "POST",
@@ -157,22 +161,10 @@ class RegistrationFormHandler {
       const fieldId = field.dataset.fieldId;
       if (!fieldId) continue;
 
-      if (field.type === "file") {
-        if (field.files && field.files[0]) {
-          const file = field.files[0];
-          const maxSize = parseInt(field.dataset.maxSize);
+      // Skip file inputs as they're handled separately by immediate upload
+      if (field.type === "file") continue;
 
-          if (file.size > maxSize) {
-            throw new Error(
-              `File size exceeds maximum allowed size of ${
-                maxSize / 1024 / 1024
-              }MB`
-            );
-          }
-
-          formData.append(`file_${fieldId}`, file);
-        }
-      } else if (field.type === "checkbox") {
+      if (field.type === "checkbox") {
         if (field.checked) {
           // Initialize array if not exists
           if (!checkboxGroups[fieldId]) {
