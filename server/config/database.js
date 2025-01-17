@@ -11,7 +11,7 @@ const pool = mysql.createPool({
   queueLimit: 0,
   enableKeepAlive: true,
   keepAliveInitialDelay: 0,
-  connectTimeout: 10000,
+  connectTimeout: 30000,
   maxIdle: 10,
   idleTimeout: 300000,
 });
@@ -20,7 +20,9 @@ setInterval(async () => {
   try {
     await pool.query("SELECT 1");
   } catch (error) {
-    console.error("Error pinging database:", error);
+    if (!error.code || error.code !== "ETIMEDOUT") {
+      console.error("Critical database error:", error);
+    }
   }
 }, 300000);
 

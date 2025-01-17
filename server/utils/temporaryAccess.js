@@ -31,10 +31,10 @@ class TokenManager {
     }
 
     if (Date.now() > data.expiresAt) {
+      console.log("Token expired:", { token, expiresAt: data.expiresAt });
       this.tokens.delete(token);
       return null;
     }
-
     return data;
   }
 
