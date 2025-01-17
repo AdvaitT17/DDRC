@@ -1,16 +1,130 @@
+class FormManager {
+  constructor() {
+    this.checkAdminAccess();
+  }
+
+  async checkAdminAccess() {
+    try {
+      const userInfo = AuthManager.getUserInfo();
+      if (!userInfo || userInfo.role !== "admin") {
+        document.getElementById("authLoader").style.display = "none";
+        document.getElementById("mainContent").innerHTML = `
+          <div class="admin-top-bar">
+            <div class="left-links">
+              <a href="/admin/dashboard">Dashboard</a>
+              <a href="/admin/forms" class="active">Form Management</a>
+              <a href="/admin/logbook">Logs</a>
+              <a href="/admin/users">Users</a>
+            </div>
+            <div class="right-links">
+              <span id="userInfo">${
+                userInfo?.full_name || userInfo?.email || ""
+              }</span>
+              <button id="logoutBtn" class="btn btn-link" onclick="AuthManager.logout()">Logout</button>
+            </div>
+          </div>
+          <header class="main-header">
+            <div class="logo-section">
+              <img
+                src="/images/emblem.png"
+                alt="Government of India Emblem"
+                class="emblem-logo"
+              />
+              <div class="header-text">
+                <h1>District Disability Rehabilitation Centre, Mumbai</h1>
+                <p>Department of Empowerment of Persons with Disabilities,</p>
+                <p>Ministry of Social Justice and Empowerment, Govt. of India</p>
+              </div>
+              <img src="/images/ddrc-logo.png" alt="DDRC Logo" class="ddrc-logo" />
+            </div>
+          </header>
+          <div class="admin-content">
+            <div class="dashboard-header">
+              <h1>Form Management</h1>
+              <p class="text-muted">Manage form sections and fields</p>
+            </div>
+            <div class="content-card p-0">
+              <div class="unauthorized-container">
+                <div class="icon-container mb-4">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+                    <path d="M8 11h8"/>
+                  </svg>
+                </div>
+                <h2 class="mb-3">Access Restricted</h2>
+                <p class="text-muted mb-4">This section is only accessible to administrators.</p>
+                <div class="action-buttons">
+                  <a href="/admin/dashboard" class="btn btn-primary">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="me-2">
+                      <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/>
+                      <polyline points="9 22 9 12 15 12 15 22"/>
+                    </svg>
+                    Back to Dashboard
+                  </a>
+                </div>
+              </div>
+            </div>
+          </div>`;
+
+        // Add custom styles for unauthorized page
+        const style = document.createElement("style");
+        style.textContent = `
+          .unauthorized-container {
+            padding: 4rem 2rem;
+            text-align: center;
+            background: #fff;
+            border-radius: 8px;
+          }
+          .icon-container {
+            width: 80px;
+            height: 80px;
+            margin: 0 auto;
+            background: #fee2e2;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+          }
+          .icon-container svg {
+            color: #dc2626;
+          }
+          .action-buttons {
+            display: flex;
+            justify-content: center;
+            gap: 1rem;
+          }
+          .action-buttons .btn {
+            display: inline-flex;
+            align-items: center;
+            padding: 0.75rem 1.5rem;
+            font-weight: 500;
+          }
+          .action-buttons svg {
+            margin-right: 0.5rem;
+          }
+        `;
+        document.head.appendChild(style);
+        return false;
+      }
+      return true;
+    } catch (error) {
+      console.error("Error checking admin access:", error);
+      return false;
+    }
+  }
+}
+
 async function initializeFormManagement() {
   try {
     // Fetch form sections
     const response = await fetchWithAuth("/api/form/sections");
-    if (response.ok) {
-      const sections = await response.json();
-      renderFormSections(sections);
-    }
+    const sections = await response.json();
+    renderFormSections(sections);
 
     // Initialize event listeners
     initializeFormEventListeners();
   } catch (error) {
-    // Show error message to user
+    console.error("Error initializing form management:", error);
   }
 }
 
@@ -343,7 +457,8 @@ function populateFieldForm(field) {
 
 // Initialize form management when the page loads
 document.addEventListener("DOMContentLoaded", async () => {
-  if (await initializeAdminPage()) {
+  window.formManager = new FormManager();
+  if (await window.formManager.checkAdminAccess()) {
     await initializeFormManagement();
 
     // Initialize event listeners for modals
