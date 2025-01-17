@@ -11,7 +11,7 @@ const tokenManager = require("../utils/temporaryAccess");
 router.get(
   "/files/access-url/:filename",
   authenticateToken,
-  requireRole(["admin"]),
+  requireRole(["admin", "staff"]),
   async (req, res) => {
     try {
       const { filename } = req.params;

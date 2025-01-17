@@ -407,8 +407,20 @@ async function previewDocument(fileName) {
       },
     });
 
-    if (!response.ok) throw new Error("Failed to get file access URL");
+    if (response.status === 403) {
+      alert("You don't have permission to view this document.");
+      return;
+    }
+
+    if (!response.ok) {
+      const error = await response.json();
+      throw new Error(error.message || "Failed to get file access URL");
+    }
+
     const { accessUrl } = await response.json();
+
+    // Log the access URL for debugging (remove in production)
+    console.log("Access URL generated:", accessUrl);
 
     const modalHtml = `
       <div class="modal fade" id="documentPreviewModal" tabindex="-1">
@@ -464,8 +476,10 @@ async function previewDocument(fileName) {
         this.remove();
       });
   } catch (error) {
-    console.error("Preview error:", error);
-    alert("Failed to load document preview");
+    console.error("Document preview error:", error);
+    alert(
+      error.message || "Failed to load document preview. Please try again."
+    );
   }
 }
 
@@ -496,3 +510,36 @@ async function downloadDocument(fileName, accessUrl) {
     alert("Failed to download file");
   }
 }
+
+async function checkAuthAndLoadData() {
+  try {
+    const response = await fetch("/api/auth/verify", {
+      headers: {
+        Authorization: `Bearer ${AuthManager.getAuthToken()}`,
+      },
+    });
+
+    const data = await response.json();
+
+    if (!response.ok) {
+      if (data.code === "TOKEN_EXPIRED" || data.code === "TOKEN_MISSING") {
+        AuthManager.clearAuthToken();
+        window.location.href = "/department-login";
+        return;
+      }
+      throw new Error(data.message);
+    }
+
+    // Load dashboard data...
+  } catch (error) {
+    console.error("Auth check failed:", error);
+    // Only show alert for non-redirect errors
+    if (window.location.pathname !== "/department-login") {
+      alert("Authentication failed. Please login again.");
+      window.location.href = "/department-login";
+    }
+  }
+}
+
+// Check auth on page load
+document.addEventListener("DOMContentLoaded", checkAuthAndLoadData);

@@ -7,7 +7,10 @@ const authenticateToken = async (req, res, next) => {
     const token = authHeader && authHeader.split(" ")[1];
 
     if (!token) {
-      return res.status(401).json({ message: "No token provided" });
+      return res.status(401).json({
+        message: "No token provided",
+        code: "TOKEN_MISSING",
+      });
     }
 
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
@@ -15,16 +18,31 @@ const authenticateToken = async (req, res, next) => {
     // Get a connection from the pool
     const conn = await pool.getConnection();
     try {
-      const [users] = await conn.query(
-        `SELECT id, username, role, full_name, email FROM users WHERE id = ?`,
-        [decoded.id]
-      );
+      // Check user type and fetch appropriate data
+      let user = null;
+      if (decoded.type === "department") {
+        const [users] = await conn.query(
+          `SELECT id, username, role, full_name, email FROM users WHERE id = ?`,
+          [decoded.id]
+        );
+        if (users.length > 0) {
+          user = { ...users[0], type: "department" };
+        }
+      } else if (decoded.type === "applicant") {
+        const [users] = await conn.query(
+          `SELECT id, email, username AS full_name FROM registered_users WHERE id = ?`,
+          [decoded.id]
+        );
+        if (users.length > 0) {
+          user = { ...users[0], type: "applicant" };
+        }
+      }
 
-      if (users.length === 0) {
+      if (!user) {
         return res.status(403).json({ message: "User not found" });
       }
 
-      req.user = { ...users[0], type: decoded.type };
+      req.user = user;
       next();
     } catch (error) {
       // Database error handling
@@ -43,16 +61,27 @@ const authenticateToken = async (req, res, next) => {
     if (error.name === "TokenExpiredError") {
       return res.status(401).json({
         message: "Session expired. Please login again.",
+        code: "TOKEN_EXPIRED",
       });
     }
-    console.error("JWT verification error:", error);
-    res.status(403).json({ message: "Token verification failed" });
+    // Only log non-standard JWT errors
+    if (error.name !== "JsonWebTokenError") {
+      console.error("JWT verification error:", error);
+    }
+    res.status(403).json({
+      message: "Token verification failed",
+      code: "TOKEN_INVALID",
+    });
   }
 };
 
 const requireRole = (roles) => {
   return (req, res, next) => {
-    if (!req.user || (roles.includes("admin") && req.user.role !== "admin")) {
+    // Allow access if user is department staff/admin
+    if (
+      !req.user ||
+      (req.user.type === "department" && !roles.includes(req.user.role))
+    ) {
       return res.status(403).json({ message: "Forbidden" });
     }
     next();
