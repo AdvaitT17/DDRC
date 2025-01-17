@@ -17,6 +17,9 @@ const {
   requireCompletedRegistration,
 } = require("./middleware/registrationMiddleware");
 const userManagementRoutes = require("./routes/userManagementRoutes");
+const { uploadsDir } = require("./config/upload");
+const pool = require("./config/database");
+const tokenManager = require("./utils/temporaryAccess");
 
 const app = express();
 
@@ -24,6 +27,33 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
+
+// Serve uploaded files with authentication
+app.use("/uploads", async (req, res, next) => {
+  try {
+    const accessToken = req.query.access_token;
+    if (!accessToken) {
+      return res.status(401).json({ message: "No token provided" });
+    }
+
+    const accessData = tokenManager.validateToken(accessToken);
+    if (!accessData) {
+      return res
+        .status(401)
+        .json({ message: "Invalid or expired access token" });
+    }
+
+    // Verify the requested file matches the token
+    if (accessData.filename !== req.path.slice(1)) {
+      return res.status(403).json({ message: "Access denied" });
+    }
+
+    express.static(uploadsDir)(req, res, next);
+  } catch (error) {
+    console.error("Upload access error:", error);
+    res.status(401).json({ message: "Invalid token" });
+  }
+});
 
 // Serve static files with proper MIME types
 app.use(

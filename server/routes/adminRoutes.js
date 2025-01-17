@@ -5,6 +5,28 @@ const {
   authenticateToken,
   requireRole,
 } = require("../middleware/authMiddleware");
+const tokenManager = require("../utils/temporaryAccess");
+
+// Generate temporary file access URL
+router.get(
+  "/files/access-url/:filename",
+  authenticateToken,
+  requireRole(["admin"]),
+  async (req, res) => {
+    try {
+      const { filename } = req.params;
+
+      const accessToken = tokenManager.generateToken(filename, req.user.id);
+
+      res.json({
+        accessUrl: `/uploads/${filename}?access_token=${accessToken}`,
+      });
+    } catch (error) {
+      console.error("Error generating file access URL:", error);
+      res.status(500).json({ message: "Error generating file access URL" });
+    }
+  }
+);
 
 // Get dashboard stats
 router.get("/stats", async (req, res) => {

@@ -4,55 +4,49 @@ const pool = require("../config/database");
 const authenticateToken = async (req, res, next) => {
   try {
     const authHeader = req.headers["authorization"];
-
-    if (!authHeader?.startsWith("Bearer ")) {
-      return res.status(401).json({ message: "Invalid authorization header" });
-    }
-
-    const token = authHeader.split(" ")[1];
+    const token = authHeader && authHeader.split(" ")[1];
 
     if (!token) {
       return res.status(401).json({ message: "No token provided" });
     }
 
+    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+
+    // Get a connection from the pool
+    const conn = await pool.getConnection();
     try {
-      const decoded = jwt.verify(token, process.env.JWT_SECRET);
+      const [users] = await conn.query(
+        `SELECT id, username, role, full_name, email FROM users WHERE id = ?`,
+        [decoded.id]
+      );
 
-      // Check user type and fetch appropriate data
-      if (decoded.type === "department") {
-        const [users] = await pool.query(
-          "SELECT id, username, role, full_name, email FROM users WHERE id = ?",
-          [decoded.id]
-        );
-
-        if (users.length === 0) {
-          throw new Error("Department user not found");
-        }
-
-        req.user = { ...users[0], type: "department" };
-      } else if (decoded.type === "applicant") {
-        const [users] = await pool.query(
-          "SELECT id, email, phone FROM registered_users WHERE id = ?",
-          [decoded.id]
-        );
-
-        if (users.length === 0) {
-          throw new Error("User not found");
-        }
-
-        req.user = { ...users[0], type: "applicant" };
-      } else {
-        throw new Error("Invalid user type");
+      if (users.length === 0) {
+        return res.status(403).json({ message: "User not found" });
       }
 
+      req.user = { ...users[0], type: decoded.type };
       next();
-    } catch (jwtError) {
-      console.error("JWT verification error:", jwtError);
-      return res.status(401).json({ message: "Invalid token" });
+    } catch (error) {
+      // Database error handling
+      if (error.code === "ETIMEDOUT") {
+        console.error("Database timeout, attempting reconnection...");
+        return res.status(500).json({
+          message: "Database connection error. Please refresh the page.",
+        });
+      }
+      console.error("JWT verification error:", error);
+      res.status(403).json({ message: "Token verification failed" });
+    } finally {
+      conn.release();
     }
   } catch (error) {
-    console.error("Auth middleware error:", error);
-    res.status(500).json({ message: "Server error during authentication" });
+    if (error.name === "TokenExpiredError") {
+      return res.status(401).json({
+        message: "Session expired. Please login again.",
+      });
+    }
+    console.error("JWT verification error:", error);
+    res.status(403).json({ message: "Token verification failed" });
   }
 };
 
