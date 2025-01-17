@@ -9,6 +9,19 @@ const pool = mysql.createPool({
   waitForConnections: true,
   connectionLimit: 10,
   queueLimit: 0,
+  enableKeepAlive: true,
+  keepAliveInitialDelay: 0,
+  connectTimeout: 10000,
+  maxIdle: 10,
+  idleTimeout: 300000,
 });
+
+setInterval(async () => {
+  try {
+    await pool.query("SELECT 1");
+  } catch (error) {
+    console.error("Error pinging database:", error);
+  }
+}, 300000);
 
 module.exports = pool;

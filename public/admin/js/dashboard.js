@@ -72,13 +72,22 @@ class DashboardManager {
         },
       });
 
-      if (!response.ok) throw new Error("Failed to fetch application details");
+      if (response.status === 401) {
+        // Session expired
+        alert("Your session has expired. Please login again.");
+        window.location.href = "/department-login";
+        return;
+      }
+
+      if (!response.ok) throw new Error("Failed to fetch application");
 
       const data = await response.json();
 
-      // Update modal header
+      // Update modal content
       document.getElementById("modalApplicationId").textContent =
         data.applicationId;
+
+      // Update modal header
       document.getElementById("modalSubmissionDate").textContent = new Date(
         data.submittedAt
       ).toLocaleDateString();
@@ -143,7 +152,14 @@ class DashboardManager {
       );
       modal.show();
     } catch (error) {
-      console.error("Error viewing application:", error);
+      console.error("Error:", error);
+      if (error.message.includes("Failed to fetch")) {
+        alert(
+          "Connection error. Please check your internet connection and try again."
+        );
+      } else {
+        alert("Failed to load application details. Please refresh the page.");
+      }
     }
   }
 
@@ -207,7 +223,7 @@ class DashboardManager {
             <path d="M13 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9z"></path>
             <polyline points="13 2 13 9 20 9"></polyline>
           </svg>
-          <a href="/uploads/${field.value}" target="_blank">View Document</a>
+          <button onclick="previewDocument('${field.value}')" class="btn btn-link p-0">View Document</button>
         </div>
       `;
     }
@@ -356,6 +372,23 @@ class DashboardManager {
       alert("Failed to undo decision");
     }
   }
+
+  renderDocumentField(field, value) {
+    return `
+      <div class="mb-2">
+        <label class="form-label">${field.display_name}</label>
+        <div>
+          <button onclick="previewDocument('${value}')" class="btn btn-sm btn-outline-primary">
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="me-1">
+              <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+              <circle cx="12" cy="12" r="3"></circle>
+            </svg>
+            View Document
+          </button>
+        </div>
+      </div>
+    `;
+  }
 }
 
 // Initialize dashboard
@@ -363,3 +396,103 @@ let dashboardManager;
 document.addEventListener("DOMContentLoaded", () => {
   dashboardManager = new DashboardManager();
 });
+
+// Add this function to handle document preview
+async function previewDocument(fileName) {
+  try {
+    // Get temporary URL for the file
+    const response = await fetch(`/api/admin/files/access-url/${fileName}`, {
+      headers: {
+        Authorization: `Bearer ${AuthManager.getAuthToken()}`,
+      },
+    });
+
+    if (!response.ok) throw new Error("Failed to get file access URL");
+    const { accessUrl } = await response.json();
+
+    const modalHtml = `
+      <div class="modal fade" id="documentPreviewModal" tabindex="-1">
+        <div class="modal-dialog modal-xl modal-dialog-centered">
+          <div class="modal-content">
+            <div class="modal-header">
+              <h5 class="modal-title">Document Preview</h5>
+              <div class="ms-auto">
+                <button onclick="downloadDocument('${fileName}', '${accessUrl}')" class="btn btn-sm download-btn">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="me-1">
+                    <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+                    <polyline points="7 10 12 15 17 10"/>
+                    <line x1="12" y1="15" x2="12" y2="3"/>
+                  </svg>
+                  Download
+                </button>
+                <button type="button" class="btn-close d-flex align-items-center" data-bs-dismiss="modal" aria-label="Close"></button>
+              </div>
+            </div>
+            <div class="modal-body p-0">
+              <div class="document-preview-container">
+                ${
+                  fileName.match(/\.(jpg|jpeg|png|gif)$/i)
+                    ? `<img src="${accessUrl}" class="img-preview" alt="Document preview">`
+                    : `<iframe src="${accessUrl}#toolbar=0" class="pdf-preview"></iframe>`
+                }
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    `;
+
+    // Remove existing modal if any
+    const existingModal = document.getElementById("documentPreviewModal");
+    if (existingModal) {
+      existingModal.remove();
+    }
+
+    // Add modal to body
+    document.body.insertAdjacentHTML("beforeend", modalHtml);
+
+    // Show modal
+    const modal = new bootstrap.Modal(
+      document.getElementById("documentPreviewModal")
+    );
+    modal.show();
+
+    // Clean up on modal hide
+    document
+      .getElementById("documentPreviewModal")
+      .addEventListener("hidden.bs.modal", function () {
+        this.remove();
+      });
+  } catch (error) {
+    console.error("Preview error:", error);
+    alert("Failed to load document preview");
+  }
+}
+
+// Add download function
+async function downloadDocument(fileName, accessUrl) {
+  try {
+    // Fetch the file with authentication
+    const response = await fetch(accessUrl);
+
+    if (!response.ok) throw new Error("Failed to download file");
+
+    // Get the blob
+    const blob = await response.blob();
+
+    // Create download link
+    const url = window.URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = fileName; // Set the download filename
+    document.body.appendChild(a);
+    a.click();
+
+    // Cleanup
+    window.URL.revokeObjectURL(url);
+    document.body.removeChild(a);
+  } catch (error) {
+    console.error("Download error:", error);
+    alert("Failed to download file");
+  }
+}
