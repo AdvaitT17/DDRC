@@ -144,6 +144,9 @@ function initializeFormEventListeners() {
   document.getElementById("fieldType").addEventListener("change", (e) => {
     const optionsContainer = document.querySelector(".field-options-container");
     const fileSizeContainer = document.querySelector(".file-size-container");
+    const nestedOptionsContainer = document.querySelector(
+      ".nested-options-container"
+    );
 
     optionsContainer.style.display = ["select", "radio", "checkbox"].includes(
       e.target.value
@@ -153,6 +156,9 @@ function initializeFormEventListeners() {
 
     fileSizeContainer.style.display =
       e.target.value === "file" ? "block" : "none";
+
+    nestedOptionsContainer.style.display =
+      e.target.value === "nested-select" ? "block" : "none";
   });
 
   // Save Field button
@@ -191,7 +197,11 @@ function renderFields(fields) {
     <div class="field-item" data-field-id="${field.id}">
       <div class="field-info">
         <span class="field-name">${field.display_name}</span>
-        <span class="field-type">${field.field_type}</span>
+        <span class="field-type">${
+          field.field_type === "nested-select"
+            ? "Nested Dropdown"
+            : field.field_type
+        }</span>
         ${
           field.is_required
             ? '<span class="required-badge">Required</span>'
@@ -199,8 +209,24 @@ function renderFields(fields) {
         }
         ${
           field.field_type === "file"
-            ? `<span class="file-info">
-                 (Max: ${field.max_file_size}MB, Types: ${field.allowed_types})
+            ? `<span class="badge rounded-pill bg-light text-dark border">
+                Max: ${field.max_file_size || 5}MB | Types: ${
+                field.allowed_types || ".pdf,.jpg,.jpeg,.png"
+              }
+               </span>`
+            : ""
+        }
+        ${
+          field.field_type === "nested-select"
+            ? `<span class="badge rounded-pill bg-light text-dark border">
+                ${(() => {
+                  try {
+                    const config = JSON.parse(field.options);
+                    return `${config.length} Levels`;
+                  } catch (e) {
+                    return "0 Levels";
+                  }
+                })()}
                </span>`
             : ""
         }
@@ -272,6 +298,7 @@ async function saveField() {
       .value.split("\n")
       .map((opt) => opt.trim())
       .filter((opt) => opt);
+    // Store options directly as an array, let JSON.stringify handle it in the request
     fieldData.options = options;
   }
 
@@ -284,19 +311,56 @@ async function saveField() {
       ".pdf,.jpg,.jpeg,.png";
   }
 
+  // Handle nested-select type
+  if (fieldType === "nested-select") {
+    console.log("Saving nested-select field...");
+    const levelNames = Array.from(
+      form.querySelectorAll('[name="level_names[]"]')
+    )
+      .map((input) => input.value.trim())
+      .filter((name) => name);
+
+    const levelOptions = Array.from(
+      form.querySelectorAll('[name="level_options[]"]')
+    )
+      .map((textarea) => textarea.value.trim())
+      .filter((options) => options);
+
+    console.log("Level names:", levelNames);
+    console.log("Level options:", levelOptions);
+
+    // Store nested configuration as an array of objects
+    const nestedConfig = levelNames.map((name, index) => ({
+      level: index + 1,
+      name: name,
+      options: levelOptions[index] || "",
+    }));
+
+    console.log("Final nested config:", nestedConfig);
+    console.log("Final nested config string:", JSON.stringify(nestedConfig));
+
+    // Store config directly as an object, let JSON.stringify handle it in the request
+    fieldData.options = nestedConfig;
+  }
+
   try {
     const url = fieldId
       ? `/api/form/fields/${fieldId}`
       : `/api/form/sections/${sectionId}/fields`;
 
+    console.log("Sending field data:", fieldData);
+
     const response = await fetchWithAuth(url, {
       method: fieldId ? "PUT" : "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
       body: JSON.stringify(fieldData),
     });
 
     if (!response.ok) throw new Error("Failed to save field");
 
-    // Refresh form sections
+    // Refresh sections
     const sectionsResponse = await fetchWithAuth("/api/form/sections");
     if (sectionsResponse.ok) {
       const sections = await sectionsResponse.json();
@@ -415,6 +479,8 @@ function resetFieldForm() {
 
 function populateFieldForm(field) {
   const form = document.getElementById("fieldModal");
+  if (!form) return;
+
   form.querySelector("#fieldName").value = field.name;
   form.querySelector("#displayName").value = field.display_name;
   form.querySelector("#fieldType").value = field.field_type;
@@ -422,67 +488,923 @@ function populateFieldForm(field) {
 
   const optionsContainer = form.querySelector(".field-options-container");
   const fileSizeContainer = form.querySelector(".file-size-container");
+  const nestedOptionsContainer = form.querySelector(
+    ".nested-options-container"
+  );
+
+  // Reset all containers
+  optionsContainer.style.display = "none";
+  fileSizeContainer.style.display = "none";
+  nestedOptionsContainer.style.display = "none";
 
   if (["select", "radio", "checkbox"].includes(field.field_type)) {
     optionsContainer.style.display = "block";
-    fileSizeContainer.style.display = "none";
+    let options = [];
 
-    // Safely parse options or use the string value
-    let optionsValue = field.options;
     try {
-      if (field.options && typeof field.options === "string") {
-        // Try to parse as JSON first
-        optionsValue = JSON.parse(field.options);
+      // Handle different formats of options
+      if (typeof field.options === "string") {
+        try {
+          // Try parsing as JSON
+          const parsedOptions = JSON.parse(field.options);
+          if (Array.isArray(parsedOptions)) {
+            options = parsedOptions;
+          } else if (typeof parsedOptions === "string") {
+            // Handle case where JSON string was double encoded
+            try {
+              options = JSON.parse(parsedOptions);
+            } catch (e) {
+              options = parsedOptions.split(",").map((opt) => opt.trim());
+            }
+          }
+        } catch (e) {
+          // If JSON parsing fails, try splitting by comma
+          options = field.options.split(",").map((opt) => opt.trim());
+        }
+      } else if (Array.isArray(field.options)) {
+        options = field.options;
       }
     } catch (e) {
-      // If parsing fails, split by comma
-      optionsValue = field.options ? field.options.split(",") : [];
+      console.error("Error parsing options:", e);
+      options = [];
     }
 
-    // Convert to newline-separated string
-    form.querySelector("#options").value = Array.isArray(optionsValue)
-      ? optionsValue.join("\n")
-      : optionsValue;
+    form.querySelector("#options").value = options.join("\n");
   } else if (field.field_type === "file") {
-    optionsContainer.style.display = "none";
     fileSizeContainer.style.display = "block";
     form.querySelector("#maxFileSize").value = field.max_file_size || 5;
     form.querySelector("#allowedTypes").value =
       field.allowed_types || ".pdf,.jpg,.jpeg,.png";
-  } else {
-    optionsContainer.style.display = "none";
-    fileSizeContainer.style.display = "none";
+  } else if (field.field_type === "nested-select") {
+    nestedOptionsContainer.style.display = "block";
+    const levelsContainer =
+      nestedOptionsContainer.querySelector(".nested-levels");
+    if (!levelsContainer) return;
+
+    levelsContainer.innerHTML = ""; // Clear existing levels
+
+    try {
+      let nestedConfig = [];
+      if (typeof field.options === "string") {
+        try {
+          nestedConfig = JSON.parse(field.options);
+          // Handle double-encoded JSON
+          if (typeof nestedConfig === "string") {
+            nestedConfig = JSON.parse(nestedConfig);
+          }
+        } catch (e) {
+          console.error("Error parsing nested config:", e);
+          nestedConfig = [];
+        }
+      } else {
+        nestedConfig = field.options || [];
+      }
+
+      if (nestedConfig.length === 0) {
+        addDefaultLevel(levelsContainer);
+      } else {
+        nestedConfig.forEach((level, index) => {
+          const levelElement = document.createElement("div");
+          levelElement.className = "nested-level mb-4";
+
+          const placeholder =
+            index === 0
+              ? "तालुका / म.न.पा. / Tahsil / Municipality"
+              : index === 1
+              ? "ग्रा.पं / प्रभाग / Grampanchayat / Ward"
+              : "Sector";
+
+          const optionsPlaceholder =
+            index === 0
+              ? "अंधेरी\nबोरीवली\nकुर्ला\nबृहन्मुंबई महानगरपालिका"
+              : "ParentOption:Option1, Option2, Option3";
+
+          levelElement.innerHTML = `
+            <div class="card shadow-sm">
+              <div class="card-body">
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                  <h6 class="card-title mb-0 text-primary">Level ${
+                    index + 1
+                  }</h6>
+                  <button type="button" class="btn-plain remove-level">
+                    <svg width="14" height="14" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+                      <path d="M9.41421 8L15.7782 1.63604C16.0718 1.34245 16.0718 0.867544 15.7782 0.573954C15.4846 0.280364 15.0097 0.280364 14.7161 0.573954L8.35214 6.93791L1.98818 0.573954C1.69459 0.280364 1.21968 0.280364 0.926091 0.573954C0.632501 0.867544 0.632501 1.34245 0.926091 1.63604L7.29006 8L0.926091 14.364C0.632501 14.6575 0.632501 15.1325 0.926091 15.426C1.21968 15.7196 1.69459 15.7196 1.98818 15.426L8.35214 9.06209L14.7161 15.426C15.0097 15.7196 15.4846 15.7196 15.7782 15.426C16.0718 15.1325 16.0718 14.6575 15.7782 14.364L9.41421 8Z" fill="currentColor"/>
+                    </svg>
+                  </button>
+                </div>
+                
+                <div class="mb-3">
+                  <label class="form-label">Level Name</label>
+                  <input type="text" class="form-control" placeholder="${placeholder}" name="level_names[]" value="${
+            level.name || ""
+          }">
+                </div>
+                
+                <div class="mb-2">
+                  <label class="form-label">Options</label>
+                  <textarea class="form-control" rows="3" placeholder="${optionsPlaceholder}" name="level_options[]">${
+            level.options || ""
+          }</textarea>
+                </div>
+                
+                <div class="form-text text-muted small">
+                  ${
+                    index === 0
+                      ? "Enter each option on a new line"
+                      : 'Use format "ParentOption:Option1, Option2"'
+                  }
+                </div>
+              </div>
+            </div>
+          `;
+          levelsContainer.appendChild(levelElement);
+
+          // Add remove button event listener
+          const removeBtn = levelElement.querySelector(".remove-level");
+          if (removeBtn) {
+            removeBtn.addEventListener("click", function () {
+              levelElement.remove();
+              updateLevelNumbers();
+              updateRemoveButtonsVisibility();
+              updateNestedPreview();
+            });
+          }
+        });
+      }
+
+      updateRemoveButtonsVisibility();
+      updateNestedPreview();
+    } catch (e) {
+      console.error("Error setting up nested config:", e);
+      addDefaultLevel(levelsContainer);
+    }
   }
 }
 
-// Initialize form management when the page loads
+// Helper function to update level numbers
+function updateLevelNumbers() {
+  document.querySelectorAll(".nested-level").forEach((level, idx) => {
+    const title = level.querySelector(".card-title");
+    if (title) {
+      title.textContent = `Level ${idx + 1}`;
+    }
+  });
+}
+
+// Helper function to update remove buttons visibility
+function updateRemoveButtonsVisibility() {
+  const removeButtons = document.querySelectorAll(".remove-level");
+  const shouldShow = removeButtons.length > 1;
+  removeButtons.forEach((btn) => {
+    if (btn) {
+      btn.style.display = shouldShow ? "block" : "none";
+    }
+  });
+}
+
+// Helper function to add a default level
+function addDefaultLevel(container) {
+  const defaultLevel = document.createElement("div");
+  defaultLevel.className = "nested-level mb-4";
+  defaultLevel.innerHTML = `
+    <div class="card shadow-sm">
+      <div class="card-body">
+        <div class="d-flex justify-content-between align-items-center mb-3">
+          <h6 class="card-title mb-0 text-primary">Level 1</h6>
+          <button type="button" class="btn-plain remove-level">
+            <svg width="14" height="14" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <path d="M9.41421 8L15.7782 1.63604C16.0718 1.34245 16.0718 0.867544 15.7782 0.573954C15.4846 0.280364 15.0097 0.280364 14.7161 0.573954L8.35214 6.93791L1.98818 0.573954C1.69459 0.280364 1.21968 0.280364 0.926091 0.573954C0.632501 0.867544 0.632501 1.34245 0.926091 1.63604L7.29006 8L0.926091 14.364C0.632501 14.6575 0.632501 15.1325 0.926091 15.426C1.21968 15.7196 1.69459 15.7196 1.98818 15.426L8.35214 9.06209L14.7161 15.426C15.0097 15.7196 15.4846 15.7196 15.7782 15.426C16.0718 15.1325 16.0718 14.6575 15.7782 14.364L9.41421 8Z" fill="currentColor"/>
+            </svg>
+          </button>
+        </div>
+        
+        <div class="mb-3">
+          <label class="form-label">Level Name</label>
+          <input type="text" class="form-control" placeholder="तालुका / म.न.पा. / Tahsil / Municipality" name="level_names[]">
+        </div>
+        
+        <div class="mb-2">
+          <label class="form-label">Options</label>
+          <textarea class="form-control" rows="3" placeholder="अंधेरी\nबोरीवली\nकुर्ला\nबृहन्मुंबई महानगरपालिका" name="level_options[]"></textarea>
+        </div>
+        
+        <div class="form-text text-muted small">Enter each option on a new line</div>
+      </div>
+    </div>
+  `;
+  container.appendChild(defaultLevel);
+
+  // Add remove button event listener
+  const removeBtn = defaultLevel.querySelector(".remove-level");
+  if (removeBtn) {
+    removeBtn.addEventListener("click", function () {
+      defaultLevel.remove();
+      updateLevelNumbers();
+      updateRemoveButtonsVisibility();
+      updateNestedPreview();
+    });
+  }
+}
+
+// Move the event listener initialization to DOMContentLoaded
 document.addEventListener("DOMContentLoaded", async () => {
   window.formManager = new FormManager();
   if (await window.formManager.checkAdminAccess()) {
     await initializeFormManagement();
 
     // Initialize event listeners for modals
-    document.getElementById("addSectionBtn").addEventListener("click", () => {
+    document.getElementById("addSectionBtn")?.addEventListener("click", () => {
       new bootstrap.Modal(document.getElementById("sectionModal")).show();
     });
 
     document
       .getElementById("saveSectionBtn")
-      .addEventListener("click", saveSection);
+      ?.addEventListener("click", saveSection);
     document
       .getElementById("saveFieldBtn")
-      .addEventListener("click", saveField);
+      ?.addEventListener("click", saveField);
 
     // Field type change handler
-    document.getElementById("fieldType").addEventListener("change", (e) => {
+    document.getElementById("fieldType")?.addEventListener("change", (e) => {
       const optionsContainer = document.querySelector(
         ".field-options-container"
       );
-      optionsContainer.style.display = ["select", "radio", "checkbox"].includes(
-        e.target.value
-      )
-        ? "block"
-        : "none";
+      const fileSizeContainer = document.querySelector(".file-size-container");
+      const nestedOptionsContainer = document.querySelector(
+        ".nested-options-container"
+      );
+
+      // Reset all containers
+      optionsContainer.style.display = "none";
+      fileSizeContainer.style.display = "none";
+      nestedOptionsContainer.style.display = "none";
+
+      if (["select", "radio", "checkbox"].includes(e.target.value)) {
+        optionsContainer.style.display = "block";
+      } else if (e.target.value === "file") {
+        fileSizeContainer.style.display = "block";
+      } else if (e.target.value === "nested-select") {
+        nestedOptionsContainer.style.display = "block";
+      }
     });
+
+    // Add nested level button handler
+    document
+      .getElementById("addNestedLevelBtn")
+      ?.addEventListener("click", () => {
+        const levelsContainer = document.querySelector(".nested-levels");
+        if (!levelsContainer) return;
+
+        const levelCount = levelsContainer.children.length + 1;
+        addDefaultLevel(levelsContainer);
+        updateLevelNumbers();
+        updateRemoveButtonsVisibility();
+        updateNestedPreview();
+      });
+
+    // Add event listeners for live preview updates
+    document
+      .querySelector(".nested-levels")
+      ?.addEventListener("input", updateNestedPreview);
+    document
+      .getElementById("refreshPreviewBtn")
+      ?.addEventListener("click", updateNestedPreview);
   }
 });
+
+// Update the field modal HTML in index.html to add the new field type
+document.querySelector("#fieldType").innerHTML += `
+  <option value="nested-select">Nested Dropdown</option>
+`;
+
+// Update the nested dropdown configuration HTML
+const modalBody = document.querySelector("#fieldModal .modal-body");
+modalBody.innerHTML += `
+  <div class="nested-options-container" style="display: none">
+    <div class="mb-4">
+      <div class="d-flex justify-content-between align-items-center mb-3">
+        <label class="form-label h5 mb-0">Nested Dropdown Configuration</label>
+        <button type="button" class="btn btn-sm custom-btn-primary" id="addNestedLevelBtn">
+          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16" class="me-1">
+            <path d="M8 4a.5.5 0 0 1 .5.5v3h3a.5.5 0 0 1 0 1h-3v3a.5.5 0 0 1-1 0v-3h-3a.5.5 0 0 1 0-1h3v-3A.5.5 0 0 1 8 4z"/>
+          </svg>
+          Add Level
+        </button>
+      </div>
+
+      <div class="alert alert-info mb-3 shadow-sm">
+        <div class="d-flex">
+          <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" viewBox="0 0 16 16" class="me-2 flex-shrink-0 mt-1">
+            <path d="M8 16A8 8 0 1 0 8 0a8 8 0 0 0 0 16zm.93-9.412-1 4.705c-.07.34.029.533.304.533.194 0 .487-.07.686-.246l-.088.416c-.287.346-.92.598-1.465.598-.703 0-1.002-.422-.808-1.319l.738-3.468c.064-.293.006-.399-.287-.47l-.451-.081.082-.381 2.29-.287zM8 5.5a1 1 0 1 1 0-2 1 1 0 0 1 0 2z"/>
+          </svg>
+          <div class="configuration-guide">
+            <strong class="d-block mb-2">Configuration Guide:</strong>
+            <div class="guide-section mb-3">
+              <strong class="text-primary d-block mb-1">Level 1 (तालुका / म.न.पा. / Tahsil / Municipality):</strong>
+              <div class="bg-white rounded p-2 border">
+                <pre class="mb-0 text-dark">अंधेरी
+बोरीवली
+कुर्ला
+बृहन्मुंबई महानगरपालिका</pre>
+              </div>
+            </div>
+            <div class="guide-section">
+              <strong class="text-primary d-block mb-1">Level 2 (ग्रा.पं / प्रभाग / Grampanchayat / Ward):</strong>
+              <div class="bg-white rounded p-2 border">
+                <pre class="mb-0 text-dark">अंधेरी:आंबिवली, अंधेरी, बांदिवली
+बोरीवली:आरे, आक्से, आकुर्ली</pre>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="nested-levels mb-4"></div>
+
+      <!-- Live Preview Section -->
+      <div class="preview-section border rounded p-3 bg-white shadow-sm">
+        <div class="d-flex justify-content-between align-items-center mb-3">
+          <h6 class="mb-0 text-primary">Live Preview</h6>
+          <button type="button" class="btn btn-outline-secondary btn-sm d-flex align-items-center gap-2" id="refreshPreviewBtn">
+            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="currentColor" viewBox="0 0 16 16">
+              <path d="M8 3a5 5 0 0 0-5 5v.5a.5.5 0 0 1-1 0V8a6 6 0 1 1 6 6 6 6 0 0 1-6-6V7a.5.5 0 0 1 1 0v1a5 5 0 1 0 5-5z"/>
+            </svg>
+            Refresh Preview
+          </button>
+        </div>
+        <div id="nestedPreview" class="p-3 rounded border"></div>
+      </div>
+    </div>
+  </div>
+`;
+
+// Add this function to handle live preview
+function updateNestedPreview() {
+  const previewContainer = document.getElementById("nestedPreview");
+  if (!previewContainer) return; // Guard clause if container doesn't exist
+
+  const levelNames = Array.from(
+    document.querySelectorAll('[name="level_names[]"]')
+  )
+    .map((input) => input.value.trim())
+    .filter((name) => name);
+
+  const levelOptions = Array.from(
+    document.querySelectorAll('[name="level_options[]"]')
+  )
+    .map((textarea) => textarea.value.trim())
+    .filter((options) => options);
+
+  // Create preview HTML
+  let previewHtml = "";
+  levelNames.forEach((name, index) => {
+    const options = levelOptions[index] || "";
+    previewHtml += `
+      <div class="form-group mb-3">
+        <label class="form-label">${name}</label>
+        <select class="form-select preview-select" data-level="${index + 1}">
+          <option value="">Select ${name}</option>
+          ${
+            index === 0 && options
+              ? options
+                  .split("\n")
+                  .map(
+                    (opt) =>
+                      `<option value="${opt.trim()}">${opt.trim()}</option>`
+                  )
+                  .join("")
+              : ""
+          }
+        </select>
+      </div>
+    `;
+  });
+
+  previewContainer.innerHTML = previewHtml;
+
+  // Add change event listeners for preview dropdowns
+  document.querySelectorAll(".preview-select").forEach((select) => {
+    select.addEventListener("change", function () {
+      const level = parseInt(this.dataset.level);
+      const selectedValue = this.value;
+      const nextSelect = document.querySelector(
+        `.preview-select[data-level="${level + 1}"]`
+      );
+
+      if (nextSelect && selectedValue && levelOptions[level]) {
+        // Clear and disable all subsequent dropdowns
+        const allSelects = document.querySelectorAll(".preview-select");
+        Array.from(allSelects)
+          .filter((s) => parseInt(s.dataset.level) > level)
+          .forEach((s) => {
+            s.innerHTML = `<option value="">Select ${s.previousElementSibling.textContent}</option>`;
+            s.disabled = true;
+          });
+
+        // Enable and populate next dropdown
+        nextSelect.disabled = false;
+        const optionsText = levelOptions[level];
+        if (!optionsText) return;
+
+        const parentOptions = optionsText
+          .split("\n")
+          .map((line) => line.trim())
+          .filter((line) => line.startsWith(`${selectedValue}:`))
+          .map((line) => {
+            const parts = line.split(":");
+            return parts.length > 1
+              ? parts[1].split(",").map((o) => o.trim())
+              : [];
+          })
+          .flat();
+
+        parentOptions.forEach((opt) => {
+          const option = document.createElement("option");
+          option.value = opt;
+          option.textContent = opt;
+          nextSelect.appendChild(option);
+        });
+      }
+    });
+  });
+}
+
+// Update the add level button handler with proper remove functionality
+document.getElementById("addNestedLevelBtn").addEventListener("click", () => {
+  const levelsContainer = document.querySelector(".nested-levels");
+  const levelCount = levelsContainer.children.length + 1;
+
+  let placeholder = "तालुका / म.न.पा. / Tahsil / Municipality";
+  let optionsPlaceholder = `Format: Enter each option on a new line
+Example:
+अंधेरी
+बोरीवली
+कुर्ला
+बृहन्मुंबई महानगरपालिका`;
+
+  if (levelCount === 2) {
+    placeholder = "ग्रा.पं / प्रभाग / Grampanchayat / Ward";
+    optionsPlaceholder = `Format: ParentOption:Option1, Option2
+Example:
+अंधेरी:आंबिवली, अंधेरी, बांदिवली
+बोरीवली:आरे, आक्से, आकुर्ली`;
+  } else if (levelCount === 3) {
+    placeholder = "Sector";
+    optionsPlaceholder = "Format: ParentOption:Option1, Option2";
+  }
+
+  const newLevel = document.createElement("div");
+  newLevel.className = "nested-level";
+  newLevel.innerHTML = `
+    <div class="card mb-3">
+      <div class="card-body position-relative">
+        <h6 class="card-title text-primary mb-3">Level ${levelCount}</h6>
+        ${
+          levelCount > 1
+            ? `
+          <button type="button" class="position-absolute top-0 end-0 mt-3 me-3 btn-plain remove-level">
+            <svg width="14" height="14" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <path d="M9.41421 8L15.7782 1.63604C16.0718 1.34245 16.0718 0.867544 15.7782 0.573954C15.4846 0.280364 15.0097 0.280364 14.7161 0.573954L8.35214 6.93791L1.98818 0.573954C1.69459 0.280364 1.21968 0.280364 0.926091 0.573954C0.632501 0.867544 0.632501 1.34245 0.926091 1.63604L7.29006 8L0.926091 14.364C0.632501 14.6575 0.632501 15.1325 0.926091 15.426C1.21968 15.7196 1.69459 15.7196 1.98818 15.426L8.35214 9.06209L14.7161 15.426C15.0097 15.7196 15.4846 15.7196 15.7782 15.426C16.0718 15.1325 16.0718 14.6575 15.7782 14.364L9.41421 8Z" fill="currentColor"/>
+            </svg>
+          </button>
+        `
+            : ""
+        }
+        
+        <div class="mb-3">
+          <label class="form-label">Level Name</label>
+          <input type="text" class="form-control" placeholder="${placeholder}" name="level_names[]">
+        </div>
+        
+        <div class="mb-2">
+          <label class="form-label">Options</label>
+          <textarea class="form-control" rows="3" placeholder="${optionsPlaceholder}" name="level_options[]"></textarea>
+        </div>
+        
+        <div class="form-text text-muted small">
+          ${
+            levelCount === 1
+              ? "Enter each option on a new line"
+              : 'Use format "ParentOption:Option1, Option2"'
+          }
+        </div>
+      </div>
+    </div>
+  `;
+
+  levelsContainer.appendChild(newLevel);
+
+  // Add remove button event listener
+  const removeBtn = newLevel.querySelector(".remove-level");
+  removeBtn.addEventListener("click", function () {
+    newLevel.remove();
+    // Update level numbers
+    document.querySelectorAll(".nested-level").forEach((level, idx) => {
+      level.querySelector(".card-title").textContent = `Level ${idx + 1}`;
+    });
+    // Update remove buttons visibility
+    const remainingButtons = document.querySelectorAll(".remove-level");
+    remainingButtons.forEach((btn) => {
+      btn.style.display = remainingButtons.length > 1 ? "block" : "none";
+    });
+
+    // Update preview
+    updateNestedPreview();
+  });
+
+  // Show all remove buttons if there's more than one level
+  const removeButtons = document.querySelectorAll(".remove-level");
+  removeButtons.forEach(
+    (btn) => (btn.style.display = removeButtons.length > 1 ? "block" : "none")
+  );
+
+  // Update preview
+  updateNestedPreview();
+});
+
+// Add event listeners for live preview updates
+document
+  .querySelector(".nested-levels")
+  .addEventListener("input", updateNestedPreview);
+document
+  .getElementById("refreshPreviewBtn")
+  .addEventListener("click", updateNestedPreview);
+
+// Add CSS for modal scrolling and nested options container
+const style = document.createElement("style");
+style.textContent += `
+  /* Modal and Container Styles */
+  .modal-body {
+    max-height: calc(100vh - 210px);
+    overflow-y: auto;
+    padding: 1.5rem;
+  }
+
+  .nested-options-container {
+    padding-right: 5px;
+  }
+
+  /* Scrollbar Styling */
+  .modal-body::-webkit-scrollbar {
+    width: 6px;
+  }
+
+  .modal-body::-webkit-scrollbar-track {
+    background: #f1f1f1;
+    border-radius: 3px;
+  }
+
+  .modal-body::-webkit-scrollbar-thumb {
+    background: #888;
+    border-radius: 3px;
+  }
+
+  .modal-body::-webkit-scrollbar-thumb:hover {
+    background: #555;
+  }
+
+  /* Card Styling */
+  .nested-options-container .card {
+    border: 1px solid rgba(0,0,0,.1);
+    box-shadow: 0 2px 4px rgba(0,0,0,.05);
+    transition: all 0.3s ease;
+    border-radius: 8px;
+  }
+  
+  .nested-options-container .card:hover {
+    box-shadow: 0 4px 8px rgba(0,0,0,.1);
+    transform: translateY(-1px);
+  }
+
+  .nested-options-container .card-body {
+    padding: 1.25rem;
+  }
+  
+  /* Button Styling */
+  .remove-level {
+    width: 32px;
+    height: 32px;
+    padding: 4px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 6px;
+    transition: all 0.2s ease;
+  }
+
+  .remove-level:hover {
+    background-color: #dc3545;
+    color: white;
+  }
+  
+  #addNestedLevelBtn {
+    font-size: 0.875rem;
+    height: 32px;
+    padding: 0 12px;
+    border-radius: 6px;
+  }
+
+  /* Configuration Guide Styling */
+  .configuration-guide {
+    font-size: 0.9rem;
+  }
+
+  .configuration-guide pre {
+    font-size: 0.85rem;
+    margin: 0;
+    padding: 0.75rem;
+    background-color: #f8f9fa;
+    border-radius: 6px;
+    white-space: pre-wrap;
+  }
+
+  /* Form Elements Styling */
+  .nested-options-container textarea {
+    min-height: 120px;
+    font-size: 0.9rem;
+    line-height: 1.5;
+    resize: vertical;
+  }
+
+  .nested-options-container input {
+    font-size: 0.9rem;
+  }
+
+  .form-text {
+    font-size: 0.85rem;
+    color: #6c757d;
+    margin-top: 0.5rem;
+  }
+
+  /* Preview Section Styling */
+  .preview-section {
+    border-radius: 8px;
+  }
+
+  #nestedPreview {
+    min-height: 100px;
+    background-color: #f8f9fa;
+  }
+
+  #nestedPreview .form-select {
+    font-size: 0.9rem;
+    border-radius: 6px;
+  }
+
+  #nestedPreview .form-select:disabled {
+    background-color: #e9ecef;
+  }
+
+  /* Responsive Adjustments */
+  @media (max-width: 768px) {
+    .modal-body {
+      padding: 1rem;
+    }
+
+    .nested-options-container .card-body {
+      padding: 1rem;
+    }
+
+    .configuration-guide pre {
+      font-size: 0.8rem;
+    }
+  }
+
+  /* Level Connection Lines */
+  .nested-level {
+    position: relative;
+    margin-bottom: 1.5rem;
+  }
+
+  .nested-level:not(:first-child)::before {
+    content: '';
+    position: absolute;
+    left: 24px;
+    top: -16px;
+    width: 2px;
+    height: 16px;
+    background: #dee2e6;
+  }
+
+  .nested-level:last-child {
+    margin-bottom: 0;
+  }
+
+  /* Updated Button Styling */
+  .custom-btn-primary {
+    background: #1a73e8;
+    color: white;
+    border: none;
+    padding: 8px 16px;
+    border-radius: 4px;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-weight: 500;
+    transition: all 0.2s ease;
+  }
+
+  .custom-btn-primary:hover {
+    background: #1557b0;
+    color: white;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.12);
+  }
+
+  .custom-btn-primary:active {
+    background: #174ea6;
+  }
+
+  .custom-btn-icon {
+    width: 36px;
+    height: 36px;
+    padding: 0;
+    border: none;
+    background: transparent;
+    color: #dc3545;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s ease;
+  }
+
+  .custom-btn-icon:hover {
+    background: rgba(220, 53, 69, 0.1);
+    color: #dc3545;
+  }
+
+  .custom-btn-icon:active {
+    background: rgba(220, 53, 69, 0.2);
+  }
+
+  /* Remove old button styles */
+  .remove-level {
+    width: 36px;
+    height: 36px;
+  }
+
+  #addNestedLevelBtn {
+    font-size: 0.875rem;
+  }
+
+  /* Adjust card header spacing */
+  .nested-options-container .card-body {
+    padding: 1.25rem;
+  }
+
+  .nested-options-container .card-title {
+    font-size: 1rem;
+    font-weight: 500;
+    color: #1a73e8;
+  }
+
+  /* Make textareas more spacious for the content */
+  .nested-options-container textarea {
+    min-height: 150px;
+    font-size: 0.9rem;
+    line-height: 1.6;
+    padding: 12px;
+  }
+
+  /* Remove Button Styling */
+  .btn-icon {
+    width: 28px;
+    height: 28px;
+    padding: 6px;
+    border: none;
+    background: transparent;
+    border-radius: 4px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s ease;
+  }
+
+  .btn-icon:hover {
+    background-color: #f8d7da;
+  }
+
+  .btn-icon:active {
+    background-color: #f5c2c7;
+  }
+
+  .btn-icon img {
+    opacity: 0.7;
+    transition: opacity 0.2s ease;
+  }
+
+  .btn-icon:hover img {
+    opacity: 1;
+  }
+
+  /* Adjust spacing */
+  .nested-level .card-body {
+    padding: 1.25rem;
+  }
+
+  .nested-level .card-title {
+    font-size: 1rem;
+    font-weight: 500;
+    color: #1a73e8;
+  }
+
+  /* Remove Button Styling */
+  .btn-close {
+    padding: 0.5rem;
+    margin: -0.5rem -0.5rem -0.5rem auto;
+    opacity: 0.5;
+    transition: opacity 0.2s ease;
+  }
+
+  .btn-close:hover {
+    opacity: 1;
+  }
+
+  /* Card title styling */
+  .card-title {
+    font-size: 1rem;
+    font-weight: 500;
+  }
+
+  /* Card body padding */
+  .nested-level .card-body {
+    padding: 1.25rem;
+  }
+
+  /* Card and Title Styling */
+  .nested-level .card {
+    border: 1px solid #e0e0e0;
+    box-shadow: none;
+    border-radius: 8px;
+  }
+
+  .nested-level .card-body {
+    padding: 1.5rem;
+  }
+
+  .nested-level .card-title {
+    font-size: 1rem;
+    font-weight: 500;
+    color: #1a73e8;
+  }
+
+  /* Remove Button Styling */
+  .btn-plain {
+    background: none;
+    border: none;
+    padding: 0;
+    color: #000;
+    opacity: 0.5;
+    cursor: pointer;
+    line-height: 1;
+    transition: opacity 0.2s ease;
+  }
+
+  .btn-plain:hover {
+    opacity: 1;
+  }
+
+  /* Form Control Styling */
+  .nested-level .form-control {
+    border-color: #e0e0e0;
+  }
+
+  .nested-level .form-control:focus {
+    border-color: #1a73e8;
+    box-shadow: 0 0 0 2px rgba(26, 115, 232, 0.1);
+  }
+
+  .nested-level textarea.form-control {
+    min-height: 120px;
+    font-size: 0.9rem;
+    line-height: 1.5;
+  }
+
+  /* Add Level Button Styling */
+  #addNestedLevelBtn {
+    height: 32px;
+    padding: 0 12px;
+    font-size: 0.875rem;
+    background-color: #1a73e8;
+    border-color: #1a73e8;
+  }
+
+  #addNestedLevelBtn:hover {
+    background-color: #1557b0;
+    border-color: #1557b0;
+  }
+
+  /* Preview Section Styling */
+  .preview-section {
+    background-color: #f8f9fa;
+    border-radius: 8px;
+    border: 1px solid #e0e0e0;
+  }
+
+  #nestedPreview {
+    background-color: white;
+    border: 1px solid #e0e0e0;
+    border-radius: 6px;
+  }
+`;
+document.head.appendChild(style);

@@ -177,14 +177,23 @@ class DashboardManager {
             <div class="form-section">
               <h5>${section.name}</h5>
               ${section.fields
-                .map(
-                  (field) => `
-                  <div class="form-field">
-                    <div class="field-label">${field.display_name}</div>
-                    ${this.renderFieldValue(field)}
-                  </div>
-                `
-                )
+                .map((field) => {
+                  if (field.field_type === "nested-select") {
+                    return this.renderNestedSelectFields(field);
+                  }
+                  return `
+                    <div class="form-field">
+                      <div class="field-label">${field.display_name}</div>
+                      <div class="nested-values">
+                        <div class="form-field">
+                          <div class="field-value">${this.renderFieldValue(
+                            field
+                          )}</div>
+                        </div>
+                      </div>
+                    </div>
+                  `;
+                })
                 .join("")}
             </div>
           `
@@ -198,14 +207,23 @@ class DashboardManager {
             <div class="form-section">
               <h5>${section.name}</h5>
               ${section.fields
-                .map(
-                  (field) => `
-                  <div class="form-field">
-                    <div class="field-label">${field.display_name}</div>
-                    ${this.renderFieldValue(field)}
-                  </div>
-                `
-                )
+                .map((field) => {
+                  if (field.field_type === "nested-select") {
+                    return this.renderNestedSelectFields(field);
+                  }
+                  return `
+                    <div class="form-field">
+                      <div class="field-label">${field.display_name}</div>
+                      <div class="nested-values">
+                        <div class="form-field">
+                          <div class="field-value">${this.renderFieldValue(
+                            field
+                          )}</div>
+                        </div>
+                      </div>
+                    </div>
+                  `;
+                })
                 .join("")}
             </div>
           `
@@ -215,20 +233,101 @@ class DashboardManager {
     `;
   }
 
-  renderFieldValue(field) {
-    if (field.field_type === "file" && field.value) {
+  renderNestedSelectFields(field) {
+    try {
+      console.log("=== Nested Select Debug ===");
+      console.log("Field:", field);
+      console.log("Field value:", field.value);
+      console.log("Field options:", field.options);
+      console.log("Field options type:", typeof field.options);
+
+      // Split the comma-separated values
+      const values = field.value
+        ? field.value.split(",").map((v) => v.trim())
+        : [];
+      console.log("Values after split:", values);
+
+      // Try to parse the nested configuration
+      let nestedConfig = null;
+      if (field.options) {
+        try {
+          nestedConfig = JSON.parse(field.options);
+          console.log("First parse result:", nestedConfig);
+
+          // Handle double-encoded JSON
+          if (typeof nestedConfig === "string") {
+            nestedConfig = JSON.parse(nestedConfig);
+            console.log("Second parse result:", nestedConfig);
+          }
+        } catch (e) {
+          console.error("Failed to parse field.options:", e);
+        }
+      }
+      console.log("Final nested config:", nestedConfig);
+
+      // Generate fields for each level using the configuration
+      return values
+        .map((value, index) => {
+          const levelName =
+            nestedConfig && nestedConfig[index]
+              ? nestedConfig[index].name
+              : "Missing level name";
+          return `
+            <div class="form-field">
+              <div class="field-label">${levelName}</div>
+              <div class="nested-values">
+                <div class="form-field">
+                  <div class="field-value">${value || "-"}</div>
+                </div>
+              </div>
+            </div>
+          `;
+        })
+        .join("");
+    } catch (error) {
+      console.error("Error rendering nested select fields:", error);
       return `
-        <div class="field-value file">
-          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <path d="M13 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9z"></path>
-            <polyline points="13 2 13 9 20 9"></polyline>
-          </svg>
-          <button onclick="previewDocument('${field.value}')" class="btn btn-link p-0">View Document</button>
+        <div class="form-field">
+          <div class="field-label">${field.display_name}</div>
+          <div class="nested-values">
+            <div class="form-field">
+              <div class="field-value">Error: ${error.message}</div>
+            </div>
+          </div>
         </div>
       `;
     }
+  }
 
-    return `<div class="field-value">${field.value || "-"}</div>`;
+  renderFieldValue(field) {
+    if (!field.value) return "-";
+
+    switch (field.field_type) {
+      case "file":
+        return field.value
+          ? `
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M13 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9z"></path>
+              <polyline points="13 2 13 9 20 9"></polyline>
+            </svg>
+            <button onclick="previewDocument('${field.value}')" class="btn btn-link p-0">View Document</button>
+          `
+          : "-";
+
+      case "checkbox":
+        try {
+          const values = JSON.parse(field.value);
+          return Array.isArray(values) ? values.join(", ") : field.value;
+        } catch (e) {
+          return field.value;
+        }
+
+      case "nested-select":
+        return this.renderNestedSelectFields(field);
+
+      default:
+        return field.value;
+    }
   }
 
   formatStatus(status) {
@@ -543,3 +642,17 @@ async function checkAuthAndLoadData() {
 
 // Check auth on page load
 document.addEventListener("DOMContentLoaded", checkAuthAndLoadData);
+
+// Add styles for nested values
+const style = document.createElement("style");
+style.textContent = `
+  .nested-values {
+    display: flex;
+    flex-direction: column;
+  }
+  
+  .nested-values .form-field:not(:last-child) {
+    margin-bottom: 0.75rem;
+  }
+`;
+document.head.appendChild(style);

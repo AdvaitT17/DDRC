@@ -1,0 +1,17 @@
+.nested-values {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.nested-value {
+  padding: 0.5rem;
+  background-color: #f8f9fa;
+  border-radius: 4px;
+  font-size: 0.95rem;
+  color: #495057;
+}
+
+.nested-value:not(:last-child) {
+  border-bottom: 1px dashed #dee2e6;
+}

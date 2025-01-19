@@ -318,6 +318,7 @@ router.get("/applications/:id", authenticateToken, async (req, res) => {
         ff.name as field_name,
         ff.display_name,
         ff.field_type,
+        ff.options,
         rr.value
       FROM form_sections fs
       JOIN form_fields ff ON fs.id = ff.section_id
@@ -346,6 +347,7 @@ router.get("/applications/:id", authenticateToken, async (req, res) => {
         name: row.field_name,
         display_name: row.display_name,
         field_type: row.field_type,
+        options: row.options,
         value: row.value,
       });
 

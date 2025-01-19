@@ -207,25 +207,36 @@ class RegistrationFormRenderer {
   }
 
   renderField(field) {
-    // Different rendering based on field type
+    let fieldHtml = "";
+
     switch (field.field_type) {
       case "text":
       case "email":
       case "tel":
       case "number":
       case "date":
-        return this.renderInputField(field);
+        fieldHtml = this.renderInputField(field);
+        break;
       case "select":
-        return this.renderSelectField(field);
+        fieldHtml = this.renderSelectField(field);
+        break;
       case "radio":
-        return this.renderRadioField(field);
+        fieldHtml = this.renderRadioField(field);
+        break;
       case "checkbox":
-        return this.renderCheckboxField(field);
+        fieldHtml = this.renderCheckboxField(field);
+        break;
       case "file":
-        return this.renderFileField(field);
+        fieldHtml = this.renderFileField(field);
+        break;
+      case "nested-select":
+        fieldHtml = this.renderNestedSelect(field);
+        break;
       default:
-        return "";
+        fieldHtml = "";
     }
+
+    return fieldHtml;
   }
 
   renderInputField(field) {
@@ -268,7 +279,14 @@ class RegistrationFormRenderer {
   }
 
   renderSelectField(field) {
-    const options = JSON.parse(field.options || "[]");
+    let options = [];
+    try {
+      options = JSON.parse(field.options || "[]");
+    } catch (e) {
+      console.error("Error parsing select options:", e);
+      options = [];
+    }
+
     return `
       <div class="mb-3">
         <label for="${field.name}" class="form-label">
@@ -301,7 +319,14 @@ class RegistrationFormRenderer {
   }
 
   renderRadioField(field) {
-    const options = JSON.parse(field.options || "[]");
+    let options = [];
+    try {
+      options = JSON.parse(field.options || "[]");
+    } catch (e) {
+      console.error("Error parsing radio options:", e);
+      options = [];
+    }
+
     return `
       <div class="mb-3">
         <label class="form-label">
@@ -337,7 +362,14 @@ class RegistrationFormRenderer {
   }
 
   renderCheckboxField(field) {
-    const options = JSON.parse(field.options || "[]");
+    let options = [];
+    try {
+      options = JSON.parse(field.options || "[]");
+    } catch (e) {
+      console.error("Error parsing checkbox options:", e);
+      options = [];
+    }
+
     return `
       <div class="mb-3">
         <label class="form-label">
@@ -429,6 +461,195 @@ class RegistrationFormRenderer {
         </div>
       </div>
     `;
+  }
+
+  renderNestedSelect(field, value = "") {
+    try {
+      let nestedConfig;
+      try {
+        console.log("Raw options:", field.options);
+        nestedConfig = JSON.parse(field.options || "[]");
+        console.log("Parsed nestedConfig:", nestedConfig);
+        console.log("Type of nestedConfig:", typeof nestedConfig);
+      } catch (e) {
+        console.error("Failed to parse nested config:", e);
+        return `<div class="alert alert-danger">Invalid nested dropdown configuration</div>`;
+      }
+
+      // Ensure nestedConfig is an array
+      if (typeof nestedConfig === "string") {
+        try {
+          nestedConfig = JSON.parse(nestedConfig);
+        } catch (e) {
+          console.error("Failed to parse nested config string:", e);
+        }
+      }
+
+      if (!Array.isArray(nestedConfig)) {
+        console.error("nestedConfig is not an array:", nestedConfig);
+        return `<div class="alert alert-danger">Invalid nested dropdown configuration</div>`;
+      }
+
+      if (!nestedConfig.length) return "";
+
+      // Get saved values if any
+      const savedValues = this.savedResponses[field.id]
+        ? this.savedResponses[field.id].split(",").map((v) => v.trim())
+        : [];
+      console.log("Saved values for nested select:", savedValues);
+
+      let html = `<div class="mb-3 nested-select-container">`;
+
+      // Create each level's dropdown
+      nestedConfig.forEach((level, index) => {
+        html += `
+          <div class="form-group mb-3">
+            <label class="form-label">
+              ${level.name}
+              ${field.is_required ? '<span class="text-danger">*</span>' : ""}
+            </label>
+            <select
+              class="form-select"
+              name="${field.name}_level_${index + 1}"
+              data-level="${index + 1}"
+              data-field-id="${field.id}"
+              ${field.is_required ? "required" : ""}
+              ${index > 0 && !savedValues[index - 1] ? "disabled" : ""}
+            >
+              <option value="">Select ${level.name}</option>
+              ${
+                index === 0
+                  ? level.options
+                      .split("\n")
+                      .map((opt) => opt.trim())
+                      .filter((opt) => opt)
+                      .map(
+                        (opt) =>
+                          `<option value="${opt}" ${
+                            savedValues[0] === opt ? "selected" : ""
+                          }>${opt}</option>`
+                      )
+                      .join("")
+                  : ""
+              }
+            </select>
+          </div>
+        `;
+      });
+
+      html += `</div>`;
+
+      // Add the change event listeners and populate saved values after the HTML is added to the DOM
+      setTimeout(() => {
+        const container = document
+          .querySelector(`[data-field-id="${field.id}"]`)
+          ?.closest(".nested-select-container");
+
+        if (!container) return;
+
+        // Set up event listeners
+        container.querySelectorAll("select").forEach((select) => {
+          select.addEventListener("change", async function () {
+            const selectedValue = this.value;
+            const currentLevel = parseInt(this.dataset.level);
+            const fieldId = this.dataset.fieldId;
+
+            const subsequentSelects = container.querySelectorAll(
+              `select[data-field-id="${fieldId}"][data-level="${
+                currentLevel + 1
+              }"]`
+            );
+
+            if (subsequentSelects.length && selectedValue) {
+              const nextLevel = nestedConfig[currentLevel];
+              const nextSelect = subsequentSelects[0];
+
+              // Clear and disable all subsequent dropdowns
+              subsequentSelects.forEach((select) => {
+                select.innerHTML = `<option value="">Select ${select.previousElementSibling.textContent.replace(
+                  " *",
+                  ""
+                )}</option>`;
+                select.disabled = true;
+              });
+
+              // Enable the immediate next dropdown
+              nextSelect.disabled = false;
+
+              if (nextLevel.options.includes("/api/")) {
+                try {
+                  const endpoint = nextLevel.options.replace(
+                    "{parent}",
+                    selectedValue
+                  );
+                  const response = await fetch(endpoint);
+                  const data = await response.json();
+
+                  data.forEach((item) => {
+                    const option = document.createElement("option");
+                    option.value = item.id || item.value || item;
+                    option.textContent = item.name || item.label || item;
+                    nextSelect.appendChild(option);
+                  });
+
+                  // Select saved value if exists
+                  if (savedValues[currentLevel]) {
+                    nextSelect.value = savedValues[currentLevel];
+                    nextSelect.dispatchEvent(new Event("change"));
+                  }
+                } catch (error) {
+                  console.error("Error fetching nested options:", error);
+                }
+              } else {
+                // Handle static options
+                const parentOptions = nextLevel.options
+                  .split("\n")
+                  .map((opt) => opt.trim())
+                  .filter((opt) => opt);
+
+                const selectedParentOptions = parentOptions
+                  .find((opt) => opt.startsWith(`${selectedValue}:`))
+                  ?.split(":")?.[1];
+
+                if (selectedParentOptions) {
+                  const options = selectedParentOptions
+                    .split(",")
+                    .map((opt) => opt.trim())
+                    .filter((opt) => opt);
+
+                  options.forEach((opt) => {
+                    const option = document.createElement("option");
+                    option.value = opt;
+                    option.textContent = opt;
+                    nextSelect.appendChild(option);
+                  });
+
+                  // Select saved value if exists
+                  if (savedValues[currentLevel]) {
+                    nextSelect.value = savedValues[currentLevel];
+                    nextSelect.dispatchEvent(new Event("change"));
+                  }
+                }
+              }
+            }
+          });
+        });
+
+        // Trigger change events for saved values
+        if (savedValues.length > 0) {
+          const firstSelect = container.querySelector("select");
+          if (firstSelect && savedValues[0]) {
+            firstSelect.value = savedValues[0];
+            firstSelect.dispatchEvent(new Event("change"));
+          }
+        }
+      }, 0);
+
+      return html;
+    } catch (error) {
+      console.error("Error rendering nested select:", error);
+      return `<div class="alert alert-danger">Error rendering nested dropdown</div>`;
+    }
   }
 
   getCurrentSectionId() {
