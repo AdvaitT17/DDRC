@@ -63,6 +63,21 @@ class RegistrationFormHandler {
       } else if (field.type === "file") {
         // Skip file inputs as they can't maintain their state
         continue;
+      } else if (field.name.includes("_level_")) {
+        // Handle nested dropdowns
+        const container = field.closest(".nested-select-container");
+        if (container) {
+          const selects = container.querySelectorAll("select");
+          const values = [];
+          selects.forEach((select) => {
+            if (select.value) {
+              values.push(select.value);
+            }
+          });
+          if (values.length > 0) {
+            this.renderer.savedResponses[fieldId] = values.join(",");
+          }
+        }
       } else {
         this.renderer.savedResponses[fieldId] = field.value;
       }
