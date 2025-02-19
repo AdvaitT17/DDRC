@@ -1,5 +1,6 @@
 class FormManager {
   constructor() {
+    this.sections = [];
     this.checkAdminAccess();
   }
 
@@ -112,6 +113,30 @@ class FormManager {
       return false;
     }
   }
+
+  async initialize() {
+    try {
+      // Fetch form sections
+      const response = await fetchWithAuth("/api/form/sections");
+      this.sections = await response.json();
+      renderFormSections(this.sections);
+
+      // Initialize event listeners
+      initializeFormEventListeners();
+    } catch (error) {
+      console.error("Error initializing form management:", error);
+    }
+  }
+
+  // Add method to get all fields across sections
+  getAllFields() {
+    return this.sections.flatMap((section) =>
+      section.fields.map((field) => ({
+        ...field,
+        sectionName: section.name,
+      }))
+    );
+  }
 }
 
 async function initializeFormManagement() {
@@ -148,17 +173,56 @@ function initializeFormEventListeners() {
       ".nested-options-container"
     );
 
-    optionsContainer.style.display = ["select", "radio", "checkbox"].includes(
-      e.target.value
-    )
-      ? "block"
-      : "none";
+    // Reset all containers
+    optionsContainer.style.display = "none";
+    fileSizeContainer.style.display = "none";
+    nestedOptionsContainer.style.display = "none";
 
-    fileSizeContainer.style.display =
-      e.target.value === "file" ? "block" : "none";
+    if (["select", "radio", "checkbox"].includes(e.target.value)) {
+      optionsContainer.style.display = "block";
 
-    nestedOptionsContainer.style.display =
-      e.target.value === "nested-select" ? "block" : "none";
+      // Clear existing options
+      document.getElementById("options").value = "";
+
+      // For radio buttons, add conditional logic container
+      if (e.target.value === "radio") {
+        // Remove existing conditional logic container if any
+        const existingContainer = optionsContainer.querySelector(
+          ".conditional-logic-container"
+        );
+        if (existingContainer) {
+          existingContainer.remove();
+        }
+
+        // Add new conditional logic container
+        const conditionalLogicContainer = document.createElement("div");
+        conditionalLogicContainer.className =
+          "conditional-logic-container mt-3";
+        conditionalLogicContainer.innerHTML = `
+          <div class="card">
+            <div class="card-header d-flex justify-content-between align-items-center">
+              <h6 class="mb-0">Conditional Logic</h6>
+              <button type="button" class="btn btn-sm btn-outline-primary" onclick="addConditionalLogic()">
+                Add Condition
+              </button>
+            </div>
+            <div class="card-body conditional-rules">
+              <p class="text-muted mb-0">Add options above to configure conditions</p>
+            </div>
+          </div>
+        `;
+        optionsContainer.appendChild(conditionalLogicContainer);
+
+        // Add input event listener for options textarea
+        document
+          .getElementById("options")
+          .addEventListener("input", updateConditionalLogicOptions);
+      }
+    } else if (e.target.value === "file") {
+      fileSizeContainer.style.display = "block";
+    } else if (e.target.value === "nested-select") {
+      nestedOptionsContainer.style.display = "block";
+    }
   });
 
   // Save Field button
@@ -298,8 +362,36 @@ async function saveField() {
       .value.split("\n")
       .map((opt) => opt.trim())
       .filter((opt) => opt);
-    // Store options directly as an array, let JSON.stringify handle it in the request
-    fieldData.options = options;
+
+    if (fieldType === "radio") {
+      // Get conditional logic
+      const conditionalLogic = {};
+      form.querySelectorAll(".conditional-rule").forEach((rule) => {
+        const optionText = rule
+          .querySelector("strong")
+          .textContent.match(/\"([^\"]+)\"/)[1];
+        const showFields = Array.from(
+          rule.querySelector(".show-fields").selectedOptions
+        ).map((opt) => parseInt(opt.value));
+        const hideFields = Array.from(
+          rule.querySelector(".hide-fields").selectedOptions
+        ).map((opt) => parseInt(opt.value));
+
+        conditionalLogic[optionText] = {
+          show: showFields,
+          hide: hideFields,
+        };
+      });
+
+      // Store as object directly, not as JSON string
+      fieldData.options = {
+        options,
+        conditionalLogic,
+      };
+    } else {
+      // For select and checkbox, store as array directly
+      fieldData.options = options;
+    }
   }
 
   // Add file configuration for file type fields
@@ -500,29 +592,27 @@ function populateFieldForm(field) {
   if (["select", "radio", "checkbox"].includes(field.field_type)) {
     optionsContainer.style.display = "block";
     let options = [];
+    let parsedOptions = field.options;
 
     try {
-      // Handle different formats of options
+      // If options is a string, try to parse it
       if (typeof field.options === "string") {
-        try {
-          // Try parsing as JSON
-          const parsedOptions = JSON.parse(field.options);
-          if (Array.isArray(parsedOptions)) {
-            options = parsedOptions;
-          } else if (typeof parsedOptions === "string") {
-            // Handle case where JSON string was double encoded
-            try {
-              options = JSON.parse(parsedOptions);
-            } catch (e) {
-              options = parsedOptions.split(",").map((opt) => opt.trim());
-            }
-          }
-        } catch (e) {
-          // If JSON parsing fails, try splitting by comma
-          options = field.options.split(",").map((opt) => opt.trim());
-        }
-      } else if (Array.isArray(field.options)) {
-        options = field.options;
+        parsedOptions = JSON.parse(field.options);
+      }
+
+      // Handle different formats based on field type
+      if (field.field_type === "radio") {
+        options = Array.isArray(parsedOptions.options)
+          ? parsedOptions.options
+          : typeof parsedOptions === "object" && parsedOptions.options
+          ? parsedOptions.options
+          : [];
+      } else {
+        options = Array.isArray(parsedOptions)
+          ? parsedOptions
+          : typeof parsedOptions === "string"
+          ? parsedOptions.split(",").map((opt) => opt.trim())
+          : [];
       }
     } catch (e) {
       console.error("Error parsing options:", e);
@@ -530,6 +620,26 @@ function populateFieldForm(field) {
     }
 
     form.querySelector("#options").value = options.join("\n");
+
+    // Handle conditional logic for radio buttons
+    if (field.field_type === "radio") {
+      const conditionalLogicContainer = document.createElement("div");
+      conditionalLogicContainer.className = "conditional-logic-container mt-3";
+      conditionalLogicContainer.innerHTML = `
+        <div class="card">
+          <div class="card-header d-flex justify-content-between align-items-center">
+            <h6 class="mb-0">Conditional Logic</h6>
+            <button type="button" class="btn btn-sm btn-outline-primary" onclick="addConditionalLogic()">
+              Add Condition
+            </button>
+          </div>
+          <div class="card-body conditional-rules">
+            ${renderConditionalLogic(parsedOptions)}
+          </div>
+        </div>
+      `;
+      optionsContainer.appendChild(conditionalLogicContainer);
+    }
   } else if (field.field_type === "file") {
     fileSizeContainer.style.display = "block";
     form.querySelector("#maxFileSize").value = field.max_file_size || 5;
@@ -577,7 +687,7 @@ function populateFieldForm(field) {
           const optionsPlaceholder =
             index === 0
               ? "अंधेरी\nबोरीवली\nकुर्ला\nबृहन्मुंबई महानगरपालिका"
-              : "ParentOption:Option1, Option2, Option3";
+              : "ParentOption:Option1, Option2";
 
           levelElement.innerHTML = `
             <div class="card shadow-sm">
@@ -639,6 +749,108 @@ function populateFieldForm(field) {
       addDefaultLevel(levelsContainer);
     }
   }
+}
+
+function renderConditionalLogic(options) {
+  let conditionalLogic = {};
+
+  // Handle both string and object formats
+  if (typeof options === "string") {
+    try {
+      const parsed = JSON.parse(options);
+      conditionalLogic = parsed.conditionalLogic || {};
+    } catch (e) {
+      console.error("Error parsing conditional logic:", e);
+    }
+  } else if (typeof options === "object" && options !== null) {
+    conditionalLogic = options.conditionalLogic || {};
+  }
+
+  return (
+    Object.entries(conditionalLogic)
+      .map(
+        ([option, rules]) => `
+      <div class="conditional-rule mb-3">
+        <div class="d-flex justify-content-between align-items-center mb-2">
+          <strong>When "${option}" is selected:</strong>
+          <button type="button" class="btn-plain text-danger" onclick="removeConditionalRule(this)">
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
+              <path d="M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14zm0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16z"/>
+              <path d="M4.646 4.646a.5.5 0 0 1 .708 0L8 7.293l2.646-2.647a.5.5 0 0 1 .708.708L8.707 8l2.647 2.646a.5.5 0 0 1-.708.708L8 8.707l-2.646 2.647a.5.5 0 0 1-.708-.708L7.293 8 4.646 5.354a.5.5 0 0 1 0-.708z"/>
+            </svg>
+          </button>
+        </div>
+        <div class="conditional-fields-container">
+          <div class="mb-3">
+            <label class="form-label">Show Fields</label>
+            <select class="form-select show-fields" multiple>
+              ${renderFieldOptions(rules.show || [])}
+            </select>
+          </div>
+          <div class="mb-3">
+            <label class="form-label">Hide Fields</label>
+            <select class="form-select hide-fields" multiple>
+              ${renderFieldOptions(rules.hide || [])}
+            </select>
+          </div>
+        </div>
+      </div>
+    `
+      )
+      .join("") ||
+    '<p class="text-muted mb-0">Add options above to configure conditions</p>'
+  );
+}
+
+function renderFieldOptions(selectedFields = []) {
+  const formManager = window.formManager;
+  if (!formManager || !formManager.sections) {
+    console.error("Form manager or sections not initialized");
+    return "";
+  }
+
+  return formManager.sections
+    .flatMap((section) =>
+      section.fields.map(
+        (field) => `
+          <option value="${field.id}" ${
+          selectedFields.includes(field.id) ? "selected" : ""
+        }>
+            ${section.name} - ${field.display_name}
+          </option>
+        `
+      )
+    )
+    .join("");
+}
+
+function addConditionalLogic() {
+  const fieldType = document.getElementById("fieldType").value;
+  if (fieldType !== "radio") return;
+
+  const optionsText = document.getElementById("options").value;
+  let options = [];
+  try {
+    options = optionsText
+      .split("\n")
+      .map((opt) => opt.trim())
+      .filter((opt) => opt);
+  } catch (e) {
+    console.error("Error parsing options:", e);
+    return;
+  }
+
+  if (options.length === 0) {
+    alert("Please add radio options first");
+    return;
+  }
+
+  updateConditionalLogicOptions();
+}
+
+function removeConditionalRule(button) {
+  const rule = button.closest(".conditional-rule");
+  rule.remove();
 }
 
 // Helper function to update level numbers
@@ -710,7 +922,7 @@ function addDefaultLevel(container) {
 document.addEventListener("DOMContentLoaded", async () => {
   window.formManager = new FormManager();
   if (await window.formManager.checkAdminAccess()) {
-    await initializeFormManagement();
+    await window.formManager.initialize();
 
     // Initialize event listeners for modals
     document.getElementById("addSectionBtn")?.addEventListener("click", () => {
@@ -741,6 +953,44 @@ document.addEventListener("DOMContentLoaded", async () => {
 
       if (["select", "radio", "checkbox"].includes(e.target.value)) {
         optionsContainer.style.display = "block";
+
+        // Clear existing options
+        document.getElementById("options").value = "";
+
+        // For radio buttons, add conditional logic container
+        if (e.target.value === "radio") {
+          // Remove existing conditional logic container if any
+          const existingContainer = optionsContainer.querySelector(
+            ".conditional-logic-container"
+          );
+          if (existingContainer) {
+            existingContainer.remove();
+          }
+
+          // Add new conditional logic container
+          const conditionalLogicContainer = document.createElement("div");
+          conditionalLogicContainer.className =
+            "conditional-logic-container mt-3";
+          conditionalLogicContainer.innerHTML = `
+            <div class="card">
+              <div class="card-header d-flex justify-content-between align-items-center">
+                <h6 class="mb-0">Conditional Logic</h6>
+                <button type="button" class="btn btn-sm btn-outline-primary" onclick="addConditionalLogic()">
+                  Add Condition
+                </button>
+              </div>
+              <div class="card-body conditional-rules">
+                <p class="text-muted mb-0">Add options above to configure conditions</p>
+              </div>
+            </div>
+          `;
+          optionsContainer.appendChild(conditionalLogicContainer);
+
+          // Add input event listener for options textarea
+          document
+            .getElementById("options")
+            .addEventListener("input", updateConditionalLogicOptions);
+        }
       } else if (e.target.value === "file") {
         fileSizeContainer.style.display = "block";
       } else if (e.target.value === "nested-select") {
@@ -1267,88 +1517,6 @@ style.textContent += `
   }
 
   /* Remove Button Styling */
-  .btn-icon {
-    width: 28px;
-    height: 28px;
-    padding: 6px;
-    border: none;
-    background: transparent;
-    border-radius: 4px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    transition: all 0.2s ease;
-  }
-
-  .btn-icon:hover {
-    background-color: #f8d7da;
-  }
-
-  .btn-icon:active {
-    background-color: #f5c2c7;
-  }
-
-  .btn-icon img {
-    opacity: 0.7;
-    transition: opacity 0.2s ease;
-  }
-
-  .btn-icon:hover img {
-    opacity: 1;
-  }
-
-  /* Adjust spacing */
-  .nested-level .card-body {
-    padding: 1.25rem;
-  }
-
-  .nested-level .card-title {
-    font-size: 1rem;
-    font-weight: 500;
-    color: #1a73e8;
-  }
-
-  /* Remove Button Styling */
-  .btn-close {
-    padding: 0.5rem;
-    margin: -0.5rem -0.5rem -0.5rem auto;
-    opacity: 0.5;
-    transition: opacity 0.2s ease;
-  }
-
-  .btn-close:hover {
-    opacity: 1;
-  }
-
-  /* Card title styling */
-  .card-title {
-    font-size: 1rem;
-    font-weight: 500;
-  }
-
-  /* Card body padding */
-  .nested-level .card-body {
-    padding: 1.25rem;
-  }
-
-  /* Card and Title Styling */
-  .nested-level .card {
-    border: 1px solid #e0e0e0;
-    box-shadow: none;
-    border-radius: 8px;
-  }
-
-  .nested-level .card-body {
-    padding: 1.5rem;
-  }
-
-  .nested-level .card-title {
-    font-size: 1rem;
-    font-weight: 500;
-    color: #1a73e8;
-  }
-
-  /* Remove Button Styling */
   .btn-plain {
     background: none;
     border: none;
@@ -1406,5 +1574,242 @@ style.textContent += `
     border: 1px solid #e0e0e0;
     border-radius: 6px;
   }
+
+  /* Conditional Logic Styling */
+  .conditional-fields-container {
+    padding: 1rem;
+    background: #f8f9fa;
+    border-radius: 6px;
+    margin-top: 0.5rem;
+  }
+
+  .conditional-fields-container select {
+    min-height: 120px;
+  }
+
+  .conditional-rule {
+    border: 1px solid #dee2e6;
+    border-radius: 8px;
+    padding: 1rem;
+    background: white;
+  }
+
+  .conditional-rule + .conditional-rule {
+    margin-top: 1rem;
+  }
+
+  /* Modal Styling */
+  .modal-dialog {
+    max-width: 800px !important;  /* Make modal wider */
+  }
+
+  .modal-body {
+    padding: 1.5rem;
+  }
+
+  /* Conditional Logic Container Styling */
+  .conditional-fields-container {
+    padding: 1.25rem;
+    background: #f8f9fa;
+    border-radius: 8px;
+    margin-top: 0.75rem;
+  }
+
+  .conditional-fields-container select {
+    min-height: 150px;  /* Make select boxes taller */
+  }
+
+  .conditional-fields-container select option {
+    padding: 8px 12px;
+    border-bottom: 1px solid #eee;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .conditional-fields-container select option:hover {
+    background-color: #e9ecef;
+  }
+
+  /* Add horizontal scrolling for select options */
+  .form-select {
+    width: 100%;
+  }
+
+  .form-select option {
+    max-width: none;  /* Allow options to be wider than select box */
+  }
+
+  /* Conditional Rule Styling */
+  .conditional-rule {
+    border: 1px solid #dee2e6;
+    border-radius: 8px;
+    padding: 1.25rem;
+    background: white;
+    margin-bottom: 1rem;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+  }
+
+  .conditional-rule:last-child {
+    margin-bottom: 0;
+  }
+
+  .conditional-rule strong {
+    font-size: 1rem;
+    color: #1a73e8;
+  }
+
+  /* Field Labels */
+  .conditional-fields-container .form-label {
+    font-weight: 500;
+    color: #444;
+    margin-bottom: 0.5rem;
+  }
+
+  /* Options Container */
+  .field-options-container {
+    margin-bottom: 1.5rem;
+  }
+
+  .field-options-container textarea {
+    min-height: 120px;
+  }
+
+  /* Add Condition Button */
+  .add-condition-btn {
+    padding: 0.375rem 0.75rem;
+    font-size: 0.875rem;
+    border-radius: 4px;
+    background-color: #1a73e8;
+    color: white;
+    border: none;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+  }
+
+  .add-condition-btn:hover {
+    background-color: #1557b0;
+  }
+
+  /* Remove Button */
+  .btn-plain.text-danger {
+    padding: 6px;
+    border-radius: 4px;
+    transition: all 0.2s;
+  }
+
+  .btn-plain.text-danger:hover {
+    background-color: #fde8e8;
+  }
+
+  /* Scrollbar Styling for Select Boxes */
+  .form-select::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+  }
+
+  .form-select::-webkit-scrollbar-track {
+    background: #f1f1f1;
+    border-radius: 4px;
+  }
+
+  .form-select::-webkit-scrollbar-thumb {
+    background: #ccc;
+    border-radius: 4px;
+  }
+
+  .form-select::-webkit-scrollbar-thumb:hover {
+    background: #999;
+  }
 `;
 document.head.appendChild(style);
+
+// Function to update conditional logic options when radio options change
+function updateConditionalLogicOptions() {
+  const optionsText = document.getElementById("options").value;
+  const options = optionsText
+    .split("\n")
+    .map((opt) => opt.trim())
+    .filter((opt) => opt);
+  const rulesContainer = document.querySelector(".conditional-rules");
+
+  if (!rulesContainer) return;
+
+  if (options.length === 0) {
+    rulesContainer.innerHTML =
+      '<p class="text-muted mb-0">Add options above to configure conditions</p>';
+    return;
+  }
+
+  // Get existing rules
+  const existingRules = Array.from(
+    rulesContainer.querySelectorAll(".conditional-rule")
+  )
+    .map((rule) => {
+      const optionText = rule
+        .querySelector("strong")
+        ?.textContent.match(/\"([^\"]+)\"/)?.[1];
+      if (!optionText) return null;
+
+      const showFields = Array.from(
+        rule.querySelector(".show-fields")?.selectedOptions || []
+      ).map((opt) => parseInt(opt.value));
+      const hideFields = Array.from(
+        rule.querySelector(".hide-fields")?.selectedOptions || []
+      ).map((opt) => parseInt(opt.value));
+
+      return {
+        option: optionText,
+        show: showFields,
+        hide: hideFields,
+      };
+    })
+    .filter((rule) => rule !== null);
+
+  // Update rules container with vertical layout
+  rulesContainer.innerHTML =
+    options
+      .map((option) => {
+        const existingRule = existingRules.find(
+          (rule) => rule.option === option
+        );
+
+        return `
+      <div class="conditional-rule mb-3">
+        <div class="d-flex justify-content-between align-items-center mb-2">
+          <strong>When "${option}" is selected:</strong>
+          <button type="button" class="btn-plain text-danger" onclick="removeConditionalRule(this)">
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
+              <path d="M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14zm0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16z"/>
+              <path d="M4.646 4.646a.5.5 0 0 1 .708 0L8 7.293l2.646-2.647a.5.5 0 0 1 .708.708L8.707 8l2.647 2.646a.5.5 0 0 1-.708.708L8 8.707l-2.646 2.647a.5.5 0 0 1-.708-.708L7.293 8 4.646 5.354a.5.5 0 0 1 0-.708z"/>
+            </svg>
+          </button>
+        </div>
+        <div class="conditional-fields-container">
+          <div class="mb-3">
+            <label class="form-label">Show Fields</label>
+            <select class="form-select show-fields" multiple>
+              ${renderFieldOptions(existingRule?.show || [])}
+            </select>
+          </div>
+          <div class="mb-3">
+            <label class="form-label">Hide Fields</label>
+            <select class="form-select hide-fields" multiple>
+              ${renderFieldOptions(existingRule?.hide || [])}
+            </select>
+          </div>
+        </div>
+      </div>
+    `;
+      })
+      .join("") ||
+    '<p class="text-muted mb-0">Add options above to configure conditions</p>';
+}
+
+// Update the modal class when showing
+document
+  .querySelector("#fieldModal")
+  .addEventListener("show.bs.modal", function () {
+    this.querySelector(".modal-dialog").classList.add("modal-lg");
+  });

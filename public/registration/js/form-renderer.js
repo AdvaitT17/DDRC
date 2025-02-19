@@ -3,6 +3,7 @@ class RegistrationFormRenderer {
     this.sections = [];
     this.currentSectionIndex = 0;
     this.savedResponses = {};
+    this.conditionalLogic = {};
   }
 
   async initialize() {
@@ -92,7 +93,6 @@ class RegistrationFormRenderer {
         const progress = await response.json();
         // Map responses by field ID instead of field name
         const responses = progress.responses || {};
-        this.savedResponses = {};
 
         // Convert field names to field IDs in saved responses
         this.sections.forEach((section) => {
@@ -112,6 +112,9 @@ class RegistrationFormRenderer {
         } else {
           this.currentSectionIndex = 0;
         }
+
+        // Store the original responses to handle navigation
+        this.originalResponses = { ...this.savedResponses };
       }
     } catch (error) {
       console.error("Error loading saved progress:", error);
@@ -320,14 +323,19 @@ class RegistrationFormRenderer {
 
   renderRadioField(field) {
     let options = [];
+    let conditionalLogic = {};
     try {
-      options = JSON.parse(field.options || "[]");
+      const parsedOptions = JSON.parse(field.options || "{}");
+      options = Array.isArray(parsedOptions)
+        ? parsedOptions
+        : parsedOptions.options || [];
+      conditionalLogic = parsedOptions.conditionalLogic || {};
     } catch (e) {
       console.error("Error parsing radio options:", e);
       options = [];
     }
 
-    return `
+    const fieldHtml = `
       <div class="mb-3">
         <label class="form-label">
           ${field.display_name}
@@ -345,8 +353,10 @@ class RegistrationFormRenderer {
                 data-field-id="${field.id}"
                 name="${field.name}"
                 value="${option}"
+                data-has-conditions="${Boolean(conditionalLogic[option])}"
                 ${field.is_required ? "required" : ""}
                 ${this.savedResponses[field.id] === option ? "checked" : ""}
+                onchange="window.formRenderer.handleRadioChange(this)"
               />
               <label class="form-check-label" for="${field.name}_${option}">
                 ${option}
@@ -359,6 +369,153 @@ class RegistrationFormRenderer {
         <div class="invalid-feedback">Please select an option</div>
       </div>
     `;
+
+    // Store conditional logic for this field
+    if (Object.keys(conditionalLogic).length > 0) {
+      this.conditionalLogic = this.conditionalLogic || {};
+      this.conditionalLogic[field.id] = conditionalLogic;
+
+      // Disable all fields that could be affected by any rule on initial load
+      setTimeout(() => {
+        const allAffectedFieldIds = new Set();
+        Object.values(conditionalLogic).forEach((rule) => {
+          rule.show?.forEach((id) => allAffectedFieldIds.add(id));
+          rule.hide?.forEach((id) => allAffectedFieldIds.add(id));
+        });
+
+        allAffectedFieldIds.forEach((affectedFieldId) => {
+          const fieldElements = document.querySelectorAll(
+            `[data-field-id="${affectedFieldId}"]`
+          );
+
+          fieldElements.forEach((fieldElement) => {
+            // Disable the field
+            fieldElement.disabled = true;
+            fieldElement.classList.add("field-disabled");
+          });
+        });
+
+        // If there's a selected radio option, trigger its rules
+        const selectedRadio = document.querySelector(
+          `[data-field-id="${field.id}"]:checked`
+        );
+        if (selectedRadio) {
+          this.handleRadioChange(selectedRadio);
+        }
+      }, 0);
+    }
+
+    return fieldHtml;
+  }
+
+  handleRadioChange(radio) {
+    const fieldId = radio.dataset.fieldId;
+    const selectedValue = radio.value;
+
+    if (!this.conditionalLogic || !this.conditionalLogic[fieldId]) return;
+
+    const rules = this.conditionalLogic[fieldId];
+
+    // Get currently enabled fields before the change
+    const currentlyEnabledFields = new Set();
+    const currentRules = rules[this.savedResponses[fieldId]] || {};
+    if (currentRules.show) {
+      currentRules.show.forEach((id) => currentlyEnabledFields.add(id));
+    }
+
+    // Get fields that will be enabled after the change
+    const willBeEnabledFields = new Set();
+    const newRules = rules[selectedValue] || {};
+    if (newRules.show) {
+      newRules.show.forEach((id) => willBeEnabledFields.add(id));
+    }
+
+    // First disable all fields that could be affected by any rule
+    const allAffectedFieldIds = new Set();
+    Object.values(rules).forEach((rule) => {
+      rule.show?.forEach((id) => allAffectedFieldIds.add(id));
+      rule.hide?.forEach((id) => allAffectedFieldIds.add(id));
+    });
+
+    // Handle all affected fields
+    allAffectedFieldIds.forEach((affectedFieldId) => {
+      const fieldElements = document.querySelectorAll(
+        `[data-field-id="${affectedFieldId}"]`
+      );
+
+      // If field was enabled but won't be enabled in new state, clear its value
+      if (
+        currentlyEnabledFields.has(affectedFieldId) &&
+        !willBeEnabledFields.has(affectedFieldId)
+      ) {
+        fieldElements.forEach((fieldElement) => {
+          // Clear the value
+          if (fieldElement.type === "checkbox") {
+            fieldElement.checked = false;
+          } else if (fieldElement.type === "radio") {
+            fieldElement.checked = false;
+          } else {
+            fieldElement.value = "";
+          }
+        });
+        // Remove from saved responses
+        delete this.savedResponses[affectedFieldId];
+      }
+
+      // Disable all fields initially
+      fieldElements.forEach((fieldElement) => {
+        fieldElement.disabled = true;
+        fieldElement.classList.add("field-disabled");
+
+        // For nested dropdowns, disable all levels
+        if (fieldElement.closest(".nested-select-container")) {
+          const container = fieldElement.closest(".nested-select-container");
+          container.querySelectorAll("select").forEach((select) => {
+            select.disabled = true;
+            select.classList.add("field-disabled");
+          });
+        }
+      });
+    });
+
+    // Then enable fields based on the selected option's rules
+    if (rules[selectedValue]) {
+      // Enable fields that should be shown
+      rules[selectedValue].show?.forEach((showFieldId) => {
+        const fieldElements = document.querySelectorAll(
+          `[data-field-id="${showFieldId}"]`
+        );
+
+        fieldElements.forEach((fieldElement) => {
+          // Enable the field
+          fieldElement.disabled = false;
+          fieldElement.classList.remove("field-disabled");
+
+          // For nested dropdowns, enable all levels and restore values
+          if (fieldElement.closest(".nested-select-container")) {
+            const container = fieldElement.closest(".nested-select-container");
+            container.querySelectorAll("select").forEach((select) => {
+              select.disabled = false;
+              select.classList.remove("field-disabled");
+            });
+
+            // Restore saved value if exists
+            if (this.savedResponses[showFieldId]) {
+              const values = this.savedResponses[showFieldId].split(",");
+              container.querySelectorAll("select").forEach((select, index) => {
+                if (values[index]) {
+                  select.value = values[index];
+                  select.dispatchEvent(new Event("change"));
+                }
+              });
+            }
+          }
+        });
+      });
+    }
+
+    // Update the saved response for the radio field
+    this.savedResponses[fieldId] = selectedValue;
   }
 
   renderCheckboxField(field) {
@@ -369,6 +526,10 @@ class RegistrationFormRenderer {
       console.error("Error parsing checkbox options:", e);
       options = [];
     }
+
+    const savedValues = this.savedResponses[field.id]
+      ? this.savedResponses[field.id].split(",")
+      : [];
 
     return `
       <div class="mb-3">
@@ -389,11 +550,8 @@ class RegistrationFormRenderer {
                 name="${field.name}[]"
                 value="${option}"
                 ${field.is_required ? "required" : ""}
-                ${
-                  this.savedResponses[field.id]?.includes(option)
-                    ? "checked"
-                    : ""
-                }
+                ${savedValues.includes(option) ? "checked" : ""}
+                onchange="window.formRenderer.handleCheckboxChange(this)"
               />
               <label class="form-check-label" for="${field.name}_${option}">
                 ${option}
@@ -406,6 +564,23 @@ class RegistrationFormRenderer {
         <div class="invalid-feedback">Please select at least one option</div>
       </div>
     `;
+  }
+
+  handleCheckboxChange(checkbox) {
+    const fieldId = checkbox.dataset.fieldId;
+    const checkboxes = document.querySelectorAll(
+      `[data-field-id="${fieldId}"]`
+    );
+    const checkedBoxes = Array.from(checkboxes).filter((cb) => cb.checked);
+
+    if (checkedBoxes.length > 0) {
+      this.savedResponses[fieldId] = checkedBoxes
+        .map((cb) => cb.value)
+        .join(",");
+    } else {
+      // If no checkboxes are checked, remove from saved responses
+      delete this.savedResponses[fieldId];
+    }
   }
 
   renderFileField(field) {
@@ -467,10 +642,7 @@ class RegistrationFormRenderer {
     try {
       let nestedConfig;
       try {
-        console.log("Raw options:", field.options);
         nestedConfig = JSON.parse(field.options || "[]");
-        console.log("Parsed nestedConfig:", nestedConfig);
-        console.log("Type of nestedConfig:", typeof nestedConfig);
       } catch (e) {
         console.error("Failed to parse nested config:", e);
         return `<div class="alert alert-danger">Invalid nested dropdown configuration</div>`;
@@ -496,7 +668,6 @@ class RegistrationFormRenderer {
       const savedValues = this.savedResponses[field.id]
         ? this.savedResponses[field.id].split(",").map((v) => v.trim())
         : [];
-      console.log("Saved values for nested select:", savedValues);
 
       let html = `<div class="mb-3 nested-select-container">`;
 
@@ -658,6 +829,78 @@ class RegistrationFormRenderer {
 
   moveToNextSection() {
     if (this.currentSectionIndex < this.sections.length - 1) {
+      // Store current section's values before moving
+      const currentForm = document.getElementById("sectionForm");
+      if (currentForm) {
+        const formData = new FormData(currentForm);
+        const currentSection = this.sections[this.currentSectionIndex];
+
+        currentSection.fields.forEach((field) => {
+          if (field.field_type === "checkbox") {
+            // Handle multiple checkboxes
+            const checkboxes = currentForm.querySelectorAll(
+              `[data-field-id="${field.id}"]`
+            );
+            const checkedBoxes = Array.from(checkboxes).filter(
+              (cb) => cb.checked
+            );
+            if (checkedBoxes.length > 0) {
+              this.savedResponses[field.id] = checkedBoxes
+                .map((cb) => cb.value)
+                .join(",");
+            } else {
+              // If no checkboxes are checked, remove from saved responses
+              delete this.savedResponses[field.id];
+            }
+          } else if (field.field_type === "radio") {
+            const selectedRadio = currentForm.querySelector(
+              `[data-field-id="${field.id}"]:checked`
+            );
+            if (selectedRadio) {
+              this.savedResponses[field.id] = selectedRadio.value;
+            } else {
+              delete this.savedResponses[field.id];
+            }
+          } else if (field.field_type === "nested-select") {
+            // Handle nested dropdowns
+            const container = currentForm
+              .querySelector(`[data-field-id="${field.id}"]`)
+              ?.closest(".nested-select-container");
+
+            if (container) {
+              const values = Array.from(container.querySelectorAll("select"))
+                .map((select) => select.value)
+                .filter((value) => value);
+
+              if (values.length > 0) {
+                this.savedResponses[field.id] = values.join(",");
+              } else {
+                delete this.savedResponses[field.id];
+              }
+            }
+          } else if (field.field_type === "file") {
+            // For file uploads, retain the existing value if present
+            if (this.savedResponses[field.id]) {
+              // Keep the existing file value
+            } else {
+              const value = formData.get(field.name);
+              if (value && value.name) {
+                this.savedResponses[field.id] = value.name;
+              } else {
+                delete this.savedResponses[field.id];
+              }
+            }
+          } else {
+            const value = formData.get(field.name);
+            if (value) {
+              this.savedResponses[field.id] = value;
+            } else {
+              delete this.savedResponses[field.id];
+            }
+          }
+        });
+      }
+
       this.currentSectionIndex++;
       this.renderCurrentSection();
       this.updateProgressIndicator();
@@ -667,6 +910,78 @@ class RegistrationFormRenderer {
 
   moveToPreviousSection() {
     if (this.currentSectionIndex > 0) {
+      // Store current section's values before moving
+      const currentForm = document.getElementById("sectionForm");
+      if (currentForm) {
+        const formData = new FormData(currentForm);
+        const currentSection = this.sections[this.currentSectionIndex];
+
+        currentSection.fields.forEach((field) => {
+          if (field.field_type === "checkbox") {
+            // Handle multiple checkboxes
+            const checkboxes = currentForm.querySelectorAll(
+              `[data-field-id="${field.id}"]`
+            );
+            const checkedBoxes = Array.from(checkboxes).filter(
+              (cb) => cb.checked
+            );
+            if (checkedBoxes.length > 0) {
+              this.savedResponses[field.id] = checkedBoxes
+                .map((cb) => cb.value)
+                .join(",");
+            } else {
+              // If no checkboxes are checked, remove from saved responses
+              delete this.savedResponses[field.id];
+            }
+          } else if (field.field_type === "radio") {
+            const selectedRadio = currentForm.querySelector(
+              `[data-field-id="${field.id}"]:checked`
+            );
+            if (selectedRadio) {
+              this.savedResponses[field.id] = selectedRadio.value;
+            } else {
+              delete this.savedResponses[field.id];
+            }
+          } else if (field.field_type === "nested-select") {
+            // Handle nested dropdowns
+            const container = currentForm
+              .querySelector(`[data-field-id="${field.id}"]`)
+              ?.closest(".nested-select-container");
+
+            if (container) {
+              const values = Array.from(container.querySelectorAll("select"))
+                .map((select) => select.value)
+                .filter((value) => value);
+
+              if (values.length > 0) {
+                this.savedResponses[field.id] = values.join(",");
+              } else {
+                delete this.savedResponses[field.id];
+              }
+            }
+          } else if (field.field_type === "file") {
+            // For file uploads, retain the existing value if present
+            if (this.savedResponses[field.id]) {
+              // Keep the existing file value
+            } else {
+              const value = formData.get(field.name);
+              if (value && value.name) {
+                this.savedResponses[field.id] = value.name;
+              } else {
+                delete this.savedResponses[field.id];
+              }
+            }
+          } else {
+            const value = formData.get(field.name);
+            if (value) {
+              this.savedResponses[field.id] = value;
+            } else {
+              delete this.savedResponses[field.id];
+            }
+          }
+        });
+      }
+
       this.currentSectionIndex--;
       this.renderCurrentSection();
       this.updateProgressIndicator();

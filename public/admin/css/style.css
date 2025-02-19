@@ -1464,3 +1464,95 @@ body.modal-open {
 #applicationModal .modal-body {
   padding: 20px;
 }
+
+/* Conditional Logic Styles */
+.conditional-logic-container {
+  margin-top: 1.5rem;
+  border-top: 1px solid #e9ecef;
+  padding-top: 1.5rem;
+}
+
+.conditional-rule {
+  background-color: #f8f9fa;
+  border: 1px solid #e9ecef;
+  border-radius: 0.375rem;
+  padding: 1rem;
+  margin-bottom: 1rem;
+}
+
+.conditional-rule:last-child {
+  margin-bottom: 0;
+}
+
+.conditional-rule .btn-plain {
+  padding: 0;
+  background: none;
+  border: none;
+  color: #dc3545;
+  line-height: 1;
+  cursor: pointer;
+}
+
+.conditional-rule .btn-plain:hover {
+  color: #bb2d3b;
+}
+
+.conditional-rule .form-select[multiple] {
+  height: 120px;
+}
+
+.conditional-rule .form-label {
+  font-weight: 500;
+  color: #6c757d;
+  margin-bottom: 0.5rem;
+}
+
+.configuration-guide {
+  font-size: 0.875rem;
+  color: #6c757d;
+}
+
+.guide-section pre {
+  font-size: 0.8125rem;
+  margin: 0;
+  padding: 0.5rem;
+  background-color: #f8f9fa;
+  border-radius: 0.25rem;
+}
+
+/* Preview Section */
+.preview-section {
+  margin-top: 1.5rem;
+}
+
+.preview-section h6 {
+  color: #1a73e8;
+  font-weight: 500;
+}
+
+#refreshPreviewBtn {
+  font-size: 0.875rem;
+  padding: 0.25rem 0.5rem;
+}
+
+#refreshPreviewBtn svg {
+  margin-right: 0.25rem;
+}
+
+#nestedPreview {
+  min-height: 100px;
+  background-color: #f8f9fa;
+}
+
+/* Form Field Transitions */
+.mb-3 {
+  transition: opacity 0.3s ease-in-out, height 0.3s ease-in-out;
+}
+
+.mb-3[style*="display: none"] {
+  opacity: 0;
+  height: 0;
+  margin: 0;
+  padding: 0;
+  overflow: hidden;
+}

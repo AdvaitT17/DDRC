@@ -77,17 +77,21 @@ router.get("/stats", async (req, res) => {
 router.get("/recent-applications", async (req, res) => {
   try {
     const [applications] = await pool.query(
-      `SELECT 
+      `SELECT DISTINCT
         rp.application_id,
         rp.completed_at,
         rp.service_status,
         rp.id,
         ru.email,
-        rr_disability.value as disability_type
+        (
+          SELECT rr.value 
+          FROM registration_responses rr
+          JOIN form_fields ff ON rr.field_id = ff.id
+          WHERE rr.registration_id = rp.id 
+          AND ff.name = 'disabilitytype'
+        ) as disability_type
       FROM registration_progress rp
       JOIN registered_users ru ON rp.user_id = ru.id
-      LEFT JOIN registration_responses rr_disability ON rp.id = rr_disability.registration_id 
-        AND rr_disability.field_id = 26
       WHERE rp.status = 'completed'
       ORDER BY rp.completed_at DESC
       LIMIT 10`

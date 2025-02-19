@@ -113,6 +113,15 @@ router.post(
       );
       const orderIndex = maxOrder[0].max + 1;
 
+      // For radio fields, structure the options object
+      let optionsToStore = options;
+      if (field_type === "radio" && typeof options === "object") {
+        optionsToStore = {
+          options: options.options || [],
+          conditionalLogic: options.conditionalLogic || {},
+        };
+      }
+
       const [result] = await pool.query(
         `INSERT INTO form_fields 
          (section_id, name, display_name, field_type, is_required, options, order_index, max_file_size, allowed_types) 
@@ -123,8 +132,7 @@ router.post(
           display_name,
           field_type,
           is_required,
-          // Store options as a JSON string if it's an array, otherwise store as is
-          Array.isArray(options) ? JSON.stringify(options) : options,
+          JSON.stringify(optionsToStore),
           orderIndex,
           field_type === "file" ? max_file_size : null,
           field_type === "file" ? allowed_types : null,
@@ -137,7 +145,7 @@ router.post(
         display_name,
         field_type,
         is_required,
-        options,
+        options: optionsToStore,
         max_file_size,
         allowed_types,
         order_index: orderIndex,
@@ -206,6 +214,15 @@ router.put(
         allowed_types,
       } = req.body;
 
+      // For radio fields, structure the options object
+      let optionsToStore = options;
+      if (field_type === "radio" && typeof options === "object") {
+        optionsToStore = {
+          options: options.options || [],
+          conditionalLogic: options.conditionalLogic || {},
+        };
+      }
+
       const [result] = await pool.query(
         `UPDATE form_fields 
        SET name = ?, 
@@ -221,7 +238,7 @@ router.put(
           display_name,
           field_type,
           is_required,
-          options ? JSON.stringify(options) : null,
+          JSON.stringify(optionsToStore),
           field_type === "file" ? max_file_size : null,
           field_type === "file" ? allowed_types : null,
           req.params.id,
@@ -238,7 +255,7 @@ router.put(
         display_name,
         field_type,
         is_required,
-        options,
+        options: optionsToStore,
         max_file_size,
         allowed_types,
       });
