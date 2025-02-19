@@ -109,7 +109,6 @@ class RegistrationFormHandler {
       sessionStorage.setItem("applicationId", data.applicationId);
       window.location.href = `/registration/success?id=${data.applicationId}`;
     } catch (error) {
-      console.error("Error submitting form:", error);
       alert("Failed to submit form. Please try again.");
     }
   }
@@ -156,7 +155,6 @@ class RegistrationFormHandler {
 
       return true;
     } catch (error) {
-      console.error("Error saving progress:", error);
       alert(error.message || "Failed to save progress. Please try again.");
       return false;
     }

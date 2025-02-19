@@ -152,7 +152,6 @@ class DashboardManager {
       );
       modal.show();
     } catch (error) {
-      console.error("Error:", error);
       if (error.message.includes("Failed to fetch")) {
         alert(
           "Connection error. Please check your internet connection and try again."
@@ -235,35 +234,25 @@ class DashboardManager {
 
   renderNestedSelectFields(field) {
     try {
-      console.log("=== Nested Select Debug ===");
-      console.log("Field:", field);
-      console.log("Field value:", field.value);
-      console.log("Field options:", field.options);
-      console.log("Field options type:", typeof field.options);
-
       // Split the comma-separated values
       const values = field.value
         ? field.value.split(",").map((v) => v.trim())
         : [];
-      console.log("Values after split:", values);
 
       // Try to parse the nested configuration
       let nestedConfig = null;
       if (field.options) {
         try {
           nestedConfig = JSON.parse(field.options);
-          console.log("First parse result:", nestedConfig);
 
           // Handle double-encoded JSON
           if (typeof nestedConfig === "string") {
             nestedConfig = JSON.parse(nestedConfig);
-            console.log("Second parse result:", nestedConfig);
           }
         } catch (e) {
-          console.error("Failed to parse field.options:", e);
+          // console.error("Failed to parse field.options:", e);
         }
       }
-      console.log("Final nested config:", nestedConfig);
 
       // Generate fields for each level using the configuration
       return values
@@ -285,7 +274,6 @@ class DashboardManager {
         })
         .join("");
     } catch (error) {
-      console.error("Error rendering nested select fields:", error);
       return `
         <div class="form-field">
           <div class="field-label">${field.display_name}</div>
@@ -575,7 +563,6 @@ async function previewDocument(fileName) {
         this.remove();
       });
   } catch (error) {
-    console.error("Document preview error:", error);
     alert(
       error.message || "Failed to load document preview. Please try again."
     );

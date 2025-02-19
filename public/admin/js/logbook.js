@@ -114,7 +114,6 @@ class LogbookManager {
       this.initializeFilters();
       this.loadLogs();
     } catch (error) {
-      console.error("Access check error:", error);
       document.getElementById("authLoader").style.display = "none";
       document.getElementById("mainContent").innerHTML = `
         <div class="admin-top-bar">
@@ -187,7 +186,7 @@ class LogbookManager {
       const logs = await response.json();
       this.renderLogs(logs);
     } catch (error) {
-      console.error("Error loading logs:", error);
+      // console.error("Error loading logs:", error);
     }
   }
 
