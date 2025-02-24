@@ -23,47 +23,89 @@ jobs:
         with:
           node-version: '18.x'
 
+      - name: Debug directory structure
+        run: |
+          echo "Current directory structure:"
+          ls -la
+          echo "Public directory:"
+          ls -la public || echo "Public directory not found"
+          echo "Server directory:"
+          ls -la server || echo "Server directory not found"
+
       - name: Install dependencies
         run: |
           cd server
           npm install
           cd ..
 
-      - name: Prepare deployment structure
+      - name: Modify server.js to handle missing path
         run: |
-          # Create deployment directory with the structure Azure expects
+          # Create a backup of server.js
+          cp server/server.js server/server.js.bak
+          
+          # Add debugging code to server.js to log path issues
+          cat > server/debug-paths.js << 'EOL'
+          // Path debugging code
+          const fs = require('fs');
+          const path = require('path');
+
+          // Log current directory and available files
+          console.log('Current working directory:', process.cwd());
+          console.log('Directory contents:', fs.readdirSync('.'));
+          
+          // Check for public directory
+          const publicPath = path.join(process.cwd(), 'public');
+          console.log('Looking for public directory at:', publicPath);
+          if (fs.existsSync(publicPath)) {
+            console.log('Public directory exists, contents:', fs.readdirSync(publicPath));
+          } else {
+            console.log('Public directory not found! Checking other locations...');
+            
+            // Check site/wwwroot/public
+            const wwwrootPublicPath = path.join('/home/site/wwwroot', 'public');
+            if (fs.existsSync(wwwrootPublicPath)) {
+              console.log('Found public at wwwroot:', wwwrootPublicPath);
+              console.log('Contents:', fs.readdirSync(wwwrootPublicPath));
+            }
+            
+            // Check parent directory
+            const parentPublicPath = path.join(process.cwd(), '..', 'public');
+            if (fs.existsSync(parentPublicPath)) {
+              console.log('Found public in parent dir:', parentPublicPath);
+              console.log('Contents:', fs.readdirSync(parentPublicPath));
+            }
+          }
+          EOL
+          
+          # Insert the debugging code at the top of server.js
+          sed -i '1s/^/require(".\/debug-paths.js");\n/' server/server.js
+
+      - name: Prepare deployment
+        run: |
+          # Use a simpler approach - copy the entire repo
           mkdir -p deployment
           
-          # Copy server files (excluding node_modules to avoid size issues)
+          # Copy server directory (excluding node_modules)
           mkdir -p deployment/server
+          cp -r server/* deployment/server/
+          rm -rf deployment/server/node_modules 2>/dev/null || true
           
-          # Only copy directories that exist
-          [ -d "server/config" ] && cp -r server/config deployment/server/ || echo "config directory not found, skipping"
-          [ -d "server/middleware" ] && cp -r server/middleware deployment/server/ || echo "middleware directory not found, skipping"
-          [ -d "server/routes" ] && cp -r server/routes deployment/server/ || echo "routes directory not found, skipping"
-          [ -d "server/services" ] && cp -r server/services deployment/server/ || echo "services directory not found, skipping"
-          [ -d "server/utils" ] && cp -r server/utils deployment/server/ || echo "utils directory not found, skipping"
-          [ -d "server/uploads" ] && cp -r server/uploads deployment/server/ || echo "uploads directory not found, skipping"
-          
-          # Copy server.js and package files
+          # Move server.js to the root
           cp server/server.js deployment/
+          cp server/debug-paths.js deployment/
           cp server/package.json deployment/
-          cp server/package-lock.json deployment/ 2>/dev/null || echo "package-lock.json not found, skipping"
           
-          # Copy public directory to root level where Azure expects it
+          # Copy public directory
           cp -r public deployment/
           
-          # Copy any other necessary files
-          [ -f "README.md" ] && cp README.md deployment/ || echo "README.md not found, skipping"
+          # Create an index.html file at multiple potential locations
+          # to help debug the path issue
+          echo "<html><body><h1>DDRC App</h1><p>If you see this, the deployment worked!</p></body></html>" > deployment/index.html
           
-          # Create a startup script that Azure will use
-          echo "#!/bin/bash" > deployment/startup.sh
-          echo "cd /home/site" >> deployment/startup.sh
-          echo "npm install" >> deployment/startup.sh
-          echo "node server.js" >> deployment/startup.sh
-          chmod +x deployment/startup.sh
+          mkdir -p deployment/public
+          echo "<html><body><h1>DDRC App - Public Directory</h1><p>This is the index.html in the public directory.</p></body></html>" > deployment/public/index.html
           
-          # Create a web.config file for Azure
+          # Create a web.config for Azure
           cat > deployment/web.config << 'EOL'
           <?xml version="1.0" encoding="utf-8"?>
           <configuration>
@@ -98,6 +140,21 @@ jobs:
             </system.webServer>
           </configuration>
           EOL
+          
+          # Create a deployment script to be run after deployment
+          cat > deployment/deploy.sh << 'EOL'
+          #!/bin/bash
+          echo "Running post-deployment script..."
+          cd /home/site/wwwroot
+          npm install
+          echo "Deployment script completed."
+          # List directory contents to verify structure
+          echo "Directory structure:"
+          ls -la
+          echo "Public directory:"
+          ls -la public || echo "Public directory not found"
+          EOL
+          chmod +x deployment/deploy.sh
 
       - name: Zip artifact for deployment
         run: |
