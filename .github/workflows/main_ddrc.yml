@@ -75,4 +75,4 @@ jobs:
         with:
           app-name: 'ddrc'
           slot-name: 'Production'
-          package: release.zip  # Deploy the full ZIP instead of just 'server/'
+          package: .
