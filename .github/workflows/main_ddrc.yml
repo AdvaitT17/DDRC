@@ -22,7 +22,8 @@ jobs:
         uses: actions/setup-node@v3
         with:
           node-version: '18.x'
-
+      - name: Change to project directory
+        run: cd server
       - name: npm install, build, and test
         run: |
           npm install
