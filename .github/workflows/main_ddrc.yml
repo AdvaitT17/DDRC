@@ -23,36 +23,77 @@ jobs:
         with:
           node-version: '18.x'
 
-      - name: Install dependencies and build
+      - name: Install dependencies
         run: |
-          # Navigate to server directory where package.json is located
           cd server
-          
-          # Install dependencies
           npm install
-          
-          # Run build scripts if they exist
-          npm run build --if-present
-          
-          # Run tests if available
-          npm run test --if-present
-          
-          # Return to root directory
           cd ..
 
-      - name: Prepare for deployment
+      - name: Prepare deployment structure
         run: |
-          # Create deployment directory
+          # Create deployment directory with the structure Azure expects
           mkdir -p deployment
           
-          # Copy server files including node_modules
-          cp -r server/* deployment/
+          # Copy server files (excluding node_modules to avoid size issues)
+          mkdir -p deployment/server
+          cp -r server/config deployment/server/
+          cp -r server/middleware deployment/server/
+          cp -r server/routes deployment/server/
+          cp -r server/scripts deployment/server/
+          cp -r server/services deployment/server/
+          cp -r server/utils deployment/server/
+          cp server/server.js deployment/
+          cp server/package.json deployment/
+          cp server/package-lock.json deployment/ 2>/dev/null || :
           
-          # Copy public directory
+          # Copy public directory to root level where Azure expects it
           cp -r public deployment/
           
-          # If you have any other root-level files needed for deployment
+          # Copy any other necessary files
           cp README.md deployment/ 2>/dev/null || :
+          
+          # Create a startup script that Azure will use
+          echo "#!/bin/bash" > deployment/startup.sh
+          echo "cd /home/site" >> deployment/startup.sh
+          echo "npm install" >> deployment/startup.sh
+          echo "node server.js" >> deployment/startup.sh
+          chmod +x deployment/startup.sh
+          
+          # Create a web.config file for Azure
+          cat > deployment/web.config << 'EOL'
+          <?xml version="1.0" encoding="utf-8"?>
+          <configuration>
+            <system.webServer>
+              <handlers>
+                <add name="iisnode" path="server.js" verb="*" modules="iisnode"/>
+              </handlers>
+              <rewrite>
+                <rules>
+                  <rule name="NodeInspector" patternSyntax="ECMAScript" stopProcessing="true">
+                    <match url="^server.js\/debug[\/]?" />
+                  </rule>
+                  <rule name="StaticContent">
+                    <action type="Rewrite" url="public{REQUEST_URI}"/>
+                  </rule>
+                  <rule name="DynamicContent">
+                    <conditions>
+                      <add input="{REQUEST_FILENAME}" matchType="IsFile" negate="True"/>
+                    </conditions>
+                    <action type="Rewrite" url="server.js"/>
+                  </rule>
+                </rules>
+              </rewrite>
+              <security>
+                <requestFiltering>
+                  <hiddenSegments>
+                    <remove segment="bin"/>
+                  </hiddenSegments>
+                </requestFiltering>
+              </security>
+              <httpErrors existingResponse="PassThrough" />
+            </system.webServer>
+          </configuration>
+          EOL
 
       - name: Zip artifact for deployment
         run: |
