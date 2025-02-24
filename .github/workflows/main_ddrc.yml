@@ -26,16 +26,16 @@ jobs:
           npm install
           cd ..
 
-      - name: Fix path in server.js
+      - name: Apply path fixes for Azure
         run: |
           cp server/server.js server/server.js.bak
           cat > server/path-fix.js << 'EOL'
           // Path correction for Azure deployment
           const fs = require('fs');
           const path = require('path');
-
+      
           const isAzure = process.env.WEBSITE_SITE_NAME !== undefined;
-
+      
           if (isAzure) {
             console.log('Running in Azure environment, applying path fixes...');
             global.PUBLIC_PATH = path.join(process.cwd(), 'public');
@@ -80,7 +80,6 @@ jobs:
           }
           EOL
           sed -i '1s/^/require(".\/path-fix.js");\n/' server/server.js
-          cp server/path-fix.js server/
 
       - name: Prepare deployment
         run: |
