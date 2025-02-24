@@ -36,21 +36,25 @@ jobs:
           
           # Copy server files (excluding node_modules to avoid size issues)
           mkdir -p deployment/server
-          cp -r server/config deployment/server/
-          cp -r server/middleware deployment/server/
-          cp -r server/routes deployment/server/
-          cp -r server/scripts deployment/server/
-          cp -r server/services deployment/server/
-          cp -r server/utils deployment/server/
+          
+          # Only copy directories that exist
+          [ -d "server/config" ] && cp -r server/config deployment/server/ || echo "config directory not found, skipping"
+          [ -d "server/middleware" ] && cp -r server/middleware deployment/server/ || echo "middleware directory not found, skipping"
+          [ -d "server/routes" ] && cp -r server/routes deployment/server/ || echo "routes directory not found, skipping"
+          [ -d "server/services" ] && cp -r server/services deployment/server/ || echo "services directory not found, skipping"
+          [ -d "server/utils" ] && cp -r server/utils deployment/server/ || echo "utils directory not found, skipping"
+          [ -d "server/uploads" ] && cp -r server/uploads deployment/server/ || echo "uploads directory not found, skipping"
+          
+          # Copy server.js and package files
           cp server/server.js deployment/
           cp server/package.json deployment/
-          cp server/package-lock.json deployment/ 2>/dev/null || :
+          cp server/package-lock.json deployment/ 2>/dev/null || echo "package-lock.json not found, skipping"
           
           # Copy public directory to root level where Azure expects it
           cp -r public deployment/
           
           # Copy any other necessary files
-          cp README.md deployment/ 2>/dev/null || :
+          [ -f "README.md" ] && cp README.md deployment/ || echo "README.md not found, skipping"
           
           # Create a startup script that Azure will use
           echo "#!/bin/bash" > deployment/startup.sh
