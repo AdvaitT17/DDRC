@@ -23,12 +23,8 @@ jobs:
         with:
           node-version: '18.x'
 
-      - name: Change to project directory
-        run: cd server
-
       - name: npm install, build, and test
         run: |
-          cd server  # Add this line
           npm install
           npm run build --if-present
           npm run test --if-present
@@ -60,13 +56,13 @@ jobs:
 
       - name: Unzip artifact for deployment
         run: unzip release.zip
-
+      
       - name: Login to Azure
         uses: azure/login@v2
         with:
-          client-id: ${{ secrets.AZUREAPPSERVICE_CLIENTID_0EB084A241264ACAAE890E794E91527C }}
-          tenant-id: ${{ secrets.AZUREAPPSERVICE_TENANTID_DF5A733B69C8453C9B2F17639FBA90F8 }}
-          subscription-id: ${{ secrets.AZUREAPPSERVICE_SUBSCRIPTIONID_F8012110BF4B40BB86D79E0100331585 }}
+          client-id: ${{ secrets.AZUREAPPSERVICE_CLIENTID_486D83FE9D484EF197E94E699D51CD7B }}
+          tenant-id: ${{ secrets.AZUREAPPSERVICE_TENANTID_8DE0D946B8684378A5368E463E548593 }}
+          subscription-id: ${{ secrets.AZUREAPPSERVICE_SUBSCRIPTIONID_F22AC0134BF34BC7BB9182148A6A47BB }}
 
       - name: 'Deploy to Azure Web App'
         id: deploy-to-webapp
@@ -75,3 +71,4 @@ jobs:
           app-name: 'ddrc'
           slot-name: 'Production'
           package: .
+          
