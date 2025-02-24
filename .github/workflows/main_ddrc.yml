@@ -23,89 +23,106 @@ jobs:
         with:
           node-version: '18.x'
 
-      - name: Debug directory structure
-        run: |
-          echo "Current directory structure:"
-          ls -la
-          echo "Public directory:"
-          ls -la public || echo "Public directory not found"
-          echo "Server directory:"
-          ls -la server || echo "Server directory not found"
-
       - name: Install dependencies
         run: |
           cd server
           npm install
           cd ..
 
-      - name: Modify server.js to handle missing path
+      - name: Fix path in server.js
         run: |
           # Create a backup of server.js
           cp server/server.js server/server.js.bak
           
-          # Add debugging code to server.js to log path issues
-          cat > server/debug-paths.js << 'EOL'
-          // Path debugging code
+          # Create a path fix script
+          cat > server/path-fix.js << 'EOL'
+          // Path correction for Azure deployment
           const fs = require('fs');
           const path = require('path');
 
-          // Log current directory and available files
-          console.log('Current working directory:', process.cwd());
-          console.log('Directory contents:', fs.readdirSync('.'));
-          
-          // Check for public directory
-          const publicPath = path.join(process.cwd(), 'public');
-          console.log('Looking for public directory at:', publicPath);
-          if (fs.existsSync(publicPath)) {
-            console.log('Public directory exists, contents:', fs.readdirSync(publicPath));
+          // Determine if we're running in Azure
+          const isAzure = process.env.WEBSITE_SITE_NAME !== undefined;
+
+          if (isAzure) {
+            console.log('Running in Azure environment, applying path fixes...');
+            
+            // Create a global variable to store the correct public path
+            global.PUBLIC_PATH = path.join(process.cwd(), 'public');
+            console.log('Setting public path to:', global.PUBLIC_PATH);
+            
+            // Override the path resolution for static files
+            const originalResolve = path.resolve;
+            path.resolve = function(...args) {
+              // Check if this is a call to resolve a path with '/home/site/public'
+              const joinedPath = args.join(' ');
+              if (joinedPath.includes('/home/site/public')) {
+                console.log('Intercepting path resolution for:', joinedPath);
+                return joinedPath.replace('/home/site/public', global.PUBLIC_PATH);
+              }
+              return originalResolve.apply(this, args);
+            };
+            
+            // Also monkey patch fs.stat, fs.readFile, etc. to catch any direct file access
+            const originalStat = fs.stat;
+            fs.stat = function(path, callback) {
+              if (typeof path === 'string' && path.startsWith('/home/site/public/')) {
+                const newPath = path.replace('/home/site/public/', `${global.PUBLIC_PATH}/`);
+                console.log(`Redirecting fs.stat from ${path} to ${newPath}`);
+                return originalStat(newPath, callback);
+              }
+              return originalStat(path, callback);
+            };
+            
+            const originalStatSync = fs.statSync;
+            fs.statSync = function(path, options) {
+              if (typeof path === 'string' && path.startsWith('/home/site/public/')) {
+                const newPath = path.replace('/home/site/public/', `${global.PUBLIC_PATH}/`);
+                console.log(`Redirecting fs.statSync from ${path} to ${newPath}`);
+                return originalStatSync(newPath, options);
+              }
+              return originalStatSync(path, options);
+            };
+            
+            // Create a symlink as an alternative approach
+            try {
+              if (!fs.existsSync('/home/site/public')) {
+                console.log('Creating symlink from /home/site/public to', global.PUBLIC_PATH);
+                fs.symlinkSync(global.PUBLIC_PATH, '/home/site/public', 'dir');
+              }
+            } catch (err) {
+              console.log('Failed to create symlink:', err.message);
+            }
           } else {
-            console.log('Public directory not found! Checking other locations...');
-            
-            // Check site/wwwroot/public
-            const wwwrootPublicPath = path.join('/home/site/wwwroot', 'public');
-            if (fs.existsSync(wwwrootPublicPath)) {
-              console.log('Found public at wwwroot:', wwwrootPublicPath);
-              console.log('Contents:', fs.readdirSync(wwwrootPublicPath));
-            }
-            
-            // Check parent directory
-            const parentPublicPath = path.join(process.cwd(), '..', 'public');
-            if (fs.existsSync(parentPublicPath)) {
-              console.log('Found public in parent dir:', parentPublicPath);
-              console.log('Contents:', fs.readdirSync(parentPublicPath));
-            }
+            console.log('Not running in Azure environment, no path fixes needed.');
           }
           EOL
           
-          # Insert the debugging code at the top of server.js
-          sed -i '1s/^/require(".\/debug-paths.js");\n/' server/server.js
+          # Insert the path fix at the top of server.js
+          sed -i '1s/^/require(".\/path-fix.js");\n/' server/server.js
+          
+          # Copy the path-fix.js file to deployment
+          cp server/path-fix.js server/
 
       - name: Prepare deployment
         run: |
-          # Use a simpler approach - copy the entire repo
+          # Create deployment directory
           mkdir -p deployment
           
-          # Copy server directory (excluding node_modules)
+          # Copy server files
           mkdir -p deployment/server
           cp -r server/* deployment/server/
           rm -rf deployment/server/node_modules 2>/dev/null || true
           
-          # Move server.js to the root
+          # Move necessary files to root
           cp server/server.js deployment/
-          cp server/debug-paths.js deployment/
+          cp server/path-fix.js deployment/
           cp server/package.json deployment/
+          cp server/package-lock.json deployment/ 2>/dev/null || true
           
           # Copy public directory
           cp -r public deployment/
           
-          # Create an index.html file at multiple potential locations
-          # to help debug the path issue
-          echo "<html><body><h1>DDRC App</h1><p>If you see this, the deployment worked!</p></body></html>" > deployment/index.html
-          
-          mkdir -p deployment/public
-          echo "<html><body><h1>DDRC App - Public Directory</h1><p>This is the index.html in the public directory.</p></body></html>" > deployment/public/index.html
-          
-          # Create a web.config for Azure
+          # Create web.config for Azure
           cat > deployment/web.config << 'EOL'
           <?xml version="1.0" encoding="utf-8"?>
           <configuration>
@@ -140,21 +157,6 @@ jobs:
             </system.webServer>
           </configuration>
           EOL
-          
-          # Create a deployment script to be run after deployment
-          cat > deployment/deploy.sh << 'EOL'
-          #!/bin/bash
-          echo "Running post-deployment script..."
-          cd /home/site/wwwroot
-          npm install
-          echo "Deployment script completed."
-          # List directory contents to verify structure
-          echo "Directory structure:"
-          ls -la
-          echo "Public directory:"
-          ls -la public || echo "Public directory not found"
-          EOL
-          chmod +x deployment/deploy.sh
 
       - name: Zip artifact for deployment
         run: |
