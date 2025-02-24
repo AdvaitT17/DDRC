@@ -1,3 +1,6 @@
+# Docs for the Azure Web Apps Deploy action: https://github.com/Azure/webapps-deploy
+# More GitHub Actions for Azure: https://github.com/Azure/actions
+
 name: Build and deploy Node.js app to Azure Web App - ddrc
 
 on:
@@ -10,30 +13,51 @@ jobs:
   build:
     runs-on: ubuntu-latest
     permissions:
-      contents: read # Required for actions/checkout
+      contents: read #This is required for actions/checkout
 
     steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
+      - uses: actions/checkout@v4
 
-      - name: Set up Node.js
+      - name: Set up Node.js version
         uses: actions/setup-node@v3
         with:
           node-version: '18.x'
 
-      - name: Install dependencies, build, and test
+      - name: Install dependencies and build
         run: |
+          # Navigate to server directory where package.json is located
+          cd server
+          
+          # Install dependencies
           npm install
+          
+          # Run build scripts if they exist
           npm run build --if-present
-          npm test --if-present
+          
+          # Run tests if available
+          npm run test --if-present
+          
+          # Return to root directory
+          cd ..
 
-      - name: Ensure correct directory structure
+      - name: Prepare for deployment
         run: |
-          mkdir -p wwwroot
-          mv * wwwroot/ || true
+          # Create deployment directory
+          mkdir -p deployment
+          
+          # Copy server files including node_modules
+          cp -r server/* deployment/
+          
+          # Copy public directory
+          cp -r public deployment/
+          
+          # If you have any other root-level files needed for deployment
+          cp README.md deployment/ 2>/dev/null || :
 
       - name: Zip artifact for deployment
-        run: zip -r release.zip wwwroot/
+        run: |
+          cd deployment
+          zip -r ../release.zip ./*
 
       - name: Upload artifact for deployment job
         uses: actions/upload-artifact@v4
@@ -48,8 +72,8 @@ jobs:
       name: 'Production'
       url: ${{ steps.deploy-to-webapp.outputs.webapp-url }}
     permissions:
-      id-token: write
-      contents: read
+      id-token: write #This is required for requesting the JWT
+      contents: read #This is required for actions/checkout
 
     steps:
       - name: Download artifact from build job
@@ -59,7 +83,7 @@ jobs:
 
       - name: Unzip artifact for deployment
         run: unzip release.zip
-
+      
       - name: Login to Azure
         uses: azure/login@v2
         with:
@@ -67,10 +91,10 @@ jobs:
           tenant-id: ${{ secrets.AZUREAPPSERVICE_TENANTID_372F13A1954945AEAE3A9EF9F48AC763 }}
           subscription-id: ${{ secrets.AZUREAPPSERVICE_SUBSCRIPTIONID_AADFC2A08B394A799450523069F2F441 }}
 
-      - name: Deploy to Azure Web App
+      - name: 'Deploy to Azure Web App'
         id: deploy-to-webapp
         uses: azure/webapps-deploy@v3
         with:
           app-name: 'ddrc'
           slot-name: 'Production'
-          package: wwwroot/
+          package: .
