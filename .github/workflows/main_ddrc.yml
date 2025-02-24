@@ -23,7 +23,7 @@ jobs:
         with:
           node-version: '18.x'
       - name: Change to project directory
-        run: cd server
+        run: cd server/
       - name: npm install, build, and test
         run: |
           npm install
