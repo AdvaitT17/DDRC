@@ -10,7 +10,7 @@ jobs:
   build:
     runs-on: ubuntu-latest
     permissions:
-      contents: read # Required for actions/checkout
+      contents: read
 
     steps:
       - uses: actions/checkout@v4
@@ -35,8 +35,8 @@ jobs:
         working-directory: server
 
       - name: Zip artifact for deployment
-        run: zip -r release.zip server public package.json package-lock.json
-        
+        run: zip -r release.zip .  # Zips the entire repo
+
       - name: Upload artifact for deployment job
         uses: actions/upload-artifact@v4
         with:
@@ -50,8 +50,8 @@ jobs:
       name: 'Production'
       url: ${{ steps.deploy-to-webapp.outputs.webapp-url }}
     permissions:
-      id-token: write # Required for requesting the JWT
-      contents: read # Required for actions/checkout
+      id-token: write
+      contents: read
 
     steps:
       - name: Download artifact from build job
@@ -75,4 +75,4 @@ jobs:
         with:
           app-name: 'ddrc'
           slot-name: 'Production'
-          package: server/
+          package: release.zip  # Deploy the full ZIP instead of just 'server/'
