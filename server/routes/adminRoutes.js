@@ -9,17 +9,19 @@ const tokenManager = require("../utils/temporaryAccess");
 
 // Generate temporary file access URL
 router.get(
-  "/files/access-url/:filename",
+  "/files/access-url/*",
   authenticateToken,
   requireRole(["admin", "staff"]),
   async (req, res) => {
     try {
-      const { filename } = req.params;
+      const filePath = req.params[0];
+      // Remove any leading slashes and 'uploads/' from the path
+      const cleanPath = filePath.replace(/^\/?(uploads\/)?/, "");
 
-      const accessToken = tokenManager.generateToken(filename, req.user.id);
+      const accessToken = tokenManager.generateToken(cleanPath, req.user.id);
 
       res.json({
-        accessUrl: `/uploads/${filename}?access_token=${accessToken}`,
+        accessUrl: `/uploads/${cleanPath}?access_token=${accessToken}`,
       });
     } catch (error) {
       console.error("Error generating file access URL:", error);

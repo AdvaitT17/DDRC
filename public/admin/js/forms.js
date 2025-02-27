@@ -14,6 +14,7 @@ class FormManager {
             <div class="left-links">
               <a href="/admin/dashboard">Dashboard</a>
               <a href="/admin/forms" class="active">Form Management</a>
+              <a href="/admin/news/index.html">News</a>
               <a href="/admin/logbook">Logs</a>
               <a href="/admin/users">Users</a>
             </div>
@@ -809,7 +810,12 @@ function renderFieldOptions(selectedFields = []) {
     return "";
   }
 
-  return formManager.sections
+  const currentSectionId =
+    document.getElementById("fieldModal").dataset.sectionId;
+
+  // First, render fields from the current section
+  let optionsHtml = formManager.sections
+    .filter((section) => section.id === parseInt(currentSectionId))
     .flatMap((section) =>
       section.fields.map(
         (field) => `
@@ -822,6 +828,24 @@ function renderFieldOptions(selectedFields = []) {
       )
     )
     .join("");
+
+  // Then, render fields from other sections
+  optionsHtml += formManager.sections
+    .filter((section) => section.id !== parseInt(currentSectionId))
+    .flatMap((section) =>
+      section.fields.map(
+        (field) => `
+          <option value="${field.id}" ${
+          selectedFields.includes(field.id) ? "selected" : ""
+        }>
+            ${section.name} - ${field.display_name}
+          </option>
+        `
+      )
+    )
+    .join("");
+
+  return optionsHtml;
 }
 
 function addConditionalLogic() {

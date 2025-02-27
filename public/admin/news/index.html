@@ -3,13 +3,14 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>User Management | DDRC Admin</title>
+    <title>News Management | DDRC Admin</title>
     <link
       href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css"
       rel="stylesheet"
     />
     <link rel="stylesheet" href="/css/main.css" />
     <link rel="stylesheet" href="/admin/css/style.css" />
+    <link rel="stylesheet" href="/admin/news/news.css" />
   </head>
   <body>
     <!-- Auth check loader -->
@@ -17,15 +18,15 @@
       <div class="spinner"></div>
     </div>
 
-    <!-- Main content -->
+    <!-- Main content will be hidden until auth check -->
     <div id="mainContent" style="display: none">
       <div class="admin-top-bar">
         <div class="left-links">
-          <a href="/admin/dashboard">Dashboard</a>
-          <a href="/admin/forms">Form Management</a>
-          <a href="/admin/news">News</a>
-          <a href="/admin/logbook">Logs</a>
-          <a href="/admin/users" class="active">Users</a>
+          <a href="/admin/dashboard/index.html">Dashboard</a>
+          <a href="/admin/forms/index.html">Form Management</a>
+          <a href="/admin/news/index.html" class="active">News</a>
+          <a href="/admin/logbook/index.html">Logs</a>
+          <a href="/admin/users/index.html">Users</a>
         </div>
         <div class="right-links">
           <span id="userInfo"></span>
@@ -60,53 +61,36 @@
         <div class="dashboard-header">
           <div class="d-flex justify-content-between align-items-center">
             <div>
-              <h1>User Management</h1>
-              <p class="text-muted">Manage department staff accounts</p>
+              <h1>News Management</h1>
+              <p class="text-muted">
+                Manage and update news articles and announcements
+              </p>
             </div>
             <button
               class="btn btn-primary"
               data-bs-toggle="modal"
-              data-bs-target="#addUserModal"
+              data-bs-target="#addNewsModal"
             >
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                width="16"
-                height="16"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                stroke-width="2"
-                stroke-linecap="round"
-                stroke-linejoin="round"
-                class="me-2"
-              >
-                <path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
-                <circle cx="8.5" cy="7" r="4"></circle>
-                <line x1="20" y1="8" x2="20" y2="14"></line>
-                <line x1="23" y1="11" x2="17" y2="11"></line>
-              </svg>
-              Add New User
+              Add News
             </button>
           </div>
         </div>
 
-        <!-- Users Table -->
+        <!-- News Table -->
         <div class="content-card">
           <div class="table-responsive">
-            <table class="table">
+            <table class="table" id="newsTable">
               <thead>
-                <tr>
-                  <th>Name</th>
-                  <th>Username</th>
-                  <th>Email</th>
-                  <th class="text-center">Role</th>
-                  <th class="text-center">Status</th>
-                  <th>Last Login</th>
+                <tr class="table-light">
+                  <th>Date</th>
+                  <th>Title</th>
+                  <th>Description</th>
+                  <th>File</th>
                   <th>Actions</th>
                 </tr>
               </thead>
-              <tbody id="usersTableBody">
-                <!-- Will be populated by JavaScript -->
+              <tbody>
+                <!-- News items will be loaded here -->
               </tbody>
             </table>
           </div>
@@ -114,12 +98,12 @@
       </div>
     </div>
 
-    <!-- Add User Modal -->
-    <div class="modal fade" id="addUserModal" tabindex="-1">
+    <!-- Add News Modal -->
+    <div class="modal fade" id="addNewsModal" tabindex="-1">
       <div class="modal-dialog">
         <div class="modal-content">
           <div class="modal-header">
-            <h5 class="modal-title">Add New User</h5>
+            <h5 class="modal-title">Add News</h5>
             <button
               type="button"
               class="btn-close"
@@ -127,49 +111,32 @@
             ></button>
           </div>
           <div class="modal-body">
-            <form id="addUserForm">
+            <form id="newsForm">
               <div class="mb-3">
-                <label class="form-label">Full Name</label>
+                <label for="newsTitle" class="form-label">Title</label>
                 <input
                   type="text"
                   class="form-control"
-                  name="fullName"
+                  id="newsTitle"
                   required
                 />
               </div>
               <div class="mb-3">
-                <label class="form-label">Username</label>
-                <input
-                  type="text"
+                <label for="newsDescription" class="form-label"
+                  >Description</label
+                >
+                <textarea
                   class="form-control"
-                  name="username"
+                  id="newsDescription"
+                  rows="3"
                   required
-                />
+                ></textarea>
               </div>
               <div class="mb-3">
-                <label class="form-label">Email</label>
-                <input
-                  type="email"
-                  class="form-control"
-                  name="email"
-                  required
-                />
-              </div>
-              <div class="mb-3">
-                <label class="form-label">Role</label>
-                <select class="form-select" name="role" required>
-                  <option value="staff">Staff</option>
-                  <option value="admin">Admin</option>
-                </select>
-              </div>
-              <div class="mb-3">
-                <label class="form-label">Password</label>
-                <input
-                  type="password"
-                  class="form-control"
-                  name="password"
-                  required
-                />
+                <label for="newsFile" class="form-label"
+                  >Attachment (Optional)</label
+                >
+                <input type="file" class="form-control" id="newsFile" />
               </div>
             </form>
           </div>
@@ -179,20 +146,21 @@
               class="btn btn-secondary"
               data-bs-dismiss="modal"
             >
-              Cancel
+              Close
             </button>
-            <button type="button" class="btn btn-primary" id="saveUserBtn">
-              Add User
+            <button type="button" class="btn btn-primary" id="saveNews">
+              Save
             </button>
           </div>
         </div>
       </div>
     </div>
 
+    <!-- Scripts -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
     <script src="/js/auth.js"></script>
-    <script src="/admin/js/api.js"></script>
+    <script src="/admin/js/admin.js"></script>
+    <script src="/admin/news/news.js"></script>
     <script src="/admin/js/init.js"></script>
-    <script src="/admin/js/users.js"></script>
   </body>
 </html>

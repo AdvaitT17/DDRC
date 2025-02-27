@@ -9,7 +9,14 @@ const fs = require("fs");
 
 // Configure multer for file uploads
 const storage = multer.diskStorage({
-  destination: uploadsDir,
+  destination: function (req, file, cb) {
+    const formsDir = path.join(__dirname, "../uploads/forms");
+    // Ensure the directory exists
+    if (!fs.existsSync(formsDir)) {
+      fs.mkdirSync(formsDir, { recursive: true });
+    }
+    cb(null, formsDir);
+  },
   filename: (req, file, cb) => {
     cb(null, generateUniqueFilename(file.originalname));
   },
@@ -100,11 +107,12 @@ router.post("/progress", authenticateToken, upload.any(), async (req, res) => {
     const files = req.files || [];
     for (const file of files) {
       const fieldId = file.fieldname.replace("file_", "");
+      const filePath = `forms/${file.filename}`;
       await pool.query(
         `INSERT INTO registration_responses (registration_id, field_id, value)
          VALUES (?, ?, ?)
          ON DUPLICATE KEY UPDATE value = ?`,
-        [registrationId, fieldId, file.filename, file.filename]
+        [registrationId, fieldId, filePath, filePath]
       );
     }
 
@@ -286,11 +294,12 @@ router.post(
       }
 
       // Save file info to database
+      const filePath = `forms/${file.filename}`;
       await pool.query(
         `INSERT INTO registration_responses (registration_id, field_id, value) 
          VALUES (?, ?, ?) 
          ON DUPLICATE KEY UPDATE value = ?`,
-        [registrationId, fieldId, file.filename, file.filename]
+        [registrationId, fieldId, filePath, filePath]
       );
 
       res.json({

@@ -13,6 +13,7 @@ class UserManager {
             <div class="left-links">
               <a href="/admin/dashboard">Dashboard</a>
               <a href="/admin/forms">Form Management</a>
+              <a href="/admin/news/index.html">News</a>
               <a href="/admin/logbook">Logs</a>
               <a href="/admin/users" class="active">Users</a>
             </div>
