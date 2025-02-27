@@ -85,13 +85,30 @@ jobs:
         run: |
           mkdir -p deployment
           mkdir -p deployment/server
+          mkdir -p deployment/server/routes
+          # Copy all server files
           cp -r server/* deployment/server/
+          # Ensure routes directory is correctly copied
+          if [ -d "server/routes" ]; then
+            cp -r server/routes/* deployment/server/routes/
+          fi
+          # Create upload directories
+          mkdir -p deployment/server/uploads
+          mkdir -p deployment/server/uploads/documents
+          mkdir -p deployment/server/uploads/forms
+          mkdir -p deployment/server/uploads/news
+          # Ensure proper permissions
+          chmod -R 755 deployment/server/uploads
+          # Remove node_modules to avoid duplicates
           rm -rf deployment/server/node_modules 2>/dev/null || true
+          # Copy main files
           cp server/server.js deployment/
           cp server/path-fix.js deployment/
           cp server/package.json deployment/
           cp server/package-lock.json deployment/ 2>/dev/null || true
+          # Copy public assets
           cp -r public deployment/
+          # Create web.config for IIS
           cat > deployment/web.config << 'EOL'
           <?xml version="1.0" encoding="utf-8"?>
           <configuration>
