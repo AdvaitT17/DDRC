@@ -10,7 +10,7 @@ jobs:
   build:
     runs-on: ubuntu-latest
     permissions:
-      contents: read 
+      contents: read
 
     steps:
       - uses: actions/checkout@v4
@@ -18,7 +18,7 @@ jobs:
       - name: Set up Node.js version
         uses: actions/setup-node@v3
         with:
-          node-version: '18.x'
+          node-version: "18.x"
 
       - name: Install dependencies
         run: |
@@ -33,40 +33,39 @@ jobs:
           // Path correction for Azure deployment
           const fs = require('fs');
           const path = require('path');
-      
+
           const isAzure = process.env.WEBSITE_SITE_NAME !== undefined;
-      
+
           if (isAzure) {
             console.log('Running in Azure environment, applying path fixes...');
             global.PUBLIC_PATH = path.join(process.cwd(), 'public');
             console.log('Setting public path to:', global.PUBLIC_PATH);
+
+            // Monkey patch path.resolve
             const originalResolve = path.resolve;
             path.resolve = function(...args) {
-              const joinedPath = args.join(' ');
-              if (joinedPath.includes('/home/site/public')) {
-                console.log('Intercepting path resolution for:', joinedPath);
-                return joinedPath.replace('/home/site/public', global.PUBLIC_PATH);
+              const result = originalResolve.apply(this, args);
+              if (result.includes('/home/site/public')) {
+                console.log('Intercepting path resolution for:', result);
+                return result.replace('/home/site/public', global.PUBLIC_PATH);
               }
-              return originalResolve.apply(this, args);
+              return result;
             };
-            const originalStat = fs.stat;
-            fs.stat = function(path, callback) {
-              if (typeof path === 'string' && path.startsWith('/home/site/public/')) {
-                const newPath = path.replace('/home/site/public/', `${global.PUBLIC_PATH}/`);
-                console.log(`Redirecting fs.stat from ${path} to ${newPath}`);
-                return originalStat(newPath, callback);
-              }
-              return originalStat(path, callback);
-            };
-            const originalStatSync = fs.statSync;
-            fs.statSync = function(path, options) {
-              if (typeof path === 'string' && path.startsWith('/home/site/public/')) {
-                const newPath = path.replace('/home/site/public/', `${global.PUBLIC_PATH}/`);
-                console.log(`Redirecting fs.statSync from ${path} to ${newPath}`);
-                return originalStatSync(newPath, options);
-              }
-              return originalStatSync(path, options);
-            };
+
+            // Monkey patch fs.stat and fs.statSync
+            ['stat', 'statSync'].forEach(method => {
+              const original = fs[method];
+              fs[method] = function(pathStr, ...args) {
+                if (typeof pathStr === 'string' && pathStr.startsWith('/home/site/public/')) {
+                  const newPath = pathStr.replace('/home/site/public/', `${global.PUBLIC_PATH}/`);
+                  console.log(`Redirecting fs.${method} from ${pathStr} to ${newPath}`);
+                  return original.call(this, newPath, ...args);
+                }
+                return original.apply(this, arguments);
+              };
+            });
+
+            // Create symlink if possible
             try {
               if (!fs.existsSync('/home/site/public')) {
                 console.log('Creating symlink from /home/site/public to', global.PUBLIC_PATH);
@@ -94,6 +93,7 @@ jobs:
       - name: Prepare deployment
         run: |
           mkdir -p deployment
+<<<<<<< ours
           mkdir -p deployment/server
           mkdir -p deployment/server/routes
           
@@ -139,13 +139,35 @@ jobs:
           cp server/package-lock.json deployment/ 2>/dev/null || true
           
           # Copy public assets
+||||||| ancestor
+          mkdir -p deployment/server
+          cp -r server/* deployment/server/
+          rm -rf deployment/server/node_modules 2>/dev/null || true
+          cp server/server.js deployment/
+          cp server/path-fix.js deployment/
+          cp server/package.json deployment/
+          cp server/package-lock.json deployment/ 2>/dev/null || true
+=======
+          cp -r server deployment/
+          rm -rf deployment/server/node_modules
+>>>>>>> theirs
           cp -r public deployment/
+<<<<<<< ours
           
           # Debug - verify deployment structure
           echo "Checking deployment structure:"
           ls -la deployment/server/routes
 
           # Create web.config for IIS
+||||||| ancestor
+=======
+
+          # Move server files to root of deployment
+          mv deployment/server/* deployment/
+          rm -rf deployment/server
+
+          # Create web.config
+>>>>>>> theirs
           cat > deployment/web.config << 'EOL'
           <?xml version="1.0" encoding="utf-8"?>
           <configuration>
@@ -165,7 +187,7 @@ jobs:
                     <conditions>
                       <add input="{REQUEST_FILENAME}" matchType="IsFile" negate="True"/>
                     </conditions>
-                      <action type="Rewrite" url="server.js"/>
+                    <action type="Rewrite" url="server.js"/>
                   </rule>
                 </rules>
               </rewrite>
@@ -196,11 +218,11 @@ jobs:
     runs-on: ubuntu-latest
     needs: build
     environment:
-      name: 'Production'
+      name: "Production"
       url: ${{ steps.deploy-to-webapp.outputs.webapp-url }}
     permissions:
-      id-token: write 
-      contents: read 
+      id-token: write
+      contents: read
 
     steps:
       - name: Download artifact from build job
@@ -210,7 +232,7 @@ jobs:
 
       - name: Unzip artifact for deployment
         run: unzip release.zip
-      
+
       - name: Login to Azure
         uses: azure/login@v2
         with:
@@ -218,10 +240,10 @@ jobs:
           tenant-id: ${{ secrets.AZUREAPPSERVICE_TENANTID_372F13A1954945AEAE3A9EF9F48AC763 }}
           subscription-id: ${{ secrets.AZUREAPPSERVICE_SUBSCRIPTIONID_AADFC2A08B394A799450523069F2F441 }}
 
-      - name: 'Deploy to Azure Web App'
+      - name: "Deploy to Azure Web App"
         id: deploy-to-webapp
         uses: azure/webapps-deploy@v3
         with:
-          app-name: 'ddrc'
-          slot-name: 'Production'
+          app-name: "ddrc"
+          slot-name: "Production"
           package: .
