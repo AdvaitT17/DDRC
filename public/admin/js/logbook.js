@@ -13,6 +13,7 @@ class LogbookManager {
             <div class="left-links">
               <a href="/admin/dashboard">Dashboard</a>
               <a href="/admin/forms">Form Management</a>
+              <a href="/admin/news/index.html">News</a>
               <a href="/admin/logbook" class="active">Logs</a>
               <a href="/admin/users">Users</a>
 

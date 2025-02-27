@@ -4,7 +4,7 @@ The development repository for the official website of District Disability Rehab
 
 ## Website
 
-Visit this website [here](https://ddrc.onrender.com)
+Visit this website [here](https://ddrc-a6f4anhghegvbqeq.centralindia-01.azurewebsites.net/)
 
 ## Author
 

@@ -1,0 +1,533 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>News & Updates | DDRC Mumbai</title>
+    <link
+      href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="/css/main.css" />
+    <link rel="stylesheet" href="/css/header.css" />
+    <link rel="stylesheet" href="/css/footer.css" />
+    <style>
+      /* Custom styles for news page */
+      .page-header {
+        background: #004a9f;
+        color: white;
+        padding: 2.5rem 0;
+        margin-bottom: 0;
+      }
+
+      .breadcrumb {
+        background: transparent;
+        margin-bottom: 1.25rem;
+      }
+
+      .breadcrumb-item a {
+        color: rgba(255, 255, 255, 0.9);
+        text-decoration: none;
+        transition: color 0.2s ease;
+      }
+
+      .breadcrumb-item a:hover {
+        color: white;
+      }
+
+      .breadcrumb-item.active {
+        color: white;
+      }
+
+      .breadcrumb-item + .breadcrumb-item::before {
+        color: rgba(255, 255, 255, 0.9);
+      }
+
+      .page-title {
+        margin: 0;
+        font-size: 2.25rem;
+        font-weight: 600;
+        letter-spacing: -0.5px;
+      }
+
+      .page-description {
+        margin-top: 0.75rem;
+        opacity: 0.9;
+        font-size: 1.1rem;
+      }
+
+      .news-container {
+        background: transparent;
+        padding: 0;
+        margin-top: 2.5rem;
+      }
+
+      .table-responsive {
+        border: 1px solid #dee2e6;
+        border-radius: 12px;
+        position: relative;
+        background: white;
+        overflow: hidden;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+      }
+
+      .news-table {
+        width: 100%;
+        border-collapse: collapse;
+        margin-bottom: 0;
+        table-layout: fixed;
+      }
+
+      .news-table th {
+        color: #2c3e50;
+        font-weight: 600;
+        padding: 1.25rem 1.5rem;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        border-bottom: 2px solid #dee2e6;
+        white-space: nowrap;
+        background: #f8f9fa;
+        font-size: 0.875rem;
+      }
+
+      .news-table td {
+        padding: 1.5rem;
+        border-bottom: 1px solid #dee2e6;
+        vertical-align: middle;
+        background: white;
+        font-size: 0.95rem;
+        line-height: 1.6;
+      }
+
+      .news-table tr {
+        border-bottom: 1px solid #dee2e6;
+        transition: background-color 0.2s ease;
+      }
+
+      .news-table tr:last-child {
+        border-bottom: none;
+      }
+
+      .news-table tr:hover td {
+        background: #f8f9fa;
+      }
+
+      /* Column Widths */
+      .news-table th:nth-child(1),
+      .news-table td:nth-child(1) {
+        width: 12%;
+        border-right: 1px solid #dee2e6;
+        font-weight: 500;
+        color: #666;
+      }
+
+      .news-table th:nth-child(2),
+      .news-table td:nth-child(2) {
+        width: 25%;
+        border-right: 1px solid #dee2e6;
+      }
+
+      .news-table th:nth-child(3),
+      .news-table td:nth-child(3) {
+        width: 48%;
+        border-right: 1px solid #dee2e6;
+      }
+
+      .news-table th:nth-child(4),
+      .news-table td:nth-child(4) {
+        width: 15%;
+        text-align: center;
+      }
+
+      .news-title {
+        color: #004a9f;
+        font-weight: 600;
+        font-size: 1.05rem;
+        margin-bottom: 0.25rem;
+      }
+
+      .news-description {
+        color: #4a5568;
+        line-height: 1.6;
+      }
+
+      .btn-view-file {
+        display: inline-block;
+        padding: 0.625rem 1.25rem;
+        color: #004a9f;
+        border: 1.5px solid #004a9f;
+        border-radius: 6px;
+        text-decoration: none;
+        transition: all 0.2s ease;
+        background: transparent;
+        font-size: 0.9rem;
+        font-weight: 500;
+      }
+
+      .btn-view-file:hover {
+        background: #004a9f;
+        color: white;
+        transform: translateY(-1px);
+        box-shadow: 0 2px 4px rgba(0, 74, 159, 0.1);
+      }
+
+      /* Loading State */
+      .loading-spinner {
+        text-align: center;
+        padding: 3rem;
+        color: #666;
+      }
+
+      /* Empty State */
+      .empty-state {
+        text-align: center;
+        padding: 3rem;
+        color: #666;
+        font-size: 1.1rem;
+      }
+
+      main {
+        min-height: calc(100vh - 400px);
+        background-color: #f8f9fa;
+        padding: 0 0 4rem 0;
+      }
+
+      /* Enhanced Mobile Responsiveness */
+      @media (max-width: 768px) {
+        .page-header {
+          padding: 2rem 0;
+        }
+
+        .page-title {
+          font-size: 1.75rem;
+        }
+
+        .page-description {
+          font-size: 1rem;
+        }
+
+        .news-table {
+          display: block;
+          width: 100%;
+        }
+
+        .news-table thead {
+          display: none;
+        }
+
+        .news-table tbody,
+        .news-table tr,
+        .news-table td {
+          display: block;
+          width: 100%;
+        }
+
+        .news-table tr {
+          margin-bottom: 1.5rem;
+          border: 1px solid #e9ecef;
+          border-radius: 12px;
+          background: white;
+          box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+        }
+
+        .news-table td {
+          text-align: left;
+          padding: 1rem 1.25rem;
+          border-bottom: 1px solid #f3f4f6;
+          position: relative;
+          padding-left: 1.25rem;
+          display: flex;
+          flex-direction: column;
+        }
+
+        .news-table td::before {
+          content: attr(data-label);
+          width: 100%;
+          font-weight: 600;
+          color: #2c3e50;
+          text-transform: uppercase;
+          font-size: 0.75rem;
+          letter-spacing: 0.5px;
+          margin-bottom: 0.75rem;
+          opacity: 0.8;
+        }
+
+        .news-table td:nth-child(1),
+        .news-table td:nth-child(2),
+        .news-table td:nth-child(3),
+        .news-table td:nth-child(4) {
+          width: 100%;
+          border-right: none;
+        }
+
+        .news-table td.news-title {
+          font-size: 1.1rem;
+          font-weight: 600;
+          color: #004a9f;
+        }
+
+        .news-table td.news-description {
+          white-space: normal;
+          line-height: 1.6;
+          color: #4a5568;
+          padding-top: 0.5rem;
+        }
+
+        .news-table td:first-child {
+          color: #666;
+          font-size: 0.9rem;
+          font-weight: 500;
+          padding-bottom: 0.75rem;
+        }
+
+        .news-table td.file-cell {
+          border-bottom: none;
+          padding-top: 0.75rem;
+          padding-bottom: 1.25rem;
+        }
+
+        .news-table td.file-cell::before {
+          display: none;
+        }
+
+        .btn-view-file {
+          width: 100%;
+          text-align: center;
+          padding: 0.875rem;
+          margin-top: 0.25rem;
+          font-weight: 500;
+          background: #f8f9fa;
+          border-radius: 8px;
+        }
+
+        .btn-view-file:hover {
+          background: #004a9f;
+        }
+
+        .table-responsive {
+          border: none;
+          box-shadow: none;
+          background: transparent;
+        }
+
+        .news-container {
+          margin-top: 1.5rem;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <!-- Top Bar -->
+    <div class="top-bar">
+      <div class="left-links">
+        <a href="/">Home</a>
+        <a href="/sitemap">Sitemap</a>
+      </div>
+      <div class="right-links">
+        <a href="#main-content" class="skip-main">Skip to Main Content</a>
+        <a href="#" class="screen-reader">Screen Reader Access</a>
+        <div class="font-size-controls">
+          <button class="font-size-btn" id="decreaseFont">T-</button>
+          <button class="font-size-btn" id="defaultFont">T</button>
+          <button class="font-size-btn" id="increaseFont">T+</button>
+        </div>
+        <select class="language-select" id="languageSelect">
+          <option value="en">English</option>
+          <option value="hi">हिंदी</option>
+        </select>
+      </div>
+    </div>
+
+    <!-- Main Header -->
+    <header class="main-header">
+      <div class="logo-section">
+        <img
+          src="/images/emblem.png"
+          alt="Government of India Emblem"
+          class="emblem-logo"
+        />
+        <div class="header-text">
+          <h1>District Disability Rehabilitation Centre, Mumbai</h1>
+          <p>Department of Empowerment of Persons with Disabilities,</p>
+          <p>Ministry of Social Justice and Empowerment, Govt. of India</p>
+        </div>
+        <img src="/images/ddrc-logo.png" alt="DDRC Logo" class="ddrc-logo" />
+      </div>
+    </header>
+
+    <!-- Navigation Menu -->
+    <nav class="main-nav">
+      <a href="/" class="nav-icon">
+        <img src="/images/home-icons.png" alt="Home" />
+      </a>
+      <a href="/apply">Apply For UDID</a>
+      <a href="/track">Track Your Application</a>
+      <a href="/data">Aggregated-Data</a>
+      <a href="/reports">Pendency-Report</a>
+      <a href="/media">Media</a>
+      <a href="/faqs">FAQs</a>
+      <a href="/contact">Contact Us</a>
+
+      <!-- Add spacer to push login buttons to the right -->
+      <div class="nav-spacer"></div>
+
+      <!-- Add login buttons -->
+      <a href="/login" class="nav-login-btn">
+        <img src="/images/login.svg" alt="Login Icon" />
+        Divyangjan Login
+      </a>
+      <a href="/department-login" class="nav-login-btn">
+        <img src="/images/user-plus.svg" alt="User Icon" />
+        Department User Login
+      </a>
+    </nav>
+
+    <!-- Page Header -->
+    <div class="page-header">
+      <div class="container">
+        <nav aria-label="breadcrumb">
+          <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a href="/">Home</a></li>
+            <li class="breadcrumb-item active" aria-current="page">
+              News & Updates
+            </li>
+          </ol>
+        </nav>
+        <h2 class="page-title">News & Updates</h2>
+        <p class="page-description">
+          Stay updated with the latest news and announcements from DDRC Mumbai
+        </p>
+      </div>
+    </div>
+
+    <main id="main-content">
+      <div class="container">
+        <div class="news-container">
+          <div class="table-container">
+            <table class="news-table">
+              <thead>
+                <tr>
+                  <th>DATE</th>
+                  <th>TITLE</th>
+                  <th>DESCRIPTION</th>
+                  <th>FILE</th>
+                </tr>
+              </thead>
+              <tbody>
+                <!-- News items will be loaded here -->
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </main>
+
+    <!-- Footer -->
+    <footer>
+      <div class="footer-content">
+        <div class="footer-section">
+          <h3>About</h3>
+          <ul>
+            <li><a href="/about-udid">Know more about DDRC</a></li>
+            <li>
+              <a href="/schemes">Schemes for Persons with Disabilities</a>
+            </li>
+            <li><a href="/about-department">About Department</a></li>
+            <li><a href="/medical-camps">Medical Camps / Hospitals</a></li>
+          </ul>
+        </div>
+        <div class="footer-section">
+          <h3>Quick Access Key</h3>
+          <ul>
+            <li>H = Go to Home Page</li>
+            <li>S = Skip to main content</li>
+            <li>F = Site Search</li>
+            <li>T = Back to Top</li>
+          </ul>
+        </div>
+        <div class="footer-section">
+          <h3>Use keyboard for quick access</h3>
+          <ul>
+            <li>Internet Explorer - [Alt] + accesskey</li>
+            <li>Chrome - [Alt] + accesskey</li>
+            <li>Firefox - [Alt] [Shift] + accesskey</li>
+            <li>Safari - [Alt] + accesskey</li>
+          </ul>
+        </div>
+      </div>
+      <div class="footer-bottom">
+        <p>
+          &copy; Copyright
+          <script>
+            document.write(new Date().getFullYear());
+          </script>
+          District Disability Rehabilitation Centre, Mumbai. All Rights
+          Reserved.
+        </p>
+      </div>
+      <div class="footer-links">
+        <a href="/terms">Terms & Conditions</a>
+        <a href="/privacy">Privacy Policy</a>
+        <a href="/copyright">Copyright Policy</a>
+        <a href="/accessibility">Accessibility Statement</a>
+      </div>
+    </footer>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+      document.addEventListener("DOMContentLoaded", async () => {
+        const tbody = document.querySelector(".news-table tbody");
+        tbody.innerHTML =
+          '<tr><td colspan="4"><div class="loading-spinner">Loading...</div></td></tr>';
+
+        try {
+          const response = await fetch("/api/news");
+          const data = await response.json();
+
+          if (data.success && data.news.length > 0) {
+            tbody.innerHTML = "";
+            data.news.forEach((news) => {
+              const row = document.createElement("tr");
+              row.innerHTML = `
+                <td data-label="DATE">${new Date(
+                  news.published_date
+                ).toLocaleDateString()}</td>
+                <td data-label="TITLE" class="news-title">${news.title}</td>
+                <td data-label="DESCRIPTION" class="news-description">${
+                  news.description
+                }</td>
+                ${
+                  news.file_path
+                    ? `<td class="file-cell"><a href="${news.file_path}" target="_blank" class="btn btn-view-file">View File</a></td>`
+                    : ""
+                }
+              `;
+              tbody.appendChild(row);
+            });
+          } else {
+            tbody.innerHTML = `
+              <tr>
+                <td colspan="4">
+                  <div class="empty-state">
+                    <p>No news items available at the moment.</p>
+                  </div>
+                </td>
+              </tr>
+            `;
+          }
+        } catch (error) {
+          console.error("Error loading news:", error);
+          tbody.innerHTML = `
+            <tr>
+              <td colspan="4">
+                <div class="empty-state">
+                  <p>Error loading news items. Please try again later.</p>
+                </div>
+              </td>
+            </tr>
+          `;
+        }
+      });
+    </script>
+  </body>
+</html>

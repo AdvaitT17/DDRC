@@ -5,6 +5,7 @@ require("dotenv").config();
 const formRoutes = require("./routes/formRoutes");
 const authRoutes = require("./routes/authRoutes");
 const userAuthRoutes = require("./routes/userAuthRoutes");
+const newsRoutes = require("./routes/news");
 const {
   authenticateToken,
   requireRole,
@@ -20,35 +21,96 @@ const userManagementRoutes = require("./routes/userManagementRoutes");
 const { uploadsDir } = require("./config/upload");
 const pool = require("./config/database");
 const tokenManager = require("./utils/temporaryAccess");
+const fs = require("fs");
 
 const app = express();
+
+// Create uploads directories if they don't exist
+const uploadDirs = [
+  path.join(__dirname, "uploads"),
+  path.join(__dirname, "uploads/news"),
+  path.join(__dirname, "uploads/forms"),
+  path.join(__dirname, "uploads/documents"),
+];
+
+uploadDirs.forEach((dir) => {
+  if (!fs.existsSync(dir)) {
+    fs.mkdirSync(dir, { recursive: true });
+  }
+});
 
 // Middleware
 app.use(cors());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-// Serve uploaded files with authentication
-app.use("/uploads", async (req, res, next) => {
+// Serve news files publicly without authentication
+app.use("/uploads/news", express.static(path.join(__dirname, "uploads/news")));
+
+// Serve user-submitted files with authentication
+app.use("/uploads/forms", async (req, res, next) => {
   try {
     const accessToken = req.query.access_token;
     if (!accessToken) {
       return res.status(401).json({ message: "No token provided" });
     }
 
-    const accessData = tokenManager.validateToken(accessToken);
-    if (!accessData) {
-      return res
-        .status(401)
-        .json({ message: "Invalid or expired access token" });
+    // Get the file path from the URL and clean it
+    const filePath = req.url.split("?")[0];
+    const cleanPath = filePath.replace(/^\//, "");
+    const fullCleanPath = `forms/${cleanPath}`;
+
+    // Validate the token and check if it matches the requested file
+    const tokenData = tokenManager.validateToken(accessToken);
+
+    if (!tokenData || tokenData.filename !== fullCleanPath) {
+      return res.status(401).json({ message: "Invalid or expired token" });
     }
 
-    // Verify the requested file matches the token
-    if (accessData.filename !== req.path.slice(1)) {
-      return res.status(403).json({ message: "Access denied" });
+    // If token is valid and matches the file, serve the file directly
+    const fullPath = path.join(__dirname, "uploads", fullCleanPath);
+
+    if (!fs.existsSync(fullPath)) {
+      return res.status(404).json({ message: "File not found" });
     }
 
-    express.static(uploadsDir)(req, res, next);
+    // Set appropriate content type based on file extension
+    const ext = path.extname(fullPath).toLowerCase();
+    const contentType =
+      {
+        ".pdf": "application/pdf",
+        ".doc": "application/msword",
+        ".docx":
+          "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+        ".jpg": "image/jpeg",
+        ".jpeg": "image/jpeg",
+        ".png": "image/png",
+      }[ext] || "application/octet-stream";
+
+    res.setHeader("Content-Type", contentType);
+    fs.createReadStream(fullPath).pipe(res);
+  } catch (error) {
+    res.status(401).json({ message: "Error accessing file" });
+  }
+});
+
+// Serve department files with authentication
+app.use("/uploads/documents", async (req, res, next) => {
+  try {
+    const authToken = req.query.access_token;
+    if (!authToken) {
+      return res.status(401).json({ message: "No token provided" });
+    }
+
+    try {
+      const decoded = jwt.verify(authToken, process.env.JWT_SECRET);
+      if (!decoded || decoded.type !== "department") {
+        return res.status(403).json({ message: "Access denied" });
+      }
+      express.static(path.join(__dirname, "uploads/documents"))(req, res, next);
+    } catch (err) {
+      return res.status(401).json({ message: "Invalid token" });
+    }
   } catch (error) {
     console.error("Upload access error:", error);
     res.status(401).json({ message: "Invalid token" });
@@ -78,6 +140,7 @@ app.use(
 app.use("/api/form", formRoutes);
 app.use("/api/auth", authRoutes);
 app.use("/api/auth", userAuthRoutes);
+app.use("/api/news", newsRoutes);
 app.use("/api/registration", registrationRoutes);
 app.use(
   "/api/admin",
@@ -167,7 +230,7 @@ app.get(
   }
 );
 
-// Admin routes - serve admin HTML for all admin paths with auth check
+// Admin routes - serve admin HTML files directly
 app.get(["/admin", "/admin/*"], async (req, res) => {
   try {
     // Check for auth token
@@ -187,7 +250,19 @@ app.get(["/admin", "/admin/*"], async (req, res) => {
       return res.redirect("/department-login");
     }
 
-    res.sendFile(path.join(__dirname, "../public/admin/index.html"));
+    // If path is just /admin, redirect to dashboard
+    if (req.path === "/admin") {
+      return res.redirect("/admin/dashboard/index.html");
+    }
+
+    // Try to serve the requested HTML file
+    const filePath = path.join(__dirname, "../public", req.path);
+    if (fs.existsSync(filePath)) {
+      res.sendFile(filePath);
+    } else {
+      // If file doesn't exist, send 404
+      res.status(404).send("Page not found");
+    }
   } catch (error) {
     console.error("Error serving admin HTML:", error);
     res.redirect("/department-login");
@@ -201,13 +276,11 @@ app.get("/api/health", (req, res) => {
 
 // Error handling for 404
 app.use((req, res) => {
-  console.log("404 Not Found:", req.path);
   res.status(404).send("Page not found");
 });
 
 // Error handling middleware
 app.use((err, req, res, next) => {
-  console.error("Server Error:", err.stack);
   res.status(500).json({ error: "Something went wrong!" });
 });
 

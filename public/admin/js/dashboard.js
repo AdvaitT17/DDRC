@@ -506,9 +506,6 @@ async function previewDocument(fileName) {
 
     const { accessUrl } = await response.json();
 
-    // Log the access URL for debugging (remove in production)
-    console.log("Access URL generated:", accessUrl);
-
     const modalHtml = `
       <div class="modal fade" id="documentPreviewModal" tabindex="-1">
         <div class="modal-dialog modal-xl modal-dialog-centered">

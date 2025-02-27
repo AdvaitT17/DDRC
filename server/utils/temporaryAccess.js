@@ -31,7 +31,6 @@ class TokenManager {
     }
 
     if (Date.now() > data.expiresAt) {
-      console.log("Token expired:", { token, expiresAt: data.expiresAt });
       this.tokens.delete(token);
       return null;
     }
@@ -39,7 +38,6 @@ class TokenManager {
   }
 
   cleanupUserTokens(userId) {
-    let userTokenCount = 0;
     const now = Date.now();
 
     // Count and collect user's tokens
@@ -59,22 +57,10 @@ class TokenManager {
     setInterval(() => {
       try {
         const now = Date.now();
-        let totalTokens = 0;
-        let expiredTokens = 0;
-
         for (const [token, data] of this.tokens.entries()) {
-          totalTokens++;
           if (data.expiresAt < now) {
             this.tokens.delete(token);
-            expiredTokens++;
           }
-        }
-
-        // Only log if there were expired tokens
-        if (expiredTokens > 0) {
-          console.log(
-            `Cleanup task: removed ${expiredTokens}/${totalTokens} expired tokens`
-          );
         }
       } catch (error) {
         console.error("Token cleanup task error:", error);
