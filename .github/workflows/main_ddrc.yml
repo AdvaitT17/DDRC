@@ -80,94 +80,18 @@ jobs:
           EOL
           sed -i '1s/^/require(".\/path-fix.js");\n/' server/server.js
 
-      - name: Debug repository structure
-        run: |
-          echo "Current directory: $(pwd)"
-          echo "Listing repository contents:"
-          ls -la
-          echo "Listing server directory:"
-          ls -la server
-          echo "Listing routes directory:"
-          ls -la server/routes || echo "Routes directory not found"
-
       - name: Prepare deployment
         run: |
           mkdir -p deployment
-<<<<<<< ours
-          mkdir -p deployment/server
-          mkdir -p deployment/server/routes
-          
-          # Copy all server files
-          cp -r server/* deployment/server/
-          
-          # Explicitly ensure routes directory and news.js exists
-          if [ -f "server/routes/news.js" ]; then
-            echo "Found news.js, copying to deployment"
-            cp server/routes/news.js deployment/server/routes/
-          else
-            echo "WARNING: news.js not found at expected location!"
-            echo "Creating placeholder news.js file to prevent deployment failure"
-            cat > deployment/server/routes/news.js << 'EOL'
-            const express = require('express');
-            const router = express.Router();
-
-            // Basic news routes
-            router.get('/', (req, res) => {
-              res.json({ message: 'News API endpoint' });
-            });
-
-            module.exports = router;
-            EOL
-          fi
-          
-          # Create upload directories
-          mkdir -p deployment/server/uploads
-          mkdir -p deployment/server/uploads/documents
-          mkdir -p deployment/server/uploads/forms
-          mkdir -p deployment/server/uploads/news
-          
-          # Ensure proper permissions
-          chmod -R 755 deployment/server/uploads
-          
-          # Remove node_modules to avoid duplicates
-          rm -rf deployment/server/node_modules 2>/dev/null || true
-          
-          # Copy main files
-          cp server/server.js deployment/
-          cp server/path-fix.js deployment/
-          cp server/package.json deployment/
-          cp server/package-lock.json deployment/ 2>/dev/null || true
-          
-          # Copy public assets
-||||||| ancestor
-          mkdir -p deployment/server
-          cp -r server/* deployment/server/
-          rm -rf deployment/server/node_modules 2>/dev/null || true
-          cp server/server.js deployment/
-          cp server/path-fix.js deployment/
-          cp server/package.json deployment/
-          cp server/package-lock.json deployment/ 2>/dev/null || true
-=======
           cp -r server deployment/
           rm -rf deployment/server/node_modules
->>>>>>> theirs
           cp -r public deployment/
-<<<<<<< ours
-          
-          # Debug - verify deployment structure
-          echo "Checking deployment structure:"
-          ls -la deployment/server/routes
-
-          # Create web.config for IIS
-||||||| ancestor
-=======
 
           # Move server files to root of deployment
           mv deployment/server/* deployment/
           rm -rf deployment/server
 
           # Create web.config
->>>>>>> theirs
           cat > deployment/web.config << 'EOL'
           <?xml version="1.0" encoding="utf-8"?>
           <configuration>
