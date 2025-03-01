@@ -804,3 +804,197 @@ footer .footer-section ul li {
   margin-bottom: 12px;
   padding: 0;
 }
+
+/* Events Section */
+.events-section.wide {
+  background: #00205b;
+  color: white;
+  padding: 0;
+  margin-top: 40px;
+}
+
+.events-section.wide .events-header {
+  background: rgba(255, 255, 255, 0.1);
+  border-bottom: none;
+  padding: 20px 30px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.events-section.wide .events-header h2 {
+  color: white;
+  font-size: 20px;
+  margin: 0;
+}
+
+.events-section.wide .events-list {
+  padding: 20px 30px;
+  max-height: 350px;
+  overflow-y: auto;
+}
+
+.event-item {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+  padding: 15px 0;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.event-item:last-child {
+  border-bottom: none;
+}
+
+.event-item .event-image {
+  width: 120px;
+  height: 80px;
+  border-radius: 4px;
+  overflow: hidden;
+  flex-shrink: 0;
+}
+
+.event-item .event-image img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.event-item .event-details {
+  flex: 1;
+}
+
+.event-item .date {
+  color: #f47920;
+  font-size: 14px;
+  font-weight: 500;
+  display: block;
+  margin-bottom: 5px;
+}
+
+.event-item p {
+  color: white;
+  opacity: 0.9;
+  font-size: 14px;
+  line-height: 1.6;
+  margin: 0;
+}
+
+/* Make sections same height but shorter */
+.about-section,
+.news-section.wide,
+.events-section.wide,
+.faq-section,
+.gallery-section {
+  height: 350px;
+  margin: 0;
+  border-radius: 8px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.08);
+  display: flex;
+  flex-direction: column;
+}
+
+/* Adjust padding for headers */
+.news-section.wide .news-header,
+.events-section.wide .events-header,
+.faq-header,
+.gallery-header {
+  padding: 15px 25px;
+}
+
+/* Adjust content padding */
+.about-section {
+  padding: 20px 25px;
+}
+
+.news-section.wide .news-list,
+.events-section.wide .events-list,
+.accordion,
+.gallery-content {
+  padding: 15px 25px;
+  flex: 1;
+  overflow-y: auto;
+}
+
+/* Gallery adjustments */
+.gallery-grid {
+  gap: 12px;
+}
+
+/* Restore font sizes to original */
+.about-section h3 {
+  font-size: 20px;
+}
+.about-section h2 {
+  font-size: 32px;
+}
+.about-section p {
+  font-size: 16px;
+}
+.news-header h2 {
+  font-size: 24px;
+}
+.news-item p {
+  font-size: 14px;
+}
+.date {
+  font-size: 14px;
+}
+.view-all {
+  font-size: 15px;
+}
+.accordion-button {
+  font-size: 16px;
+}
+.accordion-body {
+  font-size: 14px;
+}
+.tab {
+  font-size: 17px;
+}
+
+/* Update grid layout to not affect footer */
+.grid-layout {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 25px;
+  margin-bottom: 60px;
+}
+
+/* Ensure main content styles don't leak into footer */
+.main-content {
+  max-width: 1400px;
+  margin: 30px auto;
+  padding: 0 30px;
+  margin-bottom: 0;
+}
+
+/* Reset any inherited grid styles that might affect footer */
+footer .footer-content {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 40px;
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 15px;
+}
+
+/* Ensure footer sections are properly aligned */
+footer .footer-section {
+  display: block;
+  width: 100%;
+  height: auto;
+}
+
+/* Reset any margins or paddings that might be inherited */
+footer .footer-section ul {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  max-width: 280px;
+}
+
+footer .footer-section ul li {
+  margin-bottom: 12px;
+  padding: 0;
+}

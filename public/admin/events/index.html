@@ -1,0 +1,1582 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Event Management | DDRC Admin</title>
+    <link
+      href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="/css/main.css" />
+    <link rel="stylesheet" href="/admin/css/style.css" />
+    <link rel="stylesheet" href="/admin/events/events.css" />
+    <style>
+      /* Image preview styles */
+      .img-preview {
+        max-width: 200px;
+        max-height: 120px;
+        margin-top: 10px;
+        border-radius: 4px;
+        display: none;
+        object-fit: cover;
+        border: 1px solid #dee2e6;
+      }
+
+      /* Table image styles */
+      .event-image {
+        width: 120px;
+        height: 80px;
+        object-fit: cover;
+        border-radius: 4px;
+        border: 1px solid #dee2e6;
+      }
+
+      /* Description truncation */
+      .event-description {
+        max-width: 300px;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+      }
+
+      /* Modal styles */
+      .modal-dialog {
+        max-width: 800px;
+        max-height: 90vh;
+        margin: 1.75rem auto;
+      }
+
+      .modal-dialog.modal-sm {
+        max-width: 400px;
+      }
+
+      .modal-dialog-centered {
+        display: flex;
+        align-items: center;
+        min-height: calc(100% - 3.5rem);
+      }
+
+      .modal-content {
+        display: flex;
+        flex-direction: column;
+        max-height: calc(100vh - 3.5rem);
+      }
+
+      .modal-body {
+        padding: 1.5rem;
+        overflow-y: auto;
+      }
+
+      .modal-body::-webkit-scrollbar {
+        width: 8px;
+      }
+
+      .modal-body::-webkit-scrollbar-track {
+        background: #f1f1f1;
+        border-radius: 4px;
+      }
+
+      .modal-body::-webkit-scrollbar-thumb {
+        background: #888;
+        border-radius: 4px;
+      }
+
+      .modal-body::-webkit-scrollbar-thumb:hover {
+        background: #555;
+      }
+
+      /* Additional images container */
+      .additional-images {
+        border: 1px solid #dee2e6;
+        padding: 15px;
+        border-radius: 4px;
+        background: #f8f9fa;
+      }
+
+      .additional-images .mb-2:not(:last-child) {
+        border-bottom: 1px solid #dee2e6;
+        padding-bottom: 15px;
+        margin-bottom: 15px;
+      }
+
+      /* Table styles */
+      .table td {
+        vertical-align: middle;
+      }
+
+      /* Action buttons */
+      .action-buttons {
+        display: flex;
+        gap: 8px;
+      }
+
+      /* Alert container */
+      .alerts-container {
+        position: fixed;
+        top: 20px;
+        right: 20px;
+        z-index: 1050;
+        max-width: 350px;
+      }
+
+      /* Loading spinner */
+      .loading-spinner {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        height: 200px;
+      }
+
+      /* Required field indicator */
+      .required-field::after {
+        content: "*";
+        color: red;
+        margin-left: 4px;
+      }
+
+      /* Form validation styles */
+      .form-control.is-invalid {
+        border-color: #dc3545;
+        background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 12' width='12' height='12' fill='none' stroke='%23dc3545'%3e%3ccircle cx='6' cy='6' r='4.5'/%3e%3cpath stroke-linejoin='round' d='M5.8 3.6h.4L6 6.5z'/%3e%3ccircle cx='6' cy='8.2' r='.6' fill='%23dc3545' stroke='none'/%3e%3c/svg%3e");
+        background-repeat: no-repeat;
+        background-position: right calc(0.375em + 0.1875rem) center;
+        background-size: calc(0.75em + 0.375rem) calc(0.75em + 0.375rem);
+      }
+
+      .invalid-feedback {
+        display: none;
+        width: 100%;
+        margin-top: 0.25rem;
+        font-size: 0.875em;
+        color: #dc3545;
+      }
+
+      .was-validated .form-control:invalid ~ .invalid-feedback,
+      .form-control.is-invalid ~ .invalid-feedback {
+        display: block;
+      }
+
+      /* Validation animation */
+      @keyframes shake {
+        0%,
+        100% {
+          transform: translateX(0);
+        }
+        10%,
+        30%,
+        50%,
+        70%,
+        90% {
+          transform: translateX(-5px);
+        }
+        20%,
+        40%,
+        60%,
+        80% {
+          transform: translateX(5px);
+        }
+      }
+
+      .shake {
+        animation: shake 0.6s ease-in-out;
+      }
+
+      /* Validation success indicator */
+      .form-control.is-valid {
+        border-color: #28a745;
+        background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 8 8'%3e%3cpath fill='%2328a745' d='M2.3 6.73L.6 4.53c-.4-1.04.46-1.4 1.1-.8l1.1 1.4 3.4-3.8c.6-.63 1.6-.27 1.2.7l-4 4.6c-.43.5-.8.4-1.1.1z'/%3e%3c/svg%3e");
+        background-repeat: no-repeat;
+        background-position: right calc(0.375em + 0.1875rem) center;
+        background-size: calc(0.75em + 0.375rem) calc(0.75em + 0.375rem);
+      }
+
+      .valid-feedback {
+        display: none;
+        width: 100%;
+        margin-top: 0.25rem;
+        font-size: 0.875em;
+        color: #28a745;
+      }
+
+      .was-validated .form-control:valid ~ .valid-feedback,
+      .form-control.is-valid ~ .valid-feedback {
+        display: block;
+      }
+
+      /* Dropzone validation */
+      .dropzone.is-invalid {
+        border-color: #dc3545;
+        border-style: solid;
+      }
+
+      /* File info styles */
+      .file-info {
+        margin-top: 10px;
+        padding: 10px;
+        border-radius: 4px;
+        background-color: #f8f9fa;
+        border: 1px solid #dee2e6;
+      }
+
+      .file-info a {
+        word-break: break-all;
+      }
+
+      .image-container {
+        position: relative;
+        display: inline-block;
+        margin-top: 10px;
+        margin-right: 10px;
+        transition: transform 0.2s ease, box-shadow 0.2s ease;
+      }
+
+      .image-container:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+      }
+
+      .image-container img {
+        max-width: 200px;
+        max-height: 120px;
+        border-radius: 4px;
+        border: 1px solid #dee2e6;
+        object-fit: cover;
+      }
+
+      .image-container .remove-image,
+      .image-container .remove-preview {
+        position: absolute;
+        top: -10px;
+        right: -10px;
+        background: #dc3545;
+        color: white;
+        border-radius: 50%;
+        width: 24px;
+        height: 24px;
+        text-align: center;
+        line-height: 24px;
+        cursor: pointer;
+        font-weight: bold;
+        transition: background-color 0.2s ease, transform 0.2s ease;
+        box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+      }
+
+      .image-container .remove-image:hover,
+      .image-container .remove-preview:hover {
+        background: #bd2130;
+        transform: scale(1.1);
+      }
+
+      /* Image preview animation */
+      @keyframes fadeIn {
+        from {
+          opacity: 0;
+          transform: translateY(10px);
+        }
+        to {
+          opacity: 1;
+          transform: translateY(0);
+        }
+      }
+
+      .image-container {
+        animation: fadeIn 0.3s ease-out;
+      }
+
+      /* File upload button styling */
+      .custom-file-upload {
+        position: relative;
+        overflow: hidden;
+        display: inline-block;
+        cursor: pointer;
+      }
+
+      .custom-file-upload input[type="file"] {
+        position: absolute;
+        left: 0;
+        top: 0;
+        opacity: 0;
+        width: 100%;
+        height: 100%;
+        cursor: pointer;
+      }
+
+      /* Loading overlay */
+      .loading-overlay {
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: rgba(255, 255, 255, 0.7);
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        z-index: 2000;
+        display: none;
+      }
+
+      .loading-overlay .spinner-border {
+        width: 3rem;
+        height: 3rem;
+      }
+
+      /* Drag and drop zone */
+      .dropzone {
+        border: 2px dashed #dee2e6;
+        border-radius: 5px;
+        padding: 20px;
+        text-align: center;
+        background: #f8f9fa;
+        transition: all 0.3s ease;
+        margin-bottom: 15px;
+      }
+
+      .dropzone.dragover {
+        background: #e9ecef;
+        border-color: #007bff;
+      }
+
+      .dropzone p {
+        margin-bottom: 0;
+        color: #6c757d;
+      }
+
+      .dropzone .upload-icon {
+        font-size: 24px;
+        margin-bottom: 10px;
+        color: #6c757d;
+      }
+
+      /* Accessibility improvements */
+      .sr-only {
+        position: absolute;
+        width: 1px;
+        height: 1px;
+        padding: 0;
+        margin: -1px;
+        overflow: hidden;
+        clip: rect(0, 0, 0, 0);
+        white-space: nowrap;
+        border-width: 0;
+      }
+
+      /* Focus styles for better keyboard navigation */
+      .btn:focus,
+      .form-control:focus,
+      .dropzone:focus-within {
+        box-shadow: 0 0 0 0.25rem rgba(13, 110, 253, 0.25);
+        outline: none;
+      }
+
+      /* Keyboard focus indicator */
+      .keyboard-focus-indicator {
+        position: fixed;
+        bottom: 20px;
+        left: 20px;
+        background: rgba(0, 0, 0, 0.7);
+        color: white;
+        padding: 8px 12px;
+        border-radius: 4px;
+        font-size: 0.8rem;
+        z-index: 1050;
+        display: none;
+      }
+
+      /* Improved button hover states */
+      .btn-primary:hover {
+        background-color: #0b5ed7;
+        border-color: #0a58ca;
+        transform: translateY(-2px);
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+      }
+
+      .btn-danger:hover {
+        background-color: #bb2d3b;
+        border-color: #b02a37;
+        transform: translateY(-2px);
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+      }
+
+      .btn-secondary:hover {
+        background-color: #5c636a;
+        border-color: #565e64;
+        transform: translateY(-2px);
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+      }
+
+      /* Transition for buttons */
+      .btn {
+        transition: all 0.2s ease-in-out;
+      }
+    </style>
+  </head>
+  <body>
+    <!-- Auth check loader -->
+    <div id="authLoader" class="auth-loader">
+      <div class="spinner"></div>
+    </div>
+
+    <!-- Main content will be hidden until auth check -->
+    <div id="mainContent" style="display: none">
+      <div class="admin-top-bar">
+        <div class="left-links">
+          <a href="/admin/dashboard/index.html">Dashboard</a>
+          <a href="/admin/forms/index.html">Form Management</a>
+          <a href="/admin/news/index.html">News</a>
+          <a href="/admin/events/index.html" class="active">Events</a>
+          <a href="/admin/logbook/index.html">Logs</a>
+          <a href="/admin/users/index.html">Users</a>
+        </div>
+        <div class="right-links">
+          <span id="userInfo"></span>
+          <button
+            id="logoutBtn"
+            class="btn btn-link"
+            onclick="AuthManager.logout()"
+          >
+            Logout
+          </button>
+        </div>
+      </div>
+
+      <!-- Main Header -->
+      <header class="main-header">
+        <div class="logo-section">
+          <img
+            src="/images/emblem.png"
+            alt="Government of India Emblem"
+            class="emblem-logo"
+          />
+          <div class="header-text">
+            <h1>District Disability Rehabilitation Centre, Mumbai</h1>
+            <p>Department of Empowerment of Persons with Disabilities,</p>
+            <p>Ministry of Social Justice and Empowerment, Govt. of India</p>
+          </div>
+          <img src="/images/ddrc-logo.png" alt="DDRC Logo" class="ddrc-logo" />
+        </div>
+      </header>
+
+      <div class="admin-content">
+        <div class="dashboard-header">
+          <div class="d-flex justify-content-between align-items-center">
+            <div>
+              <h1>Event Management</h1>
+              <p class="text-muted">Manage and update events and activities</p>
+            </div>
+            <button class="btn btn-primary" id="addEventBtn">Add Event</button>
+          </div>
+        </div>
+
+        <!-- Events Table -->
+        <div class="content-card">
+          <div class="table-responsive">
+            <table class="table" id="eventsTable">
+              <thead>
+                <tr class="table-light">
+                  <th>Date</th>
+                  <th>Title</th>
+                  <th>Description</th>
+                  <th>Image</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody id="eventsTableBody">
+                <tr>
+                  <td colspan="5">
+                    <div class="loading-spinner">
+                      <div class="spinner-border text-primary" role="status">
+                        <span class="visually-hidden">Loading...</span>
+                      </div>
+                    </div>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Event Modal -->
+    <div
+      class="modal fade"
+      id="eventModal"
+      tabindex="-1"
+      aria-labelledby="eventModalLabel"
+      aria-hidden="true"
+    >
+      <div class="modal-dialog">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title" id="eventModalLabel">Add Event</h5>
+            <button
+              type="button"
+              class="btn-close"
+              data-bs-dismiss="modal"
+              aria-label="Close"
+            ></button>
+          </div>
+          <div class="modal-body">
+            <form id="eventForm" novalidate>
+              <input type="hidden" id="eventId" value="" />
+
+              <div class="mb-3">
+                <label for="eventTitle" class="form-label required-field"
+                  >Title</label
+                >
+                <input
+                  type="text"
+                  class="form-control"
+                  id="eventTitle"
+                  required
+                  placeholder="Enter event title"
+                />
+                <div class="invalid-feedback">Please enter a title</div>
+                <div class="valid-feedback">Looks good!</div>
+              </div>
+
+              <div class="mb-3">
+                <label for="eventDescription" class="form-label required-field"
+                  >Description</label
+                >
+                <textarea
+                  class="form-control"
+                  id="eventDescription"
+                  rows="3"
+                  required
+                  placeholder="Enter a brief description of the event"
+                ></textarea>
+                <div class="invalid-feedback">Please enter a description</div>
+                <div class="valid-feedback">Looks good!</div>
+                <small class="text-muted"
+                  >A brief summary of the event (shown in listings)</small
+                >
+              </div>
+
+              <div class="mb-3">
+                <label for="eventBody" class="form-label">Body</label>
+                <textarea
+                  class="form-control"
+                  id="eventBody"
+                  rows="6"
+                  placeholder="Enter detailed information about the event (optional)"
+                ></textarea>
+                <div class="valid-feedback">Looks good!</div>
+                <small class="text-muted"
+                  >Detailed event information (optional, shown on event
+                  page)</small
+                >
+              </div>
+
+              <div class="mb-3">
+                <label for="eventDate" class="form-label required-field"
+                  >Event Date</label
+                >
+                <input
+                  type="date"
+                  class="form-control"
+                  id="eventDate"
+                  required
+                />
+                <div class="invalid-feedback">Please select a date</div>
+                <div class="valid-feedback">Looks good!</div>
+              </div>
+
+              <div class="mb-3">
+                <label for="eventImage" class="form-label required-field"
+                  >Main Image</label
+                >
+                <div class="dropzone" id="mainImageDropzone">
+                  <div class="upload-icon">📁</div>
+                  <p>Drag & drop an image here or click to select</p>
+                  <input
+                    type="file"
+                    class="form-control d-none"
+                    id="eventImage"
+                    accept="image/jpeg,image/png"
+                  />
+                </div>
+                <div class="invalid-feedback" id="eventImageFeedback">
+                  Please select an image
+                </div>
+                <div class="valid-feedback">Image selected!</div>
+                <div
+                  id="existingMainImageInfo"
+                  class="file-info"
+                  style="display: none"
+                >
+                  <div>
+                    <strong>Current image:</strong>
+                    <span id="mainImageName"></span>
+                    <div class="image-container">
+                      <img id="mainImagePreview" alt="Main image preview" />
+                      <span
+                        class="remove-image"
+                        id="removeMainImage"
+                        title="Remove image"
+                        >×</span
+                      >
+                    </div>
+                    <small class="d-block mt-1"
+                      >Upload a new image to replace the current one</small
+                    >
+                  </div>
+                </div>
+              </div>
+
+              <div class="mb-3">
+                <label class="form-label">Additional Images (Optional)</label>
+                <div class="additional-images">
+                  <div
+                    id="existingAdditionalImagesInfo"
+                    class="file-info mb-3"
+                    style="display: none"
+                  >
+                    <strong>Current additional images:</strong>
+                    <div
+                      id="additionalImagesContainer"
+                      class="d-flex flex-wrap gap-3 mt-2"
+                    ></div>
+                    <small class="d-block mt-1"
+                      >Upload new images to add more</small
+                    >
+                  </div>
+
+                  <div class="mb-3">
+                    <div class="dropzone" id="additionalImagesDropzone">
+                      <div class="upload-icon">📁</div>
+                      <p>
+                        Drag & drop images here or click to select (up to 5)
+                      </p>
+                      <input
+                        type="file"
+                        class="form-control d-none"
+                        id="additionalImages"
+                        accept="image/jpeg,image/png"
+                        multiple
+                      />
+                    </div>
+                    <small class="text-muted d-block mt-1">
+                      Select multiple images at once (up to 5)
+                    </small>
+                    <div
+                      id="additionalImagesPreviewContainer"
+                      class="d-flex flex-wrap gap-3 mt-2"
+                    ></div>
+                  </div>
+                </div>
+              </div>
+            </form>
+          </div>
+          <div class="modal-footer">
+            <button
+              type="button"
+              class="btn btn-secondary"
+              data-bs-dismiss="modal"
+            >
+              Cancel
+            </button>
+            <button type="button" class="btn btn-primary" id="saveEventBtn">
+              Save
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Delete Confirmation Modal -->
+    <div
+      class="modal fade"
+      id="deleteConfirmModal"
+      tabindex="-1"
+      aria-hidden="true"
+    >
+      <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title">Confirm Delete</h5>
+            <button
+              type="button"
+              class="btn-close"
+              data-bs-dismiss="modal"
+              aria-label="Close"
+            ></button>
+          </div>
+          <div class="modal-body">
+            <p>
+              Are you sure you want to delete this event? This action cannot be
+              undone.
+            </p>
+          </div>
+          <div class="modal-footer">
+            <button
+              type="button"
+              class="btn btn-secondary"
+              data-bs-dismiss="modal"
+            >
+              Cancel
+            </button>
+            <button type="button" class="btn btn-danger" id="confirmDeleteBtn">
+              Delete
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Alerts Container -->
+    <div class="alerts-container"></div>
+
+    <!-- Loading Overlay -->
+    <div class="loading-overlay" id="loadingOverlay">
+      <div class="spinner-border text-primary" role="status">
+        <span class="visually-hidden">Loading...</span>
+      </div>
+    </div>
+
+    <!-- Keyboard Focus Indicator -->
+    <div class="keyboard-focus-indicator" id="keyboardFocusIndicator">
+      Keyboard navigation active
+    </div>
+
+    <!-- Scripts -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="/js/auth.js"></script>
+    <script src="/admin/js/admin.js"></script>
+
+    <script>
+      // Global variables
+      let eventModal;
+      let deleteConfirmModal;
+      let currentEventId = null;
+
+      // Initialize after DOM is loaded
+      document.addEventListener("DOMContentLoaded", async () => {
+        // Check authentication
+        if (!(await AuthManager.verifyAuth())) {
+          window.location.href = "/department-login";
+          return;
+        }
+
+        // Show main content
+        document.getElementById("authLoader").style.display = "none";
+        document.getElementById("mainContent").style.display = "block";
+
+        // Set user info
+        const userInfo = AuthManager.getUserInfo();
+        if (userInfo) {
+          document.getElementById(
+            "userInfo"
+          ).textContent = `Welcome, ${userInfo.username}`;
+        }
+
+        // Initialize Bootstrap modals
+        eventModal = new bootstrap.Modal(document.getElementById("eventModal"));
+        deleteConfirmModal = new bootstrap.Modal(
+          document.getElementById("deleteConfirmModal")
+        );
+
+        // Set up event listeners
+        setupEventListeners();
+
+        // Load events data
+        await loadEvents();
+
+        // Setup keyboard navigation indicator
+        setupKeyboardNavigation();
+      });
+
+      // Set up all event listeners
+      function setupEventListeners() {
+        // Add event button
+        document.getElementById("addEventBtn").addEventListener("click", () => {
+          resetEventForm();
+          document.getElementById("eventModalLabel").textContent = "Add Event";
+          document.getElementById("eventId").value = "";
+          document
+            .getElementById("eventImage")
+            .setAttribute("required", "required");
+          eventModal.show();
+        });
+
+        // Save event button
+        document
+          .getElementById("saveEventBtn")
+          .addEventListener("click", handleSaveEvent);
+
+        // Confirm delete button
+        document
+          .getElementById("confirmDeleteBtn")
+          .addEventListener("click", async () => {
+            if (currentEventId) {
+              showLoading(true);
+              await deleteEvent(currentEventId);
+              deleteConfirmModal.hide();
+              showLoading(false);
+            }
+          });
+
+        // Setup drag and drop for main image
+        setupDragAndDrop("mainImageDropzone", "eventImage", false);
+
+        // Setup drag and drop for additional images
+        setupDragAndDrop("additionalImagesDropzone", "additionalImages", true);
+
+        // Reset form when modal is closed
+        document
+          .getElementById("eventModal")
+          .addEventListener("hidden.bs.modal", resetEventForm);
+      }
+
+      // Setup drag and drop functionality
+      function setupDragAndDrop(dropzoneId, inputId, isMultiple) {
+        const dropzone = document.getElementById(dropzoneId);
+        const input = document.getElementById(inputId);
+
+        // Open file dialog when clicking on dropzone
+        dropzone.addEventListener("click", () => {
+          input.click();
+        });
+
+        // Handle drag events
+        ["dragenter", "dragover", "dragleave", "drop"].forEach((eventName) => {
+          dropzone.addEventListener(eventName, preventDefaults, false);
+        });
+
+        function preventDefaults(e) {
+          e.preventDefault();
+          e.stopPropagation();
+        }
+
+        // Add visual feedback when dragging over
+        ["dragenter", "dragover"].forEach((eventName) => {
+          dropzone.addEventListener(
+            eventName,
+            () => {
+              dropzone.classList.add("dragover");
+            },
+            false
+          );
+        });
+
+        ["dragleave", "drop"].forEach((eventName) => {
+          dropzone.addEventListener(
+            eventName,
+            () => {
+              dropzone.classList.remove("dragover");
+            },
+            false
+          );
+        });
+
+        // Handle dropped files
+        dropzone.addEventListener(
+          "drop",
+          (e) => {
+            const dt = e.dataTransfer;
+            if (isMultiple) {
+              input.files = dt.files;
+            } else {
+              // For single file, only take the first one
+              const newFileList = new DataTransfer();
+              if (dt.files.length > 0) {
+                newFileList.items.add(dt.files[0]);
+                input.files = newFileList.files;
+              }
+            }
+
+            // Trigger change event to update preview
+            const event = new Event("change");
+            input.dispatchEvent(event);
+          },
+          false
+        );
+
+        // Handle file selection via input
+        input.addEventListener("change", handleImagePreview);
+      }
+
+      // Show/hide loading overlay
+      function showLoading(show) {
+        document.getElementById("loadingOverlay").style.display = show
+          ? "flex"
+          : "none";
+      }
+
+      // Load events from API
+      async function loadEvents() {
+        try {
+          showLoading(true);
+
+          const token = AuthManager.getAuthToken();
+          const response = await fetch("/api/events", {
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+          });
+
+          if (!response.ok) {
+            if (response.status === 401 || response.status === 403) {
+              window.location.href = "/department-login";
+              return;
+            }
+            throw new Error(`HTTP error! status: ${response.status}`);
+          }
+
+          const data = await response.json();
+          const tbody = document.getElementById("eventsTableBody");
+
+          if (data.success && data.events && data.events.length > 0) {
+            tbody.innerHTML = "";
+
+            data.events.forEach((event) => {
+              const row = document.createElement("tr");
+              row.innerHTML = `
+                <td>${new Date(event.event_date).toLocaleDateString()}</td>
+                <td>${event.title}</td>
+                <td class="event-description">${event.description}</td>
+                <td>
+                  <img src="${
+                    event.image_path
+                  }" alt="Event image" class="event-image">
+                </td>
+                <td>
+                  <div class="action-buttons">
+                    <button class="btn btn-sm btn-primary edit-event-btn" data-event-id="${
+                      event.id
+                    }" title="Edit event">Edit</button>
+                    <button class="btn btn-sm btn-danger delete-event-btn" data-event-id="${
+                      event.id
+                    }" title="Delete event">Delete</button>
+                  </div>
+                </td>
+              `;
+              tbody.appendChild(row);
+            });
+
+            // Add event listeners to the new buttons
+            document.querySelectorAll(".edit-event-btn").forEach((btn) => {
+              btn.addEventListener("click", () =>
+                editEvent(btn.getAttribute("data-event-id"))
+              );
+            });
+
+            document.querySelectorAll(".delete-event-btn").forEach((btn) => {
+              btn.addEventListener("click", () => {
+                currentEventId = btn.getAttribute("data-event-id");
+                deleteConfirmModal.show();
+              });
+            });
+          } else {
+            tbody.innerHTML = `
+              <tr>
+                <td colspan="5" class="text-center py-4">
+                  <p class="mb-0 text-muted">No events found</p>
+                </td>
+              </tr>
+            `;
+          }
+        } catch (error) {
+          console.error("Error loading events:", error);
+          showAlert("Error loading events", "danger");
+
+          document.getElementById("eventsTableBody").innerHTML = `
+            <tr>
+              <td colspan="5" class="text-center py-4">
+                <p class="mb-0 text-danger">Failed to load events</p>
+                <button class="btn btn-sm btn-outline-primary mt-2" onclick="loadEvents()">Try Again</button>
+              </td>
+            </tr>
+          `;
+        } finally {
+          showLoading(false);
+        }
+      }
+
+      // Handle image preview
+      function handleImagePreview(event) {
+        const file = event.target.files[0];
+        if (!file && event.target.files.length === 0) return;
+
+        const inputId = event.target.id;
+
+        if (inputId === "eventImage") {
+          const reader = new FileReader();
+          reader.onload = function (e) {
+            // Hide existing image info if any
+            document.getElementById("existingMainImageInfo").style.display =
+              "none";
+
+            // Remove any "remove main image" flag
+            const removeFlag = document.getElementById("removeMainImageFlag");
+            if (removeFlag) removeFlag.remove();
+
+            // Show preview in the input area
+            const preview = document.getElementById("mainImagePreview");
+            preview.src = e.target.result;
+            document.getElementById("mainImageName").textContent = file.name;
+            document.getElementById("existingMainImageInfo").style.display =
+              "block";
+
+            // Add validation classes
+            const imageInput = document.getElementById("eventImage");
+            const mainImageDropzone =
+              document.getElementById("mainImageDropzone");
+            imageInput.classList.remove("is-invalid");
+            mainImageDropzone.classList.remove("is-invalid");
+            imageInput.classList.add("is-valid");
+            mainImageDropzone.classList.add("is-valid");
+          };
+          reader.readAsDataURL(file);
+        } else if (inputId === "additionalImages") {
+          // Handle multiple file selection
+          const files = event.target.files;
+          const previewContainer = document.getElementById(
+            "additionalImagesPreviewContainer"
+          );
+          previewContainer.innerHTML = "";
+
+          for (let i = 0; i < Math.min(files.length, 5); i++) {
+            const file = files[i];
+            const reader = new FileReader();
+
+            reader.onload = function (e) {
+              const imageContainer = document.createElement("div");
+              imageContainer.className = "image-container";
+              imageContainer.innerHTML = `
+                <img src="${e.target.result}" alt="Additional image preview" />
+                <span class="remove-preview" title="Remove image">×</span>
+              `;
+              previewContainer.appendChild(imageContainer);
+
+              // Add event listener to remove preview
+              imageContainer
+                .querySelector(".remove-preview")
+                .addEventListener("click", function () {
+                  imageContainer.remove();
+
+                  // Create a new FileList without this file
+                  const dt = new DataTransfer();
+                  const input = document.getElementById("additionalImages");
+                  const { files } = input;
+
+                  for (let j = 0; j < files.length; j++) {
+                    // Skip the file at index i
+                    if (j !== i) {
+                      dt.items.add(files[j]);
+                    }
+                  }
+
+                  input.files = dt.files;
+                });
+            };
+
+            reader.readAsDataURL(file);
+          }
+        }
+      }
+
+      // Edit event
+      async function editEvent(id) {
+        try {
+          showLoading(true);
+
+          const token = AuthManager.getAuthToken();
+          const response = await fetch(`/api/events/${id}`, {
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+          });
+
+          if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+          }
+
+          const data = await response.json();
+
+          if (data.success && data.event) {
+            const event = data.event;
+
+            // Reset form first
+            resetEventForm();
+
+            // Set form values
+            document.getElementById("eventId").value = event.id;
+            document.getElementById("eventTitle").value = event.title || "";
+            document.getElementById("eventDescription").value =
+              event.description || "";
+            document.getElementById("eventBody").value = event.body || "";
+            document.getElementById("eventDate").value = event.event_date
+              ? event.event_date.split("T")[0]
+              : "";
+
+            // Main image is not required when editing
+            document.getElementById("eventImage").removeAttribute("required");
+
+            // Show existing main image
+            if (event.image_path) {
+              const mainImageInfo = document.getElementById(
+                "existingMainImageInfo"
+              );
+              const mainImagePreview =
+                document.getElementById("mainImagePreview");
+              const mainImageName = document.getElementById("mainImageName");
+
+              mainImagePreview.src = event.image_path;
+              mainImageName.textContent = event.image_path.split("/").pop();
+              mainImageInfo.style.display = "block";
+            }
+
+            // Show additional images
+            const additionalImagesContainer = document.getElementById(
+              "additionalImagesContainer"
+            );
+            additionalImagesContainer.innerHTML = "";
+
+            let hasAdditionalImages = false;
+            ["1", "2", "3", "4", "5"].forEach((num) => {
+              const field = `additional_image${num}`;
+              if (event[field]) {
+                hasAdditionalImages = true;
+                const imagePath = event[field];
+                const fileName = imagePath.split("/").pop();
+
+                const imageContainer = document.createElement("div");
+                imageContainer.className = "image-container";
+                imageContainer.dataset.imagePath = imagePath;
+                imageContainer.dataset.imageField = field;
+
+                imageContainer.innerHTML = `
+                  <img src="${imagePath}" alt="Additional image ${num}" />
+                  <span class="remove-image" data-field="${field}" title="Remove image">×</span>
+                `;
+
+                additionalImagesContainer.appendChild(imageContainer);
+              }
+            });
+
+            if (hasAdditionalImages) {
+              document.getElementById(
+                "existingAdditionalImagesInfo"
+              ).style.display = "block";
+            }
+
+            // Update modal title
+            document.getElementById("eventModalLabel").textContent =
+              "Edit Event";
+
+            // Show modal
+            eventModal.show();
+
+            // Add event listeners for remove buttons
+            document
+              .getElementById("removeMainImage")
+              .addEventListener("click", function () {
+                document.getElementById("existingMainImageInfo").style.display =
+                  "none";
+                document
+                  .getElementById("eventImage")
+                  .setAttribute("required", "required");
+                // Add a hidden field to indicate main image should be removed
+                const hiddenInput = document.createElement("input");
+                hiddenInput.type = "hidden";
+                hiddenInput.id = "removeMainImageFlag";
+                hiddenInput.name = "removeMainImage";
+                hiddenInput.value = "true";
+                document.getElementById("eventForm").appendChild(hiddenInput);
+              });
+
+            document
+              .querySelectorAll(".remove-image[data-field]")
+              .forEach((btn) => {
+                btn.addEventListener("click", function () {
+                  const field = this.getAttribute("data-field");
+                  const container = this.closest(".image-container");
+                  container.remove();
+
+                  // Add a hidden field to indicate this additional image should be removed
+                  const hiddenInput = document.createElement("input");
+                  hiddenInput.type = "hidden";
+                  hiddenInput.id = `remove_${field}`;
+                  hiddenInput.name = `remove_${field}`;
+                  hiddenInput.value = "true";
+                  document.getElementById("eventForm").appendChild(hiddenInput);
+
+                  // Hide the container if no more images
+                  if (
+                    document.querySelectorAll(
+                      "#additionalImagesContainer .image-container"
+                    ).length === 0
+                  ) {
+                    document.getElementById(
+                      "existingAdditionalImagesInfo"
+                    ).style.display = "none";
+                  }
+                });
+              });
+          } else {
+            throw new Error(data.message || "Failed to load event details");
+          }
+        } catch (error) {
+          console.error("Error loading event details:", error);
+          showAlert("Error loading event details", "danger");
+        } finally {
+          showLoading(false);
+        }
+      }
+
+      // Handle save event (both add and update)
+      async function handleSaveEvent() {
+        // Validate form
+        const form = document.getElementById("eventForm");
+        if (!validateForm(form)) return;
+
+        try {
+          showLoading(true);
+
+          const eventId = document.getElementById("eventId").value;
+          const isEdit = eventId !== "";
+
+          const title = document.getElementById("eventTitle").value;
+          const description = document.getElementById("eventDescription").value;
+          const body = document.getElementById("eventBody").value;
+          const eventDate = document.getElementById("eventDate").value;
+          const imageInput = document.getElementById("eventImage");
+
+          // For new events, image is required
+          if (!isEdit && !imageInput.files.length) {
+            document.getElementById("eventImageFeedback").textContent =
+              "Please select an image";
+            imageInput.classList.add("is-invalid");
+            showLoading(false);
+            return;
+          }
+
+          const formData = new FormData();
+          formData.append("title", title);
+          formData.append("description", description);
+          formData.append("body", body);
+          formData.append("event_date", eventDate);
+
+          // Add main image if selected
+          if (imageInput.files.length > 0) {
+            formData.append("image", imageInput.files[0]);
+          }
+
+          // Check if main image should be removed
+          const removeMainImageFlag = document.getElementById(
+            "removeMainImageFlag"
+          );
+          if (removeMainImageFlag) {
+            formData.append("removeMainImage", "true");
+          }
+
+          // Add additional images if selected
+          const additionalImagesInput =
+            document.getElementById("additionalImages");
+          if (additionalImagesInput.files.length > 0) {
+            for (
+              let i = 0;
+              i < Math.min(additionalImagesInput.files.length, 5);
+              i++
+            ) {
+              formData.append(
+                `additional_image${i + 1}`,
+                additionalImagesInput.files[i]
+              );
+            }
+          }
+
+          // Check for additional images to remove
+          ["1", "2", "3", "4", "5"].forEach((num) => {
+            const removeFlag = document.getElementById(
+              `remove_additional_image${num}`
+            );
+            if (removeFlag) {
+              formData.append(`remove_additional_image${num}`, "true");
+            }
+          });
+
+          const token = AuthManager.getAuthToken();
+          const url = isEdit ? `/api/events/${eventId}` : "/api/events";
+          const method = isEdit ? "PUT" : "POST";
+
+          const response = await fetch(url, {
+            method: method,
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+            body: formData,
+          });
+
+          const data = await response.json();
+
+          if (response.ok && data.success) {
+            showAlert(
+              isEdit
+                ? "Event updated successfully"
+                : "Event added successfully",
+              "success"
+            );
+            eventModal.hide();
+            await loadEvents();
+          } else {
+            throw new Error(
+              data.message || `Failed to ${isEdit ? "update" : "save"} event`
+            );
+          }
+        } catch (error) {
+          console.error(
+            `Error ${
+              document.getElementById("eventId").value ? "updating" : "saving"
+            } event:`,
+            error
+          );
+          showAlert(
+            error.message ||
+              `Error ${
+                document.getElementById("eventId").value ? "updating" : "saving"
+              } event`,
+            "danger"
+          );
+        } finally {
+          showLoading(false);
+        }
+      }
+
+      // Delete event
+      async function deleteEvent(id) {
+        try {
+          const token = AuthManager.getAuthToken();
+          const response = await fetch(`/api/events/${id}`, {
+            method: "DELETE",
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+          });
+
+          const data = await response.json();
+
+          if (response.ok && data.success) {
+            showAlert("Event deleted successfully", "success");
+            await loadEvents();
+          } else {
+            throw new Error(data.message || "Failed to delete event");
+          }
+        } catch (error) {
+          console.error("Error deleting event:", error);
+          showAlert(error.message || "Error deleting event", "danger");
+        }
+      }
+
+      // Reset event form
+      function resetEventForm() {
+        const form = document.getElementById("eventForm");
+        form.reset();
+
+        // Clear validation
+        form.classList.remove("was-validated");
+        form
+          .querySelectorAll(".is-invalid")
+          .forEach((el) => el.classList.remove("is-invalid"));
+
+        // Hide all image previews
+        document.getElementById("existingMainImageInfo").style.display = "none";
+        document.getElementById("existingAdditionalImagesInfo").style.display =
+          "none";
+        document.getElementById("additionalImagesPreviewContainer").innerHTML =
+          "";
+        document.getElementById("additionalImagesContainer").innerHTML = "";
+
+        // Remove any hidden fields for image removal
+        const hiddenFields = form.querySelectorAll(
+          "input[type='hidden']:not(#eventId)"
+        );
+        hiddenFields.forEach((field) => field.remove());
+
+        // Reset event ID
+        document.getElementById("eventId").value = "";
+      }
+
+      // Validate form
+      function validateForm(form) {
+        // Add validation class
+        form.classList.add("was-validated");
+
+        // Check required fields
+        let isValid = true;
+        let firstInvalidElement = null;
+
+        // Check title
+        const title = document.getElementById("eventTitle");
+        if (!title.value.trim()) {
+          title.classList.add("is-invalid");
+          title.classList.remove("is-valid");
+          isValid = false;
+          if (!firstInvalidElement) firstInvalidElement = title;
+        } else {
+          title.classList.remove("is-invalid");
+          title.classList.add("is-valid");
+        }
+
+        // Check description
+        const description = document.getElementById("eventDescription");
+        if (!description.value.trim()) {
+          description.classList.add("is-invalid");
+          description.classList.remove("is-valid");
+          isValid = false;
+          if (!firstInvalidElement) firstInvalidElement = description;
+        } else {
+          description.classList.remove("is-invalid");
+          description.classList.add("is-valid");
+        }
+
+        // Check date
+        const date = document.getElementById("eventDate");
+        if (!date.value) {
+          date.classList.add("is-invalid");
+          date.classList.remove("is-valid");
+          isValid = false;
+          if (!firstInvalidElement) firstInvalidElement = date;
+        } else {
+          date.classList.remove("is-invalid");
+          date.classList.add("is-valid");
+        }
+
+        // For new events, check image
+        const eventId = document.getElementById("eventId").value;
+        const isEdit = eventId !== "";
+        const imageInput = document.getElementById("eventImage");
+        const mainImageDropzone = document.getElementById("mainImageDropzone");
+
+        if (!isEdit && !imageInput.files.length) {
+          imageInput.classList.add("is-invalid");
+          mainImageDropzone.classList.add("is-invalid");
+          isValid = false;
+          if (!firstInvalidElement) firstInvalidElement = imageInput;
+        } else {
+          imageInput.classList.remove("is-invalid");
+          mainImageDropzone.classList.remove("is-invalid");
+          if (imageInput.files.length > 0) {
+            imageInput.classList.add("is-valid");
+            mainImageDropzone.classList.add("is-valid");
+          }
+        }
+
+        // Optional: validate body if it has content
+        const body = document.getElementById("eventBody");
+        if (body.value.trim()) {
+          body.classList.add("is-valid");
+        } else {
+          body.classList.remove("is-valid");
+        }
+
+        // If form is invalid, shake the first invalid element to draw attention
+        if (!isValid && firstInvalidElement) {
+          firstInvalidElement.classList.add("shake");
+          // Scroll to the first invalid element
+          firstInvalidElement.scrollIntoView({
+            behavior: "smooth",
+            block: "center",
+          });
+
+          // Remove shake class after animation completes
+          setTimeout(() => {
+            firstInvalidElement.classList.remove("shake");
+          }, 600);
+
+          // Show alert for validation errors
+          showAlert("Please fill in all required fields", "warning");
+        }
+
+        return isValid;
+      }
+
+      // Show alert
+      function showAlert(message, type) {
+        const alertDiv = document.createElement("div");
+        alertDiv.className = `alert alert-${type} alert-dismissible fade show`;
+        alertDiv.setAttribute("role", "alert");
+        alertDiv.innerHTML = `
+          ${message}
+          <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        `;
+
+        const alertsContainer = document.querySelector(".alerts-container");
+        alertsContainer.appendChild(alertDiv);
+
+        // Auto dismiss after 5 seconds
+        setTimeout(() => {
+          alertDiv.classList.remove("show");
+          setTimeout(() => alertDiv.remove(), 150);
+        }, 5000);
+
+        // Announce alert for screen readers
+        const srAnnouncement = document.createElement("div");
+        srAnnouncement.className = "sr-only";
+        srAnnouncement.setAttribute("aria-live", "assertive");
+        srAnnouncement.textContent = `Alert: ${message}`;
+        document.body.appendChild(srAnnouncement);
+
+        // Remove announcement after it's been read
+        setTimeout(() => {
+          srAnnouncement.remove();
+        }, 3000);
+      }
+
+      // Setup keyboard navigation indicator
+      function setupKeyboardNavigation() {
+        const indicator = document.getElementById("keyboardFocusIndicator");
+        let usingKeyboard = false;
+
+        // Show indicator when using keyboard
+        document.addEventListener("keydown", (e) => {
+          if (e.key === "Tab") {
+            usingKeyboard = true;
+            indicator.style.display = "block";
+
+            // Hide after 3 seconds of inactivity
+            setTimeout(() => {
+              indicator.style.display = "none";
+            }, 3000);
+          }
+        });
+
+        // Hide indicator when using mouse
+        document.addEventListener("mousedown", () => {
+          usingKeyboard = false;
+          indicator.style.display = "none";
+        });
+
+        // Add keyboard shortcuts
+        document.addEventListener("keydown", (e) => {
+          // Alt+N to add new event
+          if (e.altKey && e.key === "n") {
+            e.preventDefault();
+            document.getElementById("addEventBtn").click();
+          }
+
+          // Escape to close modals
+          if (e.key === "Escape") {
+            if (document.querySelector(".modal.show")) {
+              e.preventDefault();
+              bootstrap.Modal.getInstance(
+                document.querySelector(".modal.show")
+              ).hide();
+            }
+          }
+
+          // Enter to save when modal is open and save button is visible
+          if (e.key === "Enter" && e.ctrlKey) {
+            if (document.querySelector(".modal.show #saveEventBtn")) {
+              e.preventDefault();
+              document.querySelector(".modal.show #saveEventBtn").click();
+            }
+          }
+        });
+      }
+    </script>
+  </body>
+</html>

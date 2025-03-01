@@ -47,6 +47,12 @@ app.use(express.urlencoded({ extended: true }));
 // Serve news files publicly without authentication
 app.use("/uploads/news", express.static(path.join(__dirname, "uploads/news")));
 
+// Serve event images publicly without authentication
+app.use(
+  "/uploads/events",
+  express.static(path.join(__dirname, "uploads/events"))
+);
+
 // Serve user-submitted files with authentication
 app.use("/uploads/forms", async (req, res, next) => {
   try {
@@ -140,6 +146,7 @@ app.use(
 app.use("/api/form", formRoutes);
 app.use("/api/auth", authRoutes);
 app.use("/api/auth", userAuthRoutes);
+console.log("Registering news routes at /api/news");
 app.use("/api/news", newsRoutes);
 app.use("/api/registration", registrationRoutes);
 app.use(
@@ -161,6 +168,7 @@ app.use(
   dashboardRoutes
 );
 app.use("/api/admin", userManagementRoutes);
+app.use("/api/events", require("./routes/events"));
 
 // HTML Routes - make sure these come after API routes
 app.get(
@@ -172,6 +180,8 @@ app.get(
     "/registration/success",
     "/login",
     "/track",
+    "/events",
+    "/events/event",
   ],
   async (req, res) => {
     try {
@@ -186,8 +196,8 @@ app.get(
             // Check if user has completed registration
             const [registration] = await pool.query(
               `SELECT id FROM registration_progress 
-               WHERE user_id = ? AND status = 'completed'
-               LIMIT 1`,
+             WHERE user_id = ? AND status = 'completed'
+             LIMIT 1`,
               [decoded.id]
             );
 
@@ -201,27 +211,32 @@ app.get(
         }
       }
 
-      // Serve appropriate HTML file based on path
-      if (req.path === "/") {
-        res.sendFile(path.join(__dirname, "../public/index.html"));
-      } else if (req.path === "/registration") {
-        res.sendFile(path.join(__dirname, "../public/registration/index.html"));
-      } else if (req.path === "/registration/form") {
-        res.sendFile(
-          path.join(__dirname, "../public/registration/form/index.html")
+      // Special handling for event pages
+      if (req.path === "/events/event") {
+        // Ensure we serve the event.html page regardless of query parameters
+        return res.sendFile(
+          path.join(__dirname, "../public/events/event.html")
         );
-      } else if (req.path === "/registration/success") {
-        res.sendFile(
-          path.join(__dirname, "../public/registration/success/index.html")
-        );
-      } else if (req.path === "/department-login") {
-        res.sendFile(
-          path.join(__dirname, "../public/department-login/index.html")
-        );
-      } else if (req.path === "/login") {
-        res.sendFile(path.join(__dirname, "../public/login/index.html"));
-      } else if (req.path === "/track") {
-        res.sendFile(path.join(__dirname, "../public/track/index.html"));
+      }
+
+      // Map paths to their corresponding HTML files
+      const pathMap = {
+        "/": "../public/index.html",
+        "/registration": "../public/registration/index.html",
+        "/registration/form": "../public/registration/form/index.html",
+        "/registration/success": "../public/registration/success/index.html",
+        "/department-login": "../public/department-login/index.html",
+        "/login": "../public/login/index.html",
+        "/track": "../public/track/index.html",
+        "/events": "../public/events/index.html",
+      };
+
+      const filePath = pathMap[req.path];
+      if (filePath) {
+        res.sendFile(path.join(__dirname, filePath));
+      } else {
+        // Send 404 page instead of plain text
+        res.status(404).sendFile(path.join(__dirname, "../public/404.html"));
       }
     } catch (error) {
       console.error("Error serving HTML:", error);
@@ -272,11 +287,6 @@ app.get(["/admin", "/admin/*"], async (req, res) => {
 // Health check route
 app.get("/api/health", (req, res) => {
   res.json({ status: "OK", message: "Server is running" });
-});
-
-// Error handling for 404
-app.use((req, res) => {
-  res.status(404).send("Page not found");
 });
 
 // Error handling middleware
