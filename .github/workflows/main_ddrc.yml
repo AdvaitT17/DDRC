@@ -91,18 +91,47 @@ jobs:
           mv deployment/server/* deployment/
           rm -rf deployment/server
 
-          # Create web.config
+          # Create required upload directories
+          mkdir -p deployment/uploads/news
+          mkdir -p deployment/uploads/forms
+          mkdir -p deployment/uploads/documents
+          mkdir -p deployment/uploads/events
+
+          # Set proper permissions for upload directories
+          chmod -R 755 deployment/uploads
+
+          # Create startup script to ensure directories exist and have proper permissions
+          cat > deployment/startup.sh << 'EOL'
+          #!/bin/bash
+
+          # Create required directories if they don't exist
+          mkdir -p /home/site/wwwroot/uploads/news
+          mkdir -p /home/site/wwwroot/uploads/forms
+          mkdir -p /home/site/wwwroot/uploads/documents
+          mkdir -p /home/site/wwwroot/uploads/events
+
+          # Set proper permissions
+          chmod -R 755 /home/site/wwwroot/uploads
+
+          # Start the application
+          node server.js
+          EOL
+
+          # Make startup script executable
+          chmod +x deployment/startup.sh
+
+          # Create web.config with startup script
           cat > deployment/web.config << 'EOL'
           <?xml version="1.0" encoding="utf-8"?>
           <configuration>
             <system.webServer>
               <handlers>
-                <add name="iisnode" path="server.js" verb="*" modules="iisnode"/>
+                <add name="iisnode" path="startup.sh" verb="*" modules="iisnode"/>
               </handlers>
               <rewrite>
                 <rules>
                   <rule name="NodeInspector" patternSyntax="ECMAScript" stopProcessing="true">
-                    <match url="^server.js\/debug[\/]?" />
+                    <match url="^startup.sh\/debug[\/]?" />
                   </rule>
                   <rule name="StaticContent">
                     <action type="Rewrite" url="public{REQUEST_URI}"/>
@@ -111,7 +140,7 @@ jobs:
                     <conditions>
                       <add input="{REQUEST_FILENAME}" matchType="IsFile" negate="True"/>
                     </conditions>
-                    <action type="Rewrite" url="server.js"/>
+                    <action type="Rewrite" url="startup.sh"/>
                   </rule>
                 </rules>
               </rewrite>
@@ -120,9 +149,19 @@ jobs:
                   <hiddenSegments>
                     <remove segment="bin"/>
                   </hiddenSegments>
+                  <!-- Increase max allowed content length for file uploads -->
+                  <requestLimits maxAllowedContentLength="30000000" />
                 </requestFiltering>
               </security>
               <httpErrors existingResponse="PassThrough" />
+              <!-- Configure iisnode -->
+              <iisnode
+                nodeProcessCommandLine="node"
+                watchedFiles="*.js;node_modules\*;routes\*.js;views\*.jade;middleware\*.js"
+                loggingEnabled="true"
+                logDirectory="iisnode"
+                debuggingEnabled="false"
+              />
             </system.webServer>
           </configuration>
           EOL
@@ -171,3 +210,21 @@ jobs:
           app-name: "ddrc"
           slot-name: "Production"
           package: .
+
+      - name: "Configure Azure App Service settings"
+        uses: azure/appservice-settings@v1
+        with:
+          app-name: "ddrc"
+          app-settings-json: |
+            [
+              {
+                "name": "SCM_DO_BUILD_DURING_DEPLOYMENT",
+                "value": "true",
+                "slotSetting": false
+              },
+              {
+                "name": "WEBSITE_RUN_FROM_PACKAGE",
+                "value": "0",
+                "slotSetting": false
+              }
+            ]

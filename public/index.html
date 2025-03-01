@@ -128,6 +128,25 @@
             </div>
           </div>
 
+          <div class="events-section wide">
+            <div class="events-header">
+              <h2>Latest Events</h2>
+              <a href="/events" class="view-all">View All <span>❯</span></a>
+            </div>
+            <div class="events-list" id="latestEvents">
+              <div class="event-slideshow">
+                <div class="event-slide-container">
+                  <!-- Events will be loaded here -->
+                </div>
+                <div class="event-controls">
+                  <button class="control-btn prev-btn" onclick="prevEvent()">❮</button>
+                  <button class="control-btn pause-btn" onclick="togglePause()">⏸</button>
+                  <button class="control-btn next-btn" onclick="nextEvent()">❯</button>
+                </div>
+              </div>
+            </div>
+          </div>
+
           <!-- Second Row -->
           <div class="faq-section">
             <div class="faq-header">
@@ -205,44 +224,6 @@
               </div>
             </div>
           </div>
-
-          <div class="gallery-section">
-            <div class="gallery-header">
-              <div class="tabs">
-                <button class="tab active">PHOTO GALLERY</button>
-                <button class="tab">VIDEO GALLERY</button>
-              </div>
-              <a href="/gallery" class="view-all">View All <span>❯</span></a>
-            </div>
-            <div class="gallery-content">
-              <div class="gallery-grid">
-                <div class="gallery-item">
-                  <img
-                    src="/images/gallery/photo1.jpg"
-                    alt="Medical Assessment"
-                  />
-                </div>
-                <div class="gallery-item">
-                  <img
-                    src="/images/gallery/photo2.jpg"
-                    alt="Therapeutic Services"
-                  />
-                </div>
-                <div class="gallery-item">
-                  <img
-                    src="/images/gallery/photo3.jpg"
-                    alt="Assistive Devices"
-                  />
-                </div>
-                <div class="gallery-item">
-                  <img
-                    src="/images/gallery/photo4.jpg"
-                    alt="Skill Development"
-                  />
-                </div>
-              </div>
-            </div>
-          </div>
         </div>
       </div>
     </main>
@@ -303,26 +284,724 @@
           const response = await fetch('/api/news/latest');
           const data = await response.json();
           
-          if (data.success) {
+          if (data.success && data.news.length > 0) {
             const newsContainer = document.getElementById('latestNews');
             newsContainer.innerHTML = '';
             
             data.news.forEach(news => {
+              // Format date nicely
+              const newsDate = new Date(news.published_date);
+              const formattedDate = newsDate.toLocaleDateString("en-US", {
+                year: "numeric",
+                month: "long",
+                day: "numeric"
+              });
+              
               const newsItem = document.createElement('div');
               newsItem.className = 'news-item';
+              newsItem.onclick = function() {
+                window.location.href = '/news';
+              };
               newsItem.innerHTML = `
-                <span class="date">${new Date(news.published_date).toLocaleDateString()}</span>
-                <p>${news.title}</p>
+                <div class="news-item-content">
+                  <span class="date">${formattedDate}</span>
+                  <p>${news.title}</p>
+                </div>
               `;
               newsContainer.appendChild(newsItem);
             });
+          } else {
+            const newsContainer = document.getElementById('latestNews');
+            newsContainer.innerHTML = `
+              <div class="no-news">
+                <p>No news items available at the moment.</p>
+                <p class="mt-2" style="font-size: 0.9rem; opacity: 0.8;">Check back soon for updates.</p>
+              </div>
+            `;
           }
         } catch (error) {
           console.error('Error loading latest news:', error);
+          const newsContainer = document.getElementById('latestNews');
+          newsContainer.innerHTML = `
+            <div class="no-news">
+              <p>Unable to load news.</p>
+              <button class="btn btn-light btn-sm mt-3" onclick="window.location.reload()">Try Again</button>
+            </div>
+          `;
+        }
+
+        // Load latest events
+        try {
+          const response = await fetch('/api/events/latest');
+          const data = await response.json();
+          
+          if (data.success && data.events.length > 0) {
+            const slideContainer = document.querySelector('.event-slide-container');
+            slideContainer.innerHTML = '';
+            
+            data.events.forEach((event, index) => {
+              // Format date nicely
+              const eventDate = new Date(event.event_date);
+              const formattedDate = eventDate.toLocaleDateString("en-US", {
+                year: "numeric",
+                month: "long",
+                day: "numeric"
+              });
+              
+              // Limit title length to 120 characters
+              const limitedTitle = event.title.length > 120 
+                ? event.title.substring(0, 120) + '...' 
+                : event.title;
+              
+              const slide = document.createElement('div');
+              slide.className = `event-slide ${index === 0 ? 'active' : ''}`;
+              slide.innerHTML = `
+                <a href="/events/event?id=${event.id}" class="event-slide-content">
+                  <div class="event-image">
+                    <img src="${event.image_path || '/images/event-placeholder.jpg'}" alt="${event.title}">
+                  </div>
+                  <div class="event-details">
+                    <span class="date">${formattedDate}</span>
+                    <h3 title="${event.title}">${limitedTitle}</h3>
+                    <p>${event.description}</p>
+                    <span class="view-more">View Details</span>
+                  </div>
+                </a>
+              `;
+              slideContainer.appendChild(slide);
+            });
+
+            // Start slideshow
+            startSlideshow();
+          } else {
+            const slideContainer = document.querySelector('.event-slide-container');
+            slideContainer.innerHTML = `
+              <div class="no-events">
+                <p>No upcoming events at the moment.</p>
+                <p class="mt-2" style="font-size: 0.9rem; opacity: 0.8;">Check back soon for new events and activities.</p>
+              </div>
+            `;
+            
+            // Hide controls if no events
+            document.querySelector('.event-controls').style.display = 'none';
+          }
+        } catch (error) {
+          console.error('Error loading latest events:', error);
+          const slideContainer = document.querySelector('.event-slide-container');
+          slideContainer.innerHTML = `
+            <div class="no-events">
+              <p>Unable to load events.</p>
+              <button class="btn btn-light btn-sm mt-3" onclick="window.location.reload()">Try Again</button>
+            </div>
+          `;
+          
+          // Hide controls if error
+          document.querySelector('.event-controls').style.display = 'none';
         }
 
         window.formManager = new FormManager();
       });
+
+      // Slideshow functionality
+      let currentSlide = 0;
+      let slideshowInterval;
+      let isPaused = false;
+
+      function startSlideshow() {
+        slideshowInterval = setInterval(nextEvent, 5000); // Change slide every 5 seconds
+      }
+
+      function showSlide(index) {
+        const slides = document.querySelectorAll('.event-slide');
+        if (slides.length === 0) return;
+
+        // Handle wrap-around
+        if (index >= slides.length) index = 0;
+        if (index < 0) index = slides.length - 1;
+
+        // Hide all slides
+        slides.forEach(slide => {
+          slide.classList.remove('active');
+          slide.style.display = 'none';
+        });
+        
+        // Show current slide with animation
+        setTimeout(() => {
+          slides[index].style.display = 'block';
+          setTimeout(() => {
+            slides[index].classList.add('active');
+          }, 50);
+        }, 50);
+        
+        currentSlide = index;
+      }
+
+      function nextEvent() {
+        showSlide(currentSlide + 1);
+      }
+
+      function prevEvent() {
+        showSlide(currentSlide - 1);
+      }
+
+      function togglePause() {
+        const pauseBtn = document.querySelector('.pause-btn');
+        if (isPaused) {
+          startSlideshow();
+          pauseBtn.innerHTML = '⏸';
+        } else {
+          clearInterval(slideshowInterval);
+          pauseBtn.innerHTML = '▶';
+        }
+        isPaused = !isPaused;
+      }
+
+      // Clear interval when user leaves the page
+      window.addEventListener('beforeunload', () => {
+        clearInterval(slideshowInterval);
+      });
     </script>
+
+    <style>
+      /* Event Slideshow Styles - NEW DESIGN */
+      .event-slideshow {
+        position: relative;
+        height: 100%;
+        border-radius: 12px;
+        overflow: hidden;
+        background: #004a9f;
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+      }
+
+      .event-slide-container {
+        height: 100%;
+        min-height: 380px;
+      }
+
+      .event-slide {
+        display: none;
+        height: 100%;
+        padding: 0;
+        border-radius: 12px;
+        transition: opacity 0.5s ease;
+        opacity: 0;
+      }
+
+      .event-slide.active {
+        display: block;
+        opacity: 1;
+        animation: fadeIn 0.5s ease-in-out;
+      }
+
+      @keyframes fadeIn {
+        from { opacity: 0; transform: translateY(10px); }
+        to { opacity: 1; transform: translateY(0); }
+      }
+
+      .event-slide-content {
+        display: flex;
+        flex-direction: column;
+        text-decoration: none;
+        color: inherit;
+        height: 100%;
+        transition: transform 0.3s ease;
+        position: relative;
+      }
+
+      .event-slide .event-image {
+        width: 100%;
+        height: 100%;
+        position: absolute;
+        top: 0;
+        left: 0;
+        z-index: 1;
+      }
+
+      .event-slide .event-image img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        transition: transform 0.5s ease;
+      }
+
+      .event-slide-content:hover .event-image img {
+        transform: scale(1.05);
+      }
+
+      .event-slide .event-details {
+        position: absolute;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        z-index: 2;
+        padding: 25px 90px 25px 25px;
+        background: linear-gradient(to top, rgba(0, 0, 0, 0.85) 0%, rgba(0, 0, 0, 0.5) 60%, transparent 100%);
+        color: white;
+      }
+
+      .event-slide .date {
+        color: #ffffff;
+        font-size: 0.9rem;
+        font-weight: 600;
+        margin-bottom: 15px;
+        display: inline-flex;
+        align-items: center;
+        background-color: #f47920;
+        padding: 6px 12px;
+        border-radius: 4px;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+        align-self: flex-start;
+      }
+
+      .event-slide .date::before {
+        content: "";
+        display: inline-block;
+        width: 14px;
+        height: 14px;
+        background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='white'%3E%3Cpath d='M19 4h-1V2h-2v2H8V2H6v2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 16H5V10h14v10zM5 8V6h14v2H5zm2 4h10v2H7v-2zm0 4h7v2H7v-2z'/%3E%3C/svg%3E");
+        background-size: contain;
+        margin-right: 6px;
+      }
+
+      .event-slide h3 {
+        color: white;
+        margin: 0 0 15px 0;
+        font-size: 1.4rem;
+        font-weight: 700;
+        line-height: 1.3;
+        text-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
+        width: calc(100% - 90px);
+        overflow: hidden;
+        text-overflow: ellipsis;
+      }
+
+      .event-slide p {
+        color: rgba(255, 255, 255, 0.9);
+        margin: 0;
+        font-size: 1rem;
+        line-height: 1.6;
+        display: -webkit-box;
+        -webkit-line-clamp: 3;
+        -webkit-box-orient: vertical;
+        overflow: hidden;
+        flex: 1;
+      }
+
+      .event-slide .view-more {
+        color: white;
+        font-size: 0.95rem;
+        font-weight: 600;
+        margin-top: 20px;
+        align-self: flex-start;
+        display: inline-flex;
+        align-items: center;
+        padding: 8px 18px;
+        background-color: rgba(244, 121, 32, 0.8);
+        border-radius: 30px;
+        transition: background-color 0.3s ease, transform 0.3s ease;
+        border: 1px solid rgba(255, 255, 255, 0.3);
+      }
+
+      .event-slide .view-more::after {
+        content: "→";
+        margin-left: 8px;
+        transition: transform 0.2s ease;
+      }
+
+      .event-slide-content:hover .view-more {
+        background-color: rgba(244, 121, 32, 1);
+        transform: translateY(-3px);
+      }
+
+      .event-slide-content:hover .view-more::after {
+        transform: translateX(3px);
+      }
+
+      .event-controls {
+        position: absolute;
+        bottom: 20px;
+        right: 20px;
+        display: flex;
+        gap: 10px;
+        z-index: 20;
+      }
+
+      .control-btn {
+        background: rgba(255, 255, 255, 0.2);
+        border: 1px solid rgba(255, 255, 255, 0.3);
+        color: white;
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        transition: background-color 0.3s, transform 0.2s;
+        box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+      }
+
+      .control-btn:hover {
+        background: rgba(255, 255, 255, 0.3);
+        transform: translateY(-2px);
+      }
+
+      .control-btn:active {
+        transform: translateY(0);
+      }
+
+      .events-section.wide {
+        background: #ffffff;
+        border-radius: 12px;
+        padding: 0;
+        overflow: hidden;
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+      }
+
+      .events-section.wide .events-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 20px 25px;
+        border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+        background: #f8f9fa;
+      }
+
+      .events-section.wide .events-header h2 {
+        color: #004a9f;
+        margin: 0;
+        font-size: 1.3rem;
+        font-weight: 600;
+      }
+
+      .events-section.wide .view-all {
+        color: #004a9f;
+        text-decoration: none;
+        font-size: 0.9rem;
+        font-weight: 500;
+        display: flex;
+        align-items: center;
+        transition: color 0.2s;
+      }
+
+      .events-section.wide .view-all:hover {
+        color: #f47920;
+      }
+
+      .events-section.wide .view-all span {
+        margin-left: 5px;
+        transition: transform 0.2s;
+      }
+
+      .events-section.wide .view-all:hover span {
+        transform: translateX(3px);
+      }
+
+      .events-section.wide .events-list {
+        padding: 0;
+      }
+
+      /* No events state */
+      .no-events {
+        padding: 40px 25px;
+        text-align: center;
+        color: #6c757d;
+        background: #f8f9fa;
+      }
+
+      .no-events p {
+        font-size: 1.1rem;
+        margin-bottom: 0;
+      }
+
+      /* Responsive adjustments */
+      @media (max-width: 768px) {
+        .event-slide-container {
+          min-height: 350px;
+        }
+
+        .event-slide h3 {
+          font-size: 1.3rem;
+          width: calc(100% - 80px);
+          margin-bottom: 10px;
+        }
+
+        .event-slide p {
+          -webkit-line-clamp: 2;
+          font-size: 0.95rem;
+          width: calc(100% - 80px);
+        }
+        
+        .event-slide .event-details {
+          padding: 20px 90px 20px 20px;
+        }
+        
+        .event-slide .date {
+          font-size: 0.85rem;
+          padding: 5px 10px;
+          margin-bottom: 12px;
+        }
+        
+        .event-slide .view-more {
+          padding: 6px 15px;
+          font-size: 0.9rem;
+          margin-top: 15px;
+        }
+      }
+
+      @media (max-width: 576px) {
+        .event-slide-container {
+          min-height: 320px;
+        }
+
+        .events-section.wide .events-header {
+          padding: 15px 20px;
+        }
+
+        .events-section.wide .events-header h2 {
+          font-size: 1.2rem;
+        }
+
+        .event-controls {
+          bottom: 15px;
+          right: 15px;
+        }
+
+        .control-btn {
+          width: 36px;
+          height: 36px;
+        }
+        
+        .event-slide .date {
+          font-size: 0.8rem;
+          padding: 4px 8px;
+          margin-bottom: 10px;
+        }
+        
+        .event-slide .event-details {
+          padding: 15px 80px 15px 15px;
+        }
+        
+        .event-slide h3 {
+          font-size: 1.2rem;
+          margin-bottom: 10px;
+          width: calc(100% - 70px);
+        }
+        
+        .event-slide p {
+          -webkit-line-clamp: 2;
+        }
+        
+        .event-slide .view-more {
+          padding: 5px 12px;
+          font-size: 0.85rem;
+          margin-top: 12px;
+        }
+      }
+
+      /* News Section Styles - PRESERVED */
+      .news-section.wide {
+        background: linear-gradient(135deg, #004a9f 0%, #003a7a 100%);
+        border-radius: 12px;
+        padding: 0;
+        overflow: hidden;
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+      }
+
+      .news-section.wide .news-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 20px 25px;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+      }
+
+      .news-section.wide .news-header h2 {
+        color: white;
+        margin: 0;
+        font-size: 1.3rem;
+        font-weight: 600;
+      }
+
+      .news-section.wide .view-all {
+        color: rgba(255, 255, 255, 0.9);
+        text-decoration: none;
+        font-size: 0.9rem;
+        font-weight: 500;
+        display: flex;
+        align-items: center;
+        transition: color 0.2s;
+      }
+
+      .news-section.wide .view-all:hover {
+        color: white;
+      }
+
+      .news-section.wide .view-all span {
+        margin-left: 5px;
+        transition: transform 0.2s;
+      }
+
+      .news-section.wide .view-all:hover span {
+        transform: translateX(3px);
+      }
+
+      .news-section.wide .news-list {
+        padding: 0;
+        overflow: visible;
+      }
+
+      .news-section.wide .news-item {
+        padding: 18px 25px;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        transition: background-color 0.3s ease;
+        cursor: pointer;
+        position: relative;
+        overflow: visible;
+        display: block;
+      }
+
+      .news-section.wide .news-item:last-child {
+        border-bottom: none;
+      }
+
+      .news-section.wide .news-item:hover {
+        background-color: rgba(255, 255, 255, 0.05);
+      }
+      
+      /* Use a pseudo-element for the hover animation instead of transforming the entire item */
+      .news-section.wide .news-item::before {
+        content: "";
+        position: absolute;
+        left: 0;
+        top: 0;
+        width: 5px;
+        height: 100%;
+        background-color: transparent;
+        transition: background-color 0.3s ease;
+      }
+      
+      .news-section.wide .news-item:hover::before {
+        background-color: #f47920;
+      }
+
+      .news-section.wide .news-item::after {
+        content: "→";
+        position: absolute;
+        right: 25px;
+        top: 50%;
+        transform: translateY(-50%);
+        color: #f47920;
+        font-size: 1.1rem;
+        opacity: 0;
+        transition: opacity 0.3s ease, transform 0.3s ease;
+        pointer-events: none;
+      }
+
+      .news-section.wide .news-item:hover::after {
+        opacity: 1;
+        transform: translate(-5px, -50%);
+      }
+
+      .news-section.wide .news-item-content {
+        position: relative;
+        left: 0;
+        transition: left 0.3s ease;
+      }
+      
+      .news-section.wide .news-item:hover .news-item-content {
+        left: 5px;
+      }
+
+      .news-section.wide .date {
+        color: #f47920;
+        font-size: 0.9rem;
+        font-weight: 600;
+        margin-bottom: 8px;
+        display: flex;
+        align-items: center;
+      }
+
+      .news-section.wide .date::before {
+        content: "";
+        display: inline-block;
+        width: 14px;
+        height: 14px;
+        background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%23f47920'%3E%3Cpath d='M19 4h-1V2h-2v2H8V2H6v2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 16H5V10h14v10zM5 8V6h14v2H5zm2 4h10v2H7v-2zm0 4h7v2H7v-2z'/%3E%3C/svg%3E");
+        background-size: contain;
+        margin-right: 6px;
+      }
+
+      .news-section.wide p {
+        color: white;
+        margin: 0;
+        font-size: 1rem;
+        line-height: 1.5;
+        padding-right: 30px;
+        transition: color 0.2s ease;
+        white-space: normal;
+        overflow: visible;
+        text-overflow: ellipsis;
+        max-width: 100%;
+      }
+
+      .news-section.wide .news-item:hover p {
+        color: rgba(255, 255, 255, 0.95);
+      }
+
+      /* No news state */
+      .no-news {
+        padding: 40px 25px;
+        text-align: center;
+        color: rgba(255, 255, 255, 0.8);
+      }
+
+      .no-news p {
+        font-size: 1.1rem;
+        margin-bottom: 0;
+      }
+
+      /* Responsive adjustments for news section */
+      @media (max-width: 768px) {
+        .news-section.wide .news-header {
+          padding: 15px 20px;
+        }
+
+        .news-section.wide .news-header h2 {
+          font-size: 1.2rem;
+        }
+
+        .news-section.wide .news-item {
+          padding: 15px 20px;
+        }
+
+        .news-section.wide .news-item::after {
+          right: 20px;
+        }
+
+        .news-section.wide p {
+          font-size: 0.95rem;
+        }
+      }
+
+      @media (max-width: 576px) {
+        .news-section.wide .news-item {
+          padding: 12px 15px;
+        }
+
+        .news-section.wide .date {
+          font-size: 0.85rem;
+        }
+
+        .news-section.wide p {
+          font-size: 0.9rem;
+        }
+
+        .news-section.wide .news-item::after {
+          right: 15px;
+          font-size: 1rem;
+        }
+      }
+    </style>
   </body>
 </html>
