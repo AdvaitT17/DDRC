@@ -471,4 +471,304 @@ router.put("/applications/:id/status", authenticateToken, async (req, res) => {
   }
 });
 
+// Edit a single response
+router.put(
+  "/applications/:id/responses/:field_id",
+  authenticateToken,
+  requireRole(["admin", "staff"]),
+  async (req, res) => {
+    try {
+      const { id, field_id } = req.params;
+      const { value, reason, user_consent } = req.body;
+      const userId = req.user.id;
+
+      // Get the registration ID from the application ID
+      const [registration] = await pool.query(
+        "SELECT id FROM registration_progress WHERE application_id = ?",
+        [id]
+      );
+
+      if (registration.length === 0) {
+        return res.status(404).json({ message: "Application not found" });
+      }
+
+      const registrationId = registration[0].id;
+
+      // Get the current value of the field
+      const [currentResponse] = await pool.query(
+        "SELECT value FROM registration_responses WHERE registration_id = ? AND field_id = ?",
+        [registrationId, field_id]
+      );
+
+      const previousValue =
+        currentResponse.length > 0 ? currentResponse[0].value : null;
+
+      // Get field information
+      const [fieldInfo] = await pool.query(
+        "SELECT name, display_name, field_type FROM form_fields WHERE id = ?",
+        [field_id]
+      );
+
+      if (fieldInfo.length === 0) {
+        return res.status(404).json({ message: "Field not found" });
+      }
+
+      // Update the response
+      if (currentResponse.length > 0) {
+        await pool.query(
+          "UPDATE registration_responses SET value = ? WHERE registration_id = ? AND field_id = ?",
+          [value, registrationId, field_id]
+        );
+      } else {
+        await pool.query(
+          "INSERT INTO registration_responses (registration_id, field_id, value) VALUES (?, ?, ?)",
+          [registrationId, field_id, value]
+        );
+      }
+
+      // Create edit details JSON
+      const editDetails = {
+        field_id: parseInt(field_id),
+        field_name: fieldInfo[0].name,
+        display_name: fieldInfo[0].display_name,
+        field_type: fieldInfo[0].field_type,
+        previous_value: previousValue,
+        new_value: value,
+        reason: reason || "No reason provided",
+        user_consent: user_consent || false,
+      };
+
+      // Log the action
+      await pool.query(
+        `INSERT INTO action_logs 
+       (user_id, action_type, application_id, edit_details) 
+       VALUES (?, 'edit_response', ?, ?)`,
+        [userId, id, JSON.stringify(editDetails)]
+      );
+
+      // Get user info for response
+      const [userInfo] = await pool.query(
+        `SELECT full_name FROM users WHERE id = ?`,
+        [userId]
+      );
+
+      res.json({
+        message: "Response updated successfully",
+        updatedBy: userInfo[0].full_name,
+        updatedAt: new Date().toISOString(),
+        field: fieldInfo[0].name,
+        previousValue,
+        newValue: value,
+      });
+    } catch (error) {
+      console.error("Error updating response:", error);
+      res.status(500).json({ message: "Error updating response" });
+    }
+  }
+);
+
+// Batch edit multiple responses
+router.put(
+  "/applications/:id/responses",
+  authenticateToken,
+  requireRole(["admin", "staff"]),
+  async (req, res) => {
+    try {
+      const { id } = req.params;
+      const { responses, user_consent } = req.body;
+      const userId = req.user.id;
+
+      if (!Array.isArray(responses) || responses.length === 0) {
+        return res
+          .status(400)
+          .json({ message: "No responses provided for update" });
+      }
+
+      // Get the registration ID from the application ID
+      const [registration] = await pool.query(
+        "SELECT id FROM registration_progress WHERE application_id = ?",
+        [id]
+      );
+
+      if (registration.length === 0) {
+        return res.status(404).json({ message: "Application not found" });
+      }
+
+      const registrationId = registration[0].id;
+      const conn = await pool.getConnection();
+
+      try {
+        await conn.beginTransaction();
+
+        const editResults = [];
+
+        // Process each response
+        for (const response of responses) {
+          const { field_id, value, reason } = response;
+
+          // Get the current value of the field
+          const [currentResponse] = await conn.query(
+            "SELECT value FROM registration_responses WHERE registration_id = ? AND field_id = ?",
+            [registrationId, field_id]
+          );
+
+          const previousValue =
+            currentResponse.length > 0 ? currentResponse[0].value : null;
+
+          // Get field information
+          const [fieldInfo] = await conn.query(
+            "SELECT name, display_name, field_type FROM form_fields WHERE id = ?",
+            [field_id]
+          );
+
+          if (fieldInfo.length === 0) {
+            continue; // Skip this field if not found
+          }
+
+          // Update the response
+          if (currentResponse.length > 0) {
+            await conn.query(
+              "UPDATE registration_responses SET value = ? WHERE registration_id = ? AND field_id = ?",
+              [value, registrationId, field_id]
+            );
+          } else {
+            await conn.query(
+              "INSERT INTO registration_responses (registration_id, field_id, value) VALUES (?, ?, ?)",
+              [registrationId, field_id, value]
+            );
+          }
+
+          // Create edit details JSON
+          const editDetails = {
+            field_id: parseInt(field_id),
+            field_name: fieldInfo[0].name,
+            display_name: fieldInfo[0].display_name,
+            field_type: fieldInfo[0].field_type,
+            previous_value: previousValue,
+            new_value: value,
+            reason: reason || "No reason provided",
+            user_consent: user_consent || false,
+          };
+
+          // Log the action
+          await conn.query(
+            `INSERT INTO action_logs 
+           (user_id, action_type, application_id, edit_details) 
+           VALUES (?, 'edit_response', ?, ?)`,
+            [userId, id, JSON.stringify(editDetails)]
+          );
+
+          editResults.push({
+            field_id,
+            field_name: fieldInfo[0].name,
+            display_name: fieldInfo[0].display_name,
+            previousValue,
+            newValue: value,
+          });
+        }
+
+        await conn.commit();
+
+        // Get user info for response
+        const [userInfo] = await pool.query(
+          `SELECT full_name FROM users WHERE id = ?`,
+          [userId]
+        );
+
+        res.json({
+          message: "Responses updated successfully",
+          updatedBy: userInfo[0].full_name,
+          updatedAt: new Date().toISOString(),
+          editResults,
+        });
+      } catch (error) {
+        await conn.rollback();
+        throw error;
+      } finally {
+        conn.release();
+      }
+    } catch (error) {
+      console.error("Error updating responses:", error);
+      res.status(500).json({ message: "Error updating responses" });
+    }
+  }
+);
+
+// Get edit history for an application
+router.get(
+  "/applications/:id/edit-history",
+  authenticateToken,
+  requireRole(["admin", "staff"]),
+  async (req, res) => {
+    try {
+      const { id } = req.params;
+
+      // Get all edit actions for this application
+      const [editLogs] = await pool.query(
+        `SELECT 
+        al.*,
+        u.full_name as user_name,
+        u.role as user_role
+      FROM action_logs al
+      JOIN users u ON al.user_id = u.id
+      WHERE al.application_id = ? AND al.action_type = 'edit_response'
+      ORDER BY al.performed_at DESC`,
+        [id]
+      );
+
+      // Format the logs
+      const formattedLogs = editLogs.map((log) => {
+        try {
+          const editDetails = log.edit_details
+            ? JSON.parse(log.edit_details)
+            : {};
+          return {
+            id: log.id,
+            timestamp: log.performed_at,
+            user: log.user_name,
+            userRole: log.user_role,
+            field: {
+              id: editDetails.field_id || 0,
+              name: editDetails.field_name || "Unknown",
+              display_name: editDetails.display_name || "Unknown Field",
+              type: editDetails.field_type || "text",
+            },
+            previousValue: editDetails.previous_value,
+            newValue: editDetails.new_value,
+            reason: editDetails.reason || "No reason provided",
+            userConsent: editDetails.user_consent || false,
+          };
+        } catch (error) {
+          console.error(
+            `Error parsing edit_details for log ID ${log.id}:`,
+            error
+          );
+          // Return a fallback object for logs with invalid JSON
+          return {
+            id: log.id,
+            timestamp: log.performed_at,
+            user: log.user_name,
+            userRole: log.user_role,
+            field: {
+              id: 0,
+              name: "error",
+              display_name: "Error: Could not parse edit details",
+              type: "text",
+            },
+            previousValue: null,
+            newValue: null,
+            reason: "Error: Could not parse edit details",
+            userConsent: false,
+          };
+        }
+      });
+
+      res.json(formattedLogs);
+    } catch (error) {
+      console.error("Error fetching edit history:", error);
+      res.status(500).json({ message: "Error fetching edit history" });
+    }
+  }
+);
+
 module.exports = router;

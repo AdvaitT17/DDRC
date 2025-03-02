@@ -1,0 +1,50 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="500" height="500" viewBox="0 0 500 500">
+  <!-- Background Circle -->
+  <circle cx="250" cy="250" r="200" fill="#f8f9fa" />
+  
+  <!-- Compass Needle -->
+  <g transform="translate(250, 250)">
+    <!-- North-South Needle -->
+    <path d="M0,-150 L15,-50 L0,-25 L-15,-50 Z" fill="#004a9f" />
+    <path d="M0,150 L15,50 L0,25 L-15,50 Z" fill="#e74c3c" />
+    
+    <!-- East-West Needle -->
+    <path d="M150,0 L50,15 L25,0 L50,-15 Z" fill="#f1c40f" />
+    <path d="M-150,0 L-50,15 L-25,0 L-50,-15 Z" fill="#f1c40f" />
+    
+    <!-- Center Circle -->
+    <circle cx="0" cy="0" r="20" fill="white" stroke="#004a9f" stroke-width="4" />
+  </g>
+  
+  <!-- Compass Markings -->
+  <g transform="translate(250, 250)" fill="#555" font-family="Arial" font-weight="bold">
+    <text x="0" y="-170" text-anchor="middle" font-size="20">N</text>
+    <text x="0" y="180" text-anchor="middle" font-size="20">S</text>
+    <text x="170" y="5" text-anchor="middle" font-size="20">E</text>
+    <text x="-170" y="5" text-anchor="middle" font-size="20">W</text>
+  </g>
+  
+  <!-- Compass Ring -->
+  <circle cx="250" cy="250" r="180" fill="none" stroke="#004a9f" stroke-width="4" stroke-dasharray="5,5" />
+  
+  <!-- Question Mark -->
+  <g transform="translate(250, 250) rotate(15)">
+    <path d="M-40,-20 C-40,-60 40,-60 40,-20 C40,10 0,10 0,40" stroke="#e74c3c" stroke-width="12" fill="none" stroke-linecap="round" />
+    <circle cx="0" cy="70" r="8" fill="#e74c3c" />
+  </g>
+  
+  <!-- Decorative Elements -->
+  <g transform="translate(250, 250)">
+    <!-- Small Decorative Circles -->
+    <circle cx="-120" cy="-120" r="10" fill="#3498db" />
+    <circle cx="120" cy="-120" r="10" fill="#3498db" />
+    <circle cx="120" cy="120" r="10" fill="#3498db" />
+    <circle cx="-120" cy="120" r="10" fill="#3498db" />
+    
+    <!-- Decorative Lines -->
+    <line x1="-160" y1="-160" x2="-140" y2="-140" stroke="#004a9f" stroke-width="3" />
+    <line x1="160" y1="-160" x2="140" y2="-140" stroke="#004a9f" stroke-width="3" />
+    <line x1="160" y1="160" x2="140" y2="140" stroke="#004a9f" stroke-width="3" />
+    <line x1="-160" y1="160" x2="-140" y2="140" stroke="#004a9f" stroke-width="3" />
+  </g>
+</svg> 

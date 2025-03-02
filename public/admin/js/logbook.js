@@ -14,6 +14,7 @@ class LogbookManager {
               <a href="/admin/dashboard">Dashboard</a>
               <a href="/admin/forms">Form Management</a>
               <a href="/admin/news/index.html">News</a>
+              <a href="/admin/events/index.html">Events</a>
               <a href="/admin/logbook" class="active">Logs</a>
               <a href="/admin/users">Users</a>
 
@@ -205,7 +206,7 @@ class LogbookManager {
           </span>
         </td>
         <td>${log.application_id || "-"}</td>
-        <td>${this.formatDetails(log)}</td>
+        <td class="details-cell">${this.formatDetails(log)}</td>
       </tr>
     `
       )
@@ -219,7 +220,8 @@ class LogbookManager {
       undo: "Undone",
       review: "Under Review",
       add_user: "User Added",
-      toggle_user: "Status Changed",
+      toggle_user: "Status",
+      edit_response: "Edit Made",
     };
     return formats[type] || type;
   }
@@ -243,7 +245,25 @@ class LogbookManager {
     if (log.action_type === "review") {
       return "Started reviewing application";
     }
+    if (log.action_type === "edit_response") {
+      try {
+        const editDetails = JSON.parse(log.edit_details);
+        return `Edited field "${
+          editDetails.display_name
+        }" from "${this.truncateValue(
+          editDetails.previous_value
+        )}" to "${this.truncateValue(editDetails.new_value)}"`;
+      } catch (e) {
+        return "Edited application response";
+      }
+    }
     return "-";
+  }
+
+  truncateValue(value) {
+    if (!value) return "empty";
+    if (typeof value !== "string") return String(value);
+    return value.length > 20 ? value.substring(0, 17) + "..." : value;
   }
 }
 

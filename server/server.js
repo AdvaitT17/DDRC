@@ -39,6 +39,35 @@ uploadDirs.forEach((dir) => {
   }
 });
 
+// Helper function for consistent API error responses
+const apiErrorResponse = (res, status, message) => {
+  return res.status(status).json({
+    success: false,
+    error: {
+      code: status,
+      message: message || getDefaultErrorMessage(status),
+    },
+  });
+};
+
+// Get default error message based on status code
+const getDefaultErrorMessage = (status) => {
+  switch (status) {
+    case 400:
+      return "Bad Request";
+    case 401:
+      return "Unauthorized";
+    case 403:
+      return "Forbidden";
+    case 404:
+      return "Not Found";
+    case 500:
+      return "Internal Server Error";
+    default:
+      return "An error occurred";
+  }
+};
+
 // Middleware
 app.use(cors());
 app.use(express.json());
@@ -58,7 +87,11 @@ app.use("/uploads/forms", async (req, res, next) => {
   try {
     const accessToken = req.query.access_token;
     if (!accessToken) {
-      return res.status(401).json({ message: "No token provided" });
+      return res
+        .status(401)
+        .sendFile(path.join(__dirname, "../public/error.html"), {
+          query: { code: 401, message: "Authentication Required" },
+        });
     }
 
     // Get the file path from the URL and clean it
@@ -70,14 +103,22 @@ app.use("/uploads/forms", async (req, res, next) => {
     const tokenData = tokenManager.validateToken(accessToken);
 
     if (!tokenData || tokenData.filename !== fullCleanPath) {
-      return res.status(401).json({ message: "Invalid or expired token" });
+      return res
+        .status(401)
+        .sendFile(path.join(__dirname, "../public/error.html"), {
+          query: { code: 401, message: "Invalid or expired token" },
+        });
     }
 
     // If token is valid and matches the file, serve the file directly
     const fullPath = path.join(__dirname, "uploads", fullCleanPath);
 
     if (!fs.existsSync(fullPath)) {
-      return res.status(404).json({ message: "File not found" });
+      return res
+        .status(404)
+        .sendFile(path.join(__dirname, "../public/error.html"), {
+          query: { code: 404, message: "File not found" },
+        });
     }
 
     // Set appropriate content type based on file extension
@@ -96,7 +137,9 @@ app.use("/uploads/forms", async (req, res, next) => {
     res.setHeader("Content-Type", contentType);
     fs.createReadStream(fullPath).pipe(res);
   } catch (error) {
-    res.status(401).json({ message: "Error accessing file" });
+    res.status(401).sendFile(path.join(__dirname, "../public/error.html"), {
+      query: { code: 401, message: "Error accessing file" },
+    });
   }
 });
 
@@ -105,21 +148,35 @@ app.use("/uploads/documents", async (req, res, next) => {
   try {
     const authToken = req.query.access_token;
     if (!authToken) {
-      return res.status(401).json({ message: "No token provided" });
+      return res
+        .status(401)
+        .sendFile(path.join(__dirname, "../public/error.html"), {
+          query: { code: 401, message: "Authentication Required" },
+        });
     }
 
     try {
       const decoded = jwt.verify(authToken, process.env.JWT_SECRET);
       if (!decoded || decoded.type !== "department") {
-        return res.status(403).json({ message: "Access denied" });
+        return res
+          .status(403)
+          .sendFile(path.join(__dirname, "../public/error.html"), {
+            query: { code: 403, message: "Access denied" },
+          });
       }
       express.static(path.join(__dirname, "uploads/documents"))(req, res, next);
     } catch (err) {
-      return res.status(401).json({ message: "Invalid token" });
+      return res
+        .status(401)
+        .sendFile(path.join(__dirname, "../public/error.html"), {
+          query: { code: 401, message: "Invalid token" },
+        });
     }
   } catch (error) {
     console.error("Upload access error:", error);
-    res.status(401).json({ message: "Invalid token" });
+    res.status(401).sendFile(path.join(__dirname, "../public/error.html"), {
+      query: { code: 401, message: "Invalid token" },
+    });
   }
 });
 
@@ -236,11 +293,13 @@ app.get(
         res.sendFile(path.join(__dirname, filePath));
       } else {
         // Send 404 page instead of plain text
-        res.status(404).sendFile(path.join(__dirname, "../public/404.html"));
+        res.status(404).sendFile(path.join(__dirname, "../public/error.html"));
       }
     } catch (error) {
       console.error("Error serving HTML:", error);
-      res.status(500).send("Internal Server Error");
+      res.status(500).sendFile(path.join(__dirname, "../public/error.html"), {
+        query: { code: 500 },
+      });
     }
   }
 );
@@ -276,7 +335,9 @@ app.get(["/admin", "/admin/*"], async (req, res) => {
       res.sendFile(filePath);
     } else {
       // If file doesn't exist, send 404
-      res.status(404).send("Page not found");
+      res.status(404).sendFile(path.join(__dirname, "../public/error.html"), {
+        query: { code: 404 },
+      });
     }
   } catch (error) {
     console.error("Error serving admin HTML:", error);
@@ -284,14 +345,43 @@ app.get(["/admin", "/admin/*"], async (req, res) => {
   }
 });
 
-// Health check route
-app.get("/api/health", (req, res) => {
-  res.json({ status: "OK", message: "Server is running" });
+// Universal error handler for all other routes
+app.use((req, res) => {
+  // Check if the request is an API request
+  if (req.path.startsWith("/api/")) {
+    return apiErrorResponse(res, 404, "API endpoint not found");
+  }
+
+  // For non-API requests, send the error page
+  res.status(404).sendFile(path.join(__dirname, "../public/error.html"), {
+    query: { code: 404 },
+  });
 });
 
 // Error handling middleware
 app.use((err, req, res, next) => {
-  res.status(500).json({ error: "Something went wrong!" });
+  console.error("Server error:", err);
+
+  // Check if the request is an API request
+  if (req.path.startsWith("/api/")) {
+    return apiErrorResponse(res, 500, err.message || "Internal Server Error");
+  }
+
+  // For non-API requests, send the error page
+  res.status(500).sendFile(path.join(__dirname, "../public/error.html"), {
+    query: {
+      code: 500,
+      message:
+        process.env.NODE_ENV === "production"
+          ? "Internal Server Error"
+          : err.message || "Internal Server Error",
+    },
+  });
+});
+
+// Health check route
+app.get("/api/health", (req, res) => {
+  res.json({ status: "OK", message: "Server is running" });
 });
 
 // Serve dashboard pages

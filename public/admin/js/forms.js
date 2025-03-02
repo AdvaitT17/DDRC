@@ -15,6 +15,7 @@ class FormManager {
               <a href="/admin/dashboard">Dashboard</a>
               <a href="/admin/forms" class="active">Form Management</a>
               <a href="/admin/news/index.html">News</a>
+              <a href="/admin/events/index.html">Events</a>
               <a href="/admin/logbook">Logs</a>
               <a href="/admin/users">Users</a>
             </div>
