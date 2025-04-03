@@ -24,7 +24,6 @@ document.addEventListener("DOMContentLoaded", async () => {
   // Setup form submission handler
   const newsForm = document.getElementById("newsForm");
   if (newsForm) {
-    console.log("Setting up form submission handler");
 
     newsForm.addEventListener("submit", function (event) {
       event.preventDefault();
@@ -33,10 +32,8 @@ document.addEventListener("DOMContentLoaded", async () => {
       const newsId = saveButton.getAttribute("data-news-id");
 
       if (newsId) {
-        console.log("Form submitted for updating news with ID:", newsId);
         handleUpdateNews(newsId, event);
       } else {
-        console.log("Form submitted for creating new news");
         handleSaveNews(event);
       }
     });
@@ -44,7 +41,6 @@ document.addEventListener("DOMContentLoaded", async () => {
     // Also handle the save button click
     const saveButton = document.getElementById("saveNews");
     if (saveButton) {
-      console.log("Setting up save button click handler");
 
       saveButton.addEventListener("click", function (event) {
         // Trigger form submission to validate the form
@@ -52,13 +48,11 @@ document.addEventListener("DOMContentLoaded", async () => {
         if (form.checkValidity()) {
           const newsId = this.getAttribute("data-news-id");
           if (newsId) {
-            console.log(
               "Save button clicked for updating news with ID:",
               newsId
             );
             handleUpdateNews(newsId, event);
           } else {
-            console.log("Save button clicked for creating new news");
             handleSaveNews(event);
           }
         } else {
@@ -68,7 +62,6 @@ document.addEventListener("DOMContentLoaded", async () => {
       });
     }
 
-    console.log("Form and button handlers set up");
   }
 });
 
@@ -123,14 +116,12 @@ async function loadNews() {
       });
     }
   } catch (error) {
-    console.error("Error loading news:", error);
     showAlert("Error loading news items", "danger");
   }
 }
 
 async function editNews(id) {
   try {
-    console.log("Editing news with ID:", id);
     const token = AuthManager.getAuthToken();
     const response = await fetch(`/api/news/${id}`, {
       headers: {
@@ -139,7 +130,6 @@ async function editNews(id) {
     });
 
     const data = await response.json();
-    console.log("Fetched news data:", data);
 
     if (data.success) {
       const news = data.news;
@@ -171,11 +161,9 @@ async function editNews(id) {
       // Store the news ID in a data attribute on the save button
       const saveButton = document.getElementById("saveNews");
       if (saveButton) {
-        console.log("Setting up saveNews button for editing with ID:", id);
 
         // Store the news ID in a data attribute
         saveButton.setAttribute("data-news-id", id);
-        console.log("Save button data-news-id set to:", id);
       }
 
       // Update modal title
@@ -189,7 +177,6 @@ async function editNews(id) {
       modal.show();
     }
   } catch (error) {
-    console.error("Error loading news details:", error);
     showAlert("Error loading news details", "danger");
   }
 }
@@ -201,7 +188,6 @@ async function handleUpdateNews(id, event) {
   }
 
   try {
-    console.log("Updating news with ID:", id);
     const title = document.getElementById("newsTitle").value;
     const description = document.getElementById("newsDescription").value;
     const fileInput = document.getElementById("newsFile");
@@ -241,7 +227,6 @@ async function handleUpdateNews(id, event) {
     }
 
     const token = AuthManager.getAuthToken();
-    console.log("Sending PUT request to:", `/api/news/${id}`);
 
     // Important: When using FormData, do NOT set Content-Type header
     // The browser will automatically set the correct Content-Type with boundary
@@ -254,9 +239,7 @@ async function handleUpdateNews(id, event) {
       body: formData,
     });
 
-    console.log("Response status:", response.status);
     const data = await response.json();
-    console.log("Response data:", data);
 
     if (response.ok && data.success) {
       showAlert("News updated successfully", "success");
@@ -285,7 +268,6 @@ async function handleUpdateNews(id, event) {
       throw new Error(data.message || "Failed to update news");
     }
   } catch (error) {
-    console.error("Error updating news:", error);
     showAlert(error.message || "Error updating news", "danger");
   }
 }
@@ -336,7 +318,6 @@ async function handleSaveNews(event) {
     }
 
     const token = AuthManager.getAuthToken();
-    console.log("Sending POST request to create new news item");
     const response = await fetch("/api/news", {
       method: "POST",
       headers: {
@@ -360,7 +341,6 @@ async function handleSaveNews(event) {
       throw new Error(data.message || "Failed to save news");
     }
   } catch (error) {
-    console.error("Error saving news:", error);
     showAlert(error.message || "Error saving news", "danger");
   }
 }
@@ -388,7 +368,6 @@ async function deleteNews(id) {
       showAlert(data.message || "Error deleting news", "danger");
     }
   } catch (error) {
-    console.error("Error deleting news:", error);
     showAlert("Error deleting news", "danger");
   }
 }
@@ -424,7 +403,6 @@ document.addEventListener("DOMContentLoaded", () => {
   const modal = document.getElementById("addNewsModal");
   if (modal) {
     modal.addEventListener("hidden.bs.modal", () => {
-      console.log("Modal hidden event triggered");
 
       // Reset the form
       document.getElementById("newsForm").reset();
@@ -442,9 +420,7 @@ document.addEventListener("DOMContentLoaded", () => {
       // Reset save button by removing the data-news-id attribute
       const saveButton = document.getElementById("saveNews");
       if (saveButton) {
-        console.log("Resetting saveNews button");
         saveButton.removeAttribute("data-news-id");
-        console.log("Save button data-news-id attribute removed");
       }
     });
   }

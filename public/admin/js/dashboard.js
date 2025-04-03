@@ -396,8 +396,6 @@ class DashboardManager {
             if (typeof nestedConfig === "string") {
               nestedConfig = JSON.parse(nestedConfig);
             }
-
-            console.log("Parsed nestedConfig:", nestedConfig);
           } catch (e) {
             console.error("Failed to parse nested config:", e);
             throw new Error("Invalid nested dropdown configuration");
@@ -414,8 +412,6 @@ class DashboardManager {
           const savedValues = fieldValue
             ? fieldValue.split(",").map((v) => v.trim())
             : [];
-
-          console.log("Saved values:", savedValues);
 
           let html = `<div class="edit-field-container nested-select-container" id="${fieldName}_container">`;
 
@@ -483,18 +479,10 @@ class DashboardManager {
                 const currentLevel = parseInt(this.dataset.level);
                 const fieldId = this.dataset.fieldId;
 
-                console.log("Change event triggered:", {
-                  selectedValue,
-                  currentLevel,
-                  fieldId,
-                });
-
                 // Find all subsequent selects
                 const subsequentSelects = Array.from(
                   container.querySelectorAll("select")
                 ).filter((s) => parseInt(s.dataset.level) > currentLevel);
-
-                console.log("Subsequent selects:", subsequentSelects.length);
 
                 // Clear and disable all subsequent dropdowns
                 subsequentSelects.forEach((select) => {
@@ -507,7 +495,6 @@ class DashboardManager {
 
                 if (subsequentSelects.length && selectedValue) {
                   const nextLevel = nestedConfig[currentLevel];
-                  console.log("Next level config:", nextLevel);
 
                   const nextSelect = subsequentSelects[0];
 
@@ -523,10 +510,8 @@ class DashboardManager {
                         "{parent}",
                         selectedValue
                       );
-                      console.log("Fetching from API endpoint:", endpoint);
                       const response = await fetch(endpoint);
                       const data = await response.json();
-                      console.log("API response data:", data);
 
                       data.forEach((item) => {
                         const option = document.createElement("option");
@@ -556,13 +541,10 @@ class DashboardManager {
                         .split("\n")
                         .map((opt) => opt.trim())
                         .filter((opt) => opt);
-                      console.log("Parent options (string):", parentOptions);
                     } else if (Array.isArray(nextLevel.options)) {
                       parentOptions = nextLevel.options;
-                      console.log("Parent options (array):", parentOptions);
                     } else {
                       parentOptions = [];
-                      console.log("No parent options found");
                     }
 
                     const selectedParentOptions =
@@ -572,18 +554,11 @@ class DashboardManager {
                             ?.split(":")?.[1]
                         : null;
 
-                    console.log(
-                      "Selected parent options:",
-                      selectedParentOptions
-                    );
-
                     if (selectedParentOptions) {
                       const options = selectedParentOptions
                         .split(",")
                         .map((opt) => opt.trim())
                         .filter((opt) => opt);
-
-                      console.log("Options for next level:", options);
 
                       options.forEach((opt) => {
                         const option = document.createElement("option");

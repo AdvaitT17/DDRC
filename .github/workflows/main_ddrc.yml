@@ -114,7 +114,7 @@ jobs:
           chmod -R 755 /home/site/wwwroot/uploads
 
           # Start the application
-          node server.js
+          node --max-old-space-size=4096 server.js
           EOL
 
           # Make startup script executable
@@ -150,7 +150,7 @@ jobs:
                     <remove segment="bin"/>
                   </hiddenSegments>
                   <!-- Increase max allowed content length for file uploads -->
-                  <requestLimits maxAllowedContentLength="30000000" />
+                  <requestLimits maxAllowedContentLength="50000000" />
                 </requestFiltering>
               </security>
               <httpErrors existingResponse="PassThrough" />

@@ -13,6 +13,7 @@ class FormManager {
           <div class="admin-top-bar">
             <div class="left-links">
               <a href="/admin/dashboard">Dashboard</a>
+              <a href="/admin/reports">Reports</a>
               <a href="/admin/forms" class="active">Form Management</a>
               <a href="/admin/news/index.html">News</a>
               <a href="/admin/events/index.html">Events</a>
@@ -407,7 +408,6 @@ async function saveField() {
 
   // Handle nested-select type
   if (fieldType === "nested-select") {
-    console.log("Saving nested-select field...");
     const levelNames = Array.from(
       form.querySelectorAll('[name="level_names[]"]')
     )
@@ -420,18 +420,12 @@ async function saveField() {
       .map((textarea) => textarea.value.trim())
       .filter((options) => options);
 
-    console.log("Level names:", levelNames);
-    console.log("Level options:", levelOptions);
-
     // Store nested configuration as an array of objects
     const nestedConfig = levelNames.map((name, index) => ({
       level: index + 1,
       name: name,
       options: levelOptions[index] || "",
     }));
-
-    console.log("Final nested config:", nestedConfig);
-    console.log("Final nested config string:", JSON.stringify(nestedConfig));
 
     // Store config directly as an object, let JSON.stringify handle it in the request
     fieldData.options = nestedConfig;
@@ -441,8 +435,6 @@ async function saveField() {
     const url = fieldId
       ? `/api/form/fields/${fieldId}`
       : `/api/form/sections/${sectionId}/fields`;
-
-    console.log("Sending field data:", fieldData);
 
     const response = await fetchWithAuth(url, {
       method: fieldId ? "PUT" : "POST",

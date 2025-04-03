@@ -98,7 +98,6 @@ router.get("/latest", async (req, res) => {
 });
 
 // Protected routes below this line
-console.log("Setting up authentication middleware for news routes");
 router.use(checkAuth);
 router.use(isAdmin);
 
@@ -195,13 +194,8 @@ router.put(
   handleMulterError,
   async (req, res) => {
     try {
-      console.log("PUT request received for news ID:", req.params.id);
-      console.log("Request body:", req.body);
-      console.log("Request file:", req.file);
-
       const { title, description } = req.body;
       if (!title || !description) {
-        console.log("Missing required fields");
         return res.status(400).json({
           success: false,
           message: "Title and description are required",
@@ -214,50 +208,34 @@ router.put(
       ]);
 
       if (news.length === 0) {
-        console.log("News item not found");
         return res.status(404).json({
           success: false,
           message: "News item not found",
         });
       }
 
-      console.log("Existing news item found:", news[0]);
       let file_path = news[0].file_path;
 
       // If a new file is uploaded, delete the old one and update the path
       if (req.file) {
-        console.log("New file uploaded:", req.file.filename);
         // Delete old file if it exists
         if (file_path) {
           const oldFilePath = path.join(__dirname, "..", file_path);
-          console.log("Attempting to delete old file:", oldFilePath);
           if (fs.existsSync(oldFilePath)) {
             fs.unlinkSync(oldFilePath);
-            console.log("Old file deleted successfully");
           } else {
-            console.log("Old file not found");
           }
         }
 
         // Set new file path
         file_path = `/uploads/news/${req.file.filename}`;
-        console.log("New file path set:", file_path);
       }
-
-      // Update the news item in the database
-      console.log("Updating news item with:", {
-        title,
-        description,
-        file_path,
-        id: req.params.id,
-      });
 
       await db.query(
         "UPDATE news SET title = ?, description = ?, file_path = ? WHERE id = ?",
         [title, description, file_path, req.params.id]
       );
 
-      console.log("News item updated successfully");
       res.json({
         success: true,
         message: "News updated successfully",
