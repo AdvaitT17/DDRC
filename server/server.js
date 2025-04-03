@@ -18,6 +18,7 @@ const {
   requireCompletedRegistration,
 } = require("./middleware/registrationMiddleware");
 const userManagementRoutes = require("./routes/userManagementRoutes");
+const reportRoutes = require("./routes/reportRoutes");
 const { uploadsDir } = require("./config/upload");
 const pool = require("./config/database");
 const tokenManager = require("./utils/temporaryAccess");
@@ -203,7 +204,6 @@ app.use(
 app.use("/api/form", formRoutes);
 app.use("/api/auth", authRoutes);
 app.use("/api/auth", userAuthRoutes);
-console.log("Registering news routes at /api/news");
 app.use("/api/news", newsRoutes);
 app.use("/api/registration", registrationRoutes);
 app.use(
@@ -217,6 +217,12 @@ app.use(
   },
   adminRoutes
 );
+// Comment out the document routes that don't exist
+// app.use(
+//   "/api/documents",
+//   authenticateToken,
+//   require("./routes/documentRoutes")
+// );
 app.use("/api/track", require("./routes/trackingRoutes"));
 app.use(
   "/api/dashboard",
@@ -226,6 +232,7 @@ app.use(
 );
 app.use("/api/admin", userManagementRoutes);
 app.use("/api/events", require("./routes/events"));
+app.use("/api/reports", reportRoutes);
 
 // HTML Routes - make sure these come after API routes
 app.get(

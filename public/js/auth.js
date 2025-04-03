@@ -9,6 +9,21 @@ class AuthManager {
     }
   }
 
+  // Alias for getAuthToken for better API compatibility
+  static getToken() {
+    return this.getAuthToken();
+  }
+
+  // Check if user is authenticated
+  static isAuthenticated() {
+    return !!this.getAuthToken();
+  }
+
+  static getUserId() {
+    const userInfo = this.getUserInfo();
+    return userInfo ? userInfo.id : null;
+  }
+
   static getUserInfo() {
     const userType = this.getCurrentUserType();
     const userInfo = localStorage.getItem(`${userType}UserInfo`);

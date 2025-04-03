@@ -88,4 +88,51 @@ const requireRole = (roles) => {
   };
 };
 
-module.exports = { authenticateToken, requireRole };
+/**
+ * Middleware to check if the user is a department user (staff or admin)
+ */
+const checkDepartmentUser = (req, res, next) => {
+  if (!req.user || req.user.type !== "department") {
+    return res.status(403).json({
+      message: "Access denied. Department staff or admin required.",
+      code: "ACCESS_DENIED",
+    });
+  }
+  next();
+};
+
+const verifyToken = (req, res, next) => {
+  try {
+    const authHeader = req.headers["authorization"];
+    const token = authHeader && authHeader.split(" ")[1];
+
+    if (!token) {
+      return res.status(401).json({
+        message: "No token provided",
+        code: "TOKEN_MISSING",
+      });
+    }
+
+    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+    req.user = decoded;
+    next();
+  } catch (error) {
+    if (error.name === "TokenExpiredError") {
+      return res.status(401).json({
+        message: "Session expired. Please login again.",
+        code: "TOKEN_EXPIRED",
+      });
+    }
+    res.status(403).json({
+      message: "Token verification failed",
+      code: "TOKEN_INVALID",
+    });
+  }
+};
+
+module.exports = {
+  authenticateToken,
+  requireRole,
+  checkDepartmentUser,
+  verifyToken,
+};

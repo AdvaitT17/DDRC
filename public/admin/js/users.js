@@ -12,6 +12,7 @@ class UserManager {
           <div class="admin-top-bar">
             <div class="left-links">
               <a href="/admin/dashboard">Dashboard</a>
+              <a href="/admin/reports">Reports</a>
               <a href="/admin/forms">Form Management</a>
               <a href="/admin/news/index.html">News</a>
               <a href="/admin/events/index.html">Events</a>

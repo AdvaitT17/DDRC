@@ -1,0 +1,726 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Report View | DDRC Admin</title>
+    <link
+      href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css"
+      rel="stylesheet"
+    />
+    <link
+      href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css"
+      rel="stylesheet"
+    />
+    <link
+      rel="stylesheet"
+      href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css"
+    />
+    <link rel="stylesheet" href="/css/main.css" />
+    <link rel="stylesheet" href="/admin/css/style.css" />
+    <style>
+      /* Report View specific styling */
+      .report-card {
+        background-color: #fff;
+        border-radius: 8px;
+        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+        margin-bottom: 2rem;
+      }
+
+      .report-header {
+        padding: 1.25rem;
+        border-bottom: 1px solid #eee;
+      }
+
+      .report-body {
+        padding: 1.5rem;
+      }
+
+      .cross-tab-container {
+        overflow-x: auto;
+      }
+
+      .cross-tab-table {
+        min-width: 800px;
+      }
+
+      .cross-tab-table th {
+        background-color: #f1f5f9;
+        position: sticky;
+        top: 0;
+        z-index: 10;
+      }
+
+      .cross-tab-table th.row-header {
+        background-color: #f1f5f9;
+        position: sticky;
+        left: 0;
+        z-index: 11;
+      }
+
+      .cross-tab-table td.row-label {
+        position: sticky;
+        left: 0;
+        background-color: #f8fafc;
+        font-weight: 500;
+        z-index: 9;
+      }
+
+      .cross-tab-table th.total-header,
+      .cross-tab-table td.total-cell {
+        background-color: #e2e8f0;
+        font-weight: 600;
+      }
+
+      /* Styling for empty cells in full table view */
+      .cross-tab-table td.empty-cell {
+        background-color: #f9f9f9;
+        color: #aaa;
+        font-style: italic;
+      }
+
+      /* Full table view toggle styling */
+      .form-check.form-switch {
+        display: flex;
+        align-items: center;
+      }
+
+      .form-check.form-switch .form-check-input {
+        margin-right: 8px;
+        margin-top: 0.1rem;
+      }
+
+      .form-check.form-switch .form-check-label {
+        font-size: 0.9rem;
+        font-weight: 500;
+        display: flex;
+        align-items: center;
+      }
+
+      .full-table-badge {
+        display: inline-block;
+        margin-left: 8px;
+        margin-top: 0.1rem;
+        font-size: 0.7rem;
+        background-color: #e1f5fe;
+        color: #0288d1;
+        padding: 2px 6px;
+        border-radius: 4px;
+        font-weight: 600;
+      }
+
+      .report-view-content {
+        min-height: 400px;
+      }
+
+      .report-actions {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        flex-wrap: wrap;
+      }
+
+      .back-button {
+        display: flex;
+        align-items: center;
+        padding: 8px 16px;
+        font-weight: 500;
+        border-radius: 6px;
+        transition: all 0.2s ease;
+      }
+
+      .back-button i {
+        margin-right: 8px;
+      }
+
+      .aggregation-type-selector {
+        margin-left: auto;
+      }
+
+      .aggregation-type-selector .btn-group {
+        border: 1px solid #dee2e6;
+        border-radius: 6px;
+        overflow: hidden;
+      }
+
+      .aggregation-type-selector .btn {
+        font-size: 0.85rem;
+        padding: 0.35rem 0.75rem;
+        border: none;
+        margin-right: -1px;
+      }
+
+      .aggregation-type-selector .btn-outline-primary {
+        color: #495057;
+        background-color: #f8f9fa;
+      }
+
+      .aggregation-type-selector .btn-outline-primary:hover {
+        color: #0d6efd;
+        background-color: #f1f8ff;
+      }
+
+      .aggregation-type-selector .btn-check:checked + .btn-outline-primary {
+        background-color: #0d6efd;
+        color: white;
+      }
+
+      /* Chart View Styling */
+      .chart-type-selector .btn-group {
+        border: 1px solid #dee2e6;
+        border-radius: 6px;
+        overflow: hidden;
+      }
+
+      .chart-type-selector .btn {
+        font-size: 0.9rem;
+        padding: 0.4rem 0.9rem;
+        border: none;
+        margin-right: -1px;
+        font-weight: 500;
+      }
+
+      .chart-type-selector .btn-outline-primary {
+        color: #495057;
+        background-color: #f8f9fa;
+      }
+
+      .chart-type-selector .btn-outline-primary:hover {
+        color: #0d6efd;
+        background-color: #f1f8ff;
+        transform: translateY(-1px);
+        box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+      }
+
+      .chart-type-selector .btn-check:checked + .btn-outline-primary {
+        background-color: #0d6efd;
+        color: white;
+      }
+
+      .chart-container {
+        background-color: #ffffff;
+        border-radius: 8px;
+        min-height: 400px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        transition: all 0.3s ease;
+        box-shadow: 0 2px 12px rgba(0, 0, 0, 0.08);
+        position: relative;
+        overflow: hidden;
+      }
+
+      #chartView {
+        transition: opacity 0.3s ease;
+        margin-top: 2rem;
+        padding-top: 1rem;
+        border-top: 1px solid #eee;
+      }
+
+      .tab-controls {
+        margin-bottom: 1.5rem;
+      }
+
+      .tab-controls .nav-link {
+        padding: 0.75rem 1.5rem;
+        font-weight: 500;
+        color: #555;
+        border-radius: 6px;
+        transition: all 0.2s ease;
+      }
+
+      .tab-controls .nav-link.active {
+        background-color: #0d6efd;
+        color: white;
+        box-shadow: 0 4px 8px rgba(13, 110, 253, 0.2);
+      }
+
+      .tab-controls .nav-link:hover:not(.active) {
+        background-color: #f0f7ff;
+        color: #0d6efd;
+      }
+
+      .tab-controls .nav-item {
+        margin-right: 10px;
+      }
+
+      .tab-controls .nav-link i {
+        margin-right: 8px;
+      }
+
+      .report-metadata {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 12px;
+        margin-bottom: 1.5rem;
+        padding: 15px;
+        background-color: #f8f9fa;
+        border-radius: 8px;
+        border: 1px solid #eee;
+      }
+
+      .metadata-item {
+        display: flex;
+        flex-direction: column;
+        padding: 10px 15px;
+        background-color: white;
+        border-radius: 6px;
+        border: 1px solid #e9ecef;
+        min-width: 150px;
+      }
+
+      .metadata-label {
+        font-size: 0.8rem;
+        color: #6c757d;
+        margin-bottom: 4px;
+      }
+
+      .metadata-value {
+        font-weight: 500;
+        color: #212529;
+      }
+
+      .filter-tag {
+        background-color: #f5f9ff;
+        border: 1px solid #dae8fc;
+        color: #1a56db;
+        border-radius: 8px;
+        padding: 8px 14px;
+        margin-right: 8px;
+        margin-bottom: 8px;
+        display: inline-flex;
+        align-items: center;
+        font-size: 0.875rem;
+        transition: all 0.2s ease;
+        box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+        font-weight: 500;
+      }
+
+      /* Responsive adjustments */
+      @media (max-width: 768px) {
+        .aggregation-type-selector {
+          margin-left: 0;
+          margin-top: 1rem;
+          width: 100%;
+        }
+
+        .aggregation-type-selector .btn-group {
+          width: 100%;
+        }
+
+        .chart-container {
+          min-height: 300px;
+        }
+
+        .chart-type-selector .btn {
+          font-size: 0.8rem;
+          padding: 0.35rem 0.7rem;
+        }
+      }
+
+      /* Enhance matrix/heatmap appearance */
+      canvas.matrix-element {
+        border-radius: 3px;
+        transition: transform 0.15s ease;
+      }
+
+      canvas.matrix-element:hover {
+        transform: scale(1.05);
+      }
+
+      .report-title {
+        font-size: 1.75rem;
+        font-weight: 600;
+        color: #212529;
+        margin-bottom: 1rem;
+      }
+
+      .loading-overlay {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background-color: rgba(255, 255, 255, 0.8);
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        z-index: 9999;
+      }
+
+      .loading-spinner {
+        width: 50px;
+        height: 50px;
+        border: 5px solid #f3f3f3;
+        border-top: 5px solid #0d6efd;
+        border-radius: 50%;
+        animation: spin 1s linear infinite;
+      }
+
+      @keyframes spin {
+        0% {
+          transform: rotate(0deg);
+        }
+        100% {
+          transform: rotate(360deg);
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <!-- Auth check loader -->
+    <div id="authLoader" class="auth-loader">
+      <div class="spinner"></div>
+    </div>
+
+    <!-- Loading overlay -->
+    <div id="loadingOverlay" class="loading-overlay">
+      <div class="loading-spinner"></div>
+    </div>
+
+    <!-- Main content will be hidden until auth check -->
+    <div id="mainContent" style="display: none">
+      <div class="admin-top-bar">
+        <div class="left-links">
+          <a href="/admin/dashboard">Dashboard</a>
+          <a href="/admin/reports" class="active">Reports</a>
+          <a href="/admin/forms">Form Management</a>
+          <a href="/admin/news">News</a>
+          <a href="/admin/events/index.html">Events</a>
+          <a href="/admin/logbook">Logs</a>
+          <a href="/admin/users">Users</a>
+        </div>
+        <div class="right-links">
+          <span id="userInfo"></span>
+          <button
+            id="logoutBtn"
+            class="btn btn-link"
+            onclick="AuthManager.logout()"
+          >
+            Logout
+          </button>
+        </div>
+      </div>
+
+      <!-- Main Header -->
+      <header class="main-header">
+        <div class="logo-section">
+          <img
+            src="/images/emblem.png"
+            alt="Government of India Emblem"
+            class="emblem-logo"
+          />
+          <div class="header-text">
+            <h1>District Disability Rehabilitation Centre, Mumbai</h1>
+            <p>Department of Empowerment of Persons with Disabilities,</p>
+            <p>Ministry of Social Justice and Empowerment, Govt. of India</p>
+          </div>
+          <img src="/images/ddrc-logo.png" alt="DDRC Logo" class="ddrc-logo" />
+        </div>
+      </header>
+
+      <div class="admin-content">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+          <div>
+            <button
+              class="btn btn-outline-primary back-button"
+              id="backToReportsBtn"
+            >
+              <i class="bi bi-arrow-left"></i> Back to Reports
+            </button>
+          </div>
+          <div class="report-actions">
+            <button class="btn btn-outline-secondary" id="refreshReportBtn">
+              <i class="bi bi-arrow-clockwise"></i> Refresh
+            </button>
+          </div>
+        </div>
+
+        <!-- Report Title & Metadata -->
+        <div class="report-card mb-4">
+          <div class="report-header">
+            <h2 class="report-title" id="reportTitle">Loading Report...</h2>
+            <p class="text-muted mb-0" id="reportDescription">
+              Please wait while we load the report data
+            </p>
+          </div>
+          <div class="report-body">
+            <div class="report-metadata" id="reportMetadata">
+              <!-- Will be populated by JavaScript -->
+            </div>
+          </div>
+        </div>
+
+        <!-- Tab Controls -->
+        <ul class="nav nav-pills tab-controls" id="reportTabs">
+          <li class="nav-item">
+            <a
+              class="nav-link active"
+              id="tableTab"
+              data-bs-toggle="tab"
+              href="#tableContent"
+            >
+              <i class="bi bi-table"></i> Table View
+            </a>
+          </li>
+          <li class="nav-item">
+            <a
+              class="nav-link"
+              id="chartTab"
+              data-bs-toggle="tab"
+              href="#chartContent"
+            >
+              <i class="bi bi-bar-chart"></i> Chart View
+            </a>
+          </li>
+          <li class="nav-item">
+            <a
+              class="nav-link"
+              id="filtersTab"
+              data-bs-toggle="tab"
+              href="#filtersContent"
+            >
+              <i class="bi bi-funnel"></i> Filters
+            </a>
+          </li>
+          <li class="nav-item">
+            <a
+              class="nav-link"
+              id="exportTab"
+              data-bs-toggle="tab"
+              href="#exportContent"
+            >
+              <i class="bi bi-download"></i> Export
+            </a>
+          </li>
+        </ul>
+
+        <!-- Tab Content -->
+        <div class="tab-content">
+          <!-- Table View Tab -->
+          <div class="tab-pane fade show active" id="tableContent">
+            <div class="report-card">
+              <div
+                class="report-header d-flex justify-content-between align-items-center"
+              >
+                <h4 class="mb-0">Report Data</h4>
+                <div class="d-flex align-items-center gap-3">
+                  <div class="form-check form-switch">
+                    <input
+                      class="form-check-input"
+                      type="checkbox"
+                      id="toggleFullTableView"
+                      data-bs-toggle="tooltip"
+                      data-bs-placement="top"
+                      title="When enabled, shows all available options in the table, even those with zero responses"
+                    />
+                    <label class="form-check-label" for="toggleFullTableView">
+                      Show All Options
+                      <span
+                        class="full-table-badge"
+                        id="fullTableBadge"
+                        style="display: none"
+                        >FULL VIEW</span
+                      >
+                    </label>
+                  </div>
+                  <div class="aggregation-type-selector">
+                    <div
+                      class="btn-group"
+                      role="group"
+                      aria-label="Aggregation Type"
+                    >
+                      <input
+                        type="radio"
+                        class="btn-check"
+                        name="aggregationType"
+                        id="countAggregation"
+                        value="count"
+                        checked
+                      />
+                      <label
+                        class="btn btn-outline-primary"
+                        for="countAggregation"
+                        >Count</label
+                      >
+
+                      <input
+                        type="radio"
+                        class="btn-check"
+                        name="aggregationType"
+                        id="percentTotalAggregation"
+                        value="percent_total"
+                      />
+                      <label
+                        class="btn btn-outline-primary"
+                        for="percentTotalAggregation"
+                        >% of Total</label
+                      >
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <div class="report-body">
+                <div class="cross-tab-container">
+                  <div id="reportLoading" class="report-loader">
+                    <div class="spinner-border text-primary" role="status">
+                      <span class="visually-hidden">Loading...</span>
+                    </div>
+                  </div>
+                  <table
+                    class="table table-bordered cross-tab-table"
+                    id="crossTabTable"
+                    style="display: none"
+                  >
+                    <!-- Will be populated by JavaScript -->
+                  </table>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Chart View Tab -->
+          <div class="tab-pane fade" id="chartContent">
+            <div class="report-card">
+              <div
+                class="report-header d-flex justify-content-between align-items-center"
+              >
+                <h4 class="mb-0">Chart View</h4>
+                <div
+                  class="btn-group chart-type-selector"
+                  role="group"
+                  aria-label="Chart type"
+                >
+                  <input
+                    type="radio"
+                    class="btn-check"
+                    name="chartType"
+                    id="barChartInput"
+                    value="bar"
+                    checked
+                  />
+                  <label
+                    class="btn btn-outline-primary"
+                    for="barChartInput"
+                    id="barChartBtn"
+                    >Bar Chart</label
+                  >
+
+                  <input
+                    type="radio"
+                    class="btn-check"
+                    name="chartType"
+                    id="pieChartInput"
+                    value="pie"
+                  />
+                  <label
+                    class="btn btn-outline-primary"
+                    for="pieChartInput"
+                    id="pieChartBtn"
+                    >Pie Chart</label
+                  >
+
+                  <input
+                    type="radio"
+                    class="btn-check"
+                    name="chartType"
+                    id="heatmapInput"
+                    value="heatmap"
+                  />
+                  <label
+                    class="btn btn-outline-primary"
+                    for="heatmapInput"
+                    id="heatmapBtn"
+                    >Heatmap</label
+                  >
+                </div>
+              </div>
+              <div class="report-body">
+                <div
+                  class="chart-container p-3 bg-white border rounded shadow-sm"
+                >
+                  <canvas id="reportChart" width="400" height="300"></canvas>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Filters Tab -->
+          <div class="tab-pane fade" id="filtersContent">
+            <div class="report-card">
+              <div class="report-header">
+                <h4 class="mb-0">Applied Filters</h4>
+              </div>
+              <div class="report-body">
+                <div id="appliedFiltersContainer">
+                  <!-- Will be populated by JavaScript -->
+                  <p class="text-muted">No filters applied to this report.</p>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Export Tab -->
+          <div class="tab-pane fade" id="exportContent">
+            <div class="report-card">
+              <div class="report-header">
+                <h4 class="mb-0">Export Options</h4>
+              </div>
+              <div class="report-body">
+                <div class="row g-3">
+                  <div class="col-md-6">
+                    <div class="card h-100">
+                      <div class="card-body">
+                        <h5 class="card-title">
+                          <i
+                            class="bi bi-file-earmark-excel text-success me-2"
+                          ></i
+                          >Excel
+                        </h5>
+                        <p class="card-text">
+                          Download the report data as an Excel file that can be
+                          opened in Microsoft Excel or Google Sheets.
+                        </p>
+                        <button class="btn btn-primary" id="exportCsvBtn">
+                          <i class="bi bi-download me-2"></i>Download Excel
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                  <div class="col-md-6">
+                    <div class="card h-100">
+                      <div class="card-body">
+                        <h5 class="card-title">
+                          <i class="bi bi-printer me-2"></i>Print Report
+                        </h5>
+                        <p class="card-text">
+                          Generate a printer-friendly version of the report for
+                          printing or saving as PDF.
+                        </p>
+                        <button class="btn btn-primary" id="printReportBtn">
+                          <i class="bi bi-printer me-2"></i>Print Report
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-chart-matrix@1.2.0/dist/chartjs-chart-matrix.min.js"></script>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
+    <!-- Replace SheetJS with ExcelJS for better Excel styling -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/exceljs/4.3.0/exceljs.min.js"></script>
+    <!-- Add FileSaver.js for better cross-browser file saving -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/FileSaver.js/2.0.5/FileSaver.min.js"></script>
+    <script src="/js/auth.js"></script>
+    <script src="/admin/js/reportView.js"></script>
+  </body>
+</html>
