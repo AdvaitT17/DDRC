@@ -15,10 +15,6 @@ class EnhancedFilterSystem {
       "enhanced-savedFiltersContainer"
     );
 
-    if (this.filterFieldSelect) {
-      const style = window.getComputedStyle(this.filterFieldSelect);
-    }
-
     // Fields data
     this.allFields = [];
 
@@ -27,36 +23,6 @@ class EnhancedFilterSystem {
     this.currentOperator = null;
     this.activeFilters = [];
     this.savedFilters = [];
-
-    // Check for global ReportsManager
-    if (window.ReportsManager) {
-      this.connectWithReportsManager();
-    } else {
-      // Set up a retry mechanism
-      let attempts = 0;
-      const maxAttempts = 5;
-      const checkInterval = setInterval(() => {
-        attempts++;
-        if (window.ReportsManager) {
-          this.connectWithReportsManager();
-          clearInterval(checkInterval);
-        } else if (attempts >= maxAttempts) {
-          console.warn(
-            `Failed to find global ReportsManager after ${maxAttempts} attempts`
-          );
-          clearInterval(checkInterval);
-        } else {
-        }
-      }, 1000);
-    }
-
-    // Check if required elements exist
-    if (!this.filterFieldSelect) {
-      console.error(
-        "Filter field select not found - cannot initialize filter system"
-      );
-      return;
-    }
 
     // Initialize
     if (this.filterPanel) {
@@ -77,100 +43,6 @@ class EnhancedFilterSystem {
         this.ensureFilterVisibility();
       }, 500);
     });
-  }
-
-  // Connect with the global ReportsManager
-  connectWithReportsManager() {
-    if (!window.ReportsManager) {
-      console.error("Cannot connect: ReportsManager not available");
-      return;
-    }
-
-    // Connect with ReportsManager's fields
-    if (
-      window.ReportsManager.allFields &&
-      window.ReportsManager.allFields.length > 0
-    ) {
-      this.allFields = window.ReportsManager.allFields;
-      this.populateFieldSelect();
-    } else {
-    }
-
-    // Connect with ReportsManager's active filters
-    if (
-      window.ReportsManager.activeFilters &&
-      window.ReportsManager.activeFilters.length > 0
-    ) {
-      this.syncFilters(window.ReportsManager.activeFilters);
-    } else {
-    }
-
-    // Register this instance with ReportsManager
-    if (!window.ReportsManager.enhancedFilterSystem) {
-      window.ReportsManager.enhancedFilterSystem = this;
-    }
-  }
-
-  // Initialize Enhanced Filter System
-  async init() {
-    try {
-      // Define key UI elements
-      this.filterSystem = document.getElementById("filterPanelContent");
-      this.filterPanel = document.querySelector(".filter-panel");
-      this.savedFiltersContainer = document.getElementById(
-        "enhanced-savedFiltersContainer"
-      );
-
-      // Check critical elements
-      if (!this.filterSystem) {
-        console.error("Filter system container not found");
-        return;
-      }
-
-      if (!this.savedFiltersContainer) {
-        console.error(
-          "Saved filters container not found. Element ID: enhanced-savedFiltersContainer"
-        );
-        // Try to find it by another means
-        this.savedFiltersContainer = document.querySelector(
-          "[id='enhanced-savedFiltersContainer']"
-        );
-      }
-
-      // Initialize toggle functionality for panel collapse/expand
-      this.initToggle();
-
-      // Load fields data first - this is required for filters
-      await this.loadFieldsData();
-
-      // Then populate filter select with the loaded fields
-      this.populateFieldSelect();
-
-      // Set up event listeners
-      this.setupModalEventListeners();
-      this.initEventListeners();
-
-      // Try to connect with ReportsManager if available
-      if (window.ReportsManager) {
-        this.connectWithReportsManager();
-      } else {
-        console.warn("ReportsManager not available for connection");
-      }
-
-      // Ensure filter visibility before loading saved filters
-      this.ensureFilterVisibility();
-
-      // Load saved filters with a slight delay to ensure DOM is ready
-      setTimeout(async () => {
-        try {
-          const filters = await this.loadSavedFilters();
-        } catch (error) {
-          console.error("Error in delayed loadSavedFilters:", error);
-        }
-      }, 1000);
-    } catch (error) {
-      console.error("Error initializing Enhanced Filter System:", error);
-    }
   }
 
   initEventListeners() {
@@ -333,37 +205,10 @@ class EnhancedFilterSystem {
     try {
       if (window.ReportsManager && window.ReportsManager.formFields) {
         this.allFields = window.ReportsManager.formFields;
-      } else if (
-        window.ReportsManager &&
-        window.ReportsManager.allFields &&
-        window.ReportsManager.allFields.length > 0
-      ) {
-        this.allFields = window.ReportsManager.allFields;
-      } else {
-        console.warn(
-          "Form fields are still loading. Filter functionality will be available shortly."
-        );
-
-        // Set a minimal empty state instead of sample data
-        this.allFields = [];
-
-        // Attempt to get fields again after a short delay
-        setTimeout(() => {
-          if (
-            window.ReportsManager &&
-            (window.ReportsManager.formFields ||
-              window.ReportsManager.allFields)
-          ) {
-            this.allFields =
-              window.ReportsManager.formFields ||
-              window.ReportsManager.allFields;
-            this.populateFieldSelect();
-          }
-        }, 2000);
       }
 
       // Populate the select dropdown
-      this.populateFieldSelect();
+      else this.populateFieldSelect();
     } catch (error) {
       console.error("Error loading fields data:", error);
     }
@@ -405,11 +250,6 @@ class EnhancedFilterSystem {
     } catch (error) {
       console.warn("Error refreshing select2:", error);
     }
-
-    // Add a timeout to check if the dropdown is visible after population
-    setTimeout(() => {
-      const style = window.getComputedStyle(this.filterFieldSelect);
-    }, 100);
   }
 
   // Initialize after document ready and ensure filter dropdowns are visible
@@ -446,9 +286,6 @@ class EnhancedFilterSystem {
 
       // Check if the dropdown has options
       if (this.filterFieldSelect.options.length <= 1) {
-        console.warn(
-          "Filter field select has no options, attempting to repopulate"
-        );
         this.populateFieldSelect();
       }
 
@@ -618,17 +455,11 @@ class EnhancedFilterSystem {
       console.error("Filter action buttons not found");
     }
 
-    // Initialize any special controls
-    this.initializeSpecialControls(fieldType);
-
     // Set up button event listeners
     this.setupFilterActionButtons();
 
     // Double check visibility
     setTimeout(() => {
-      if (filterActionButtons) {
-      }
-
       this.ensureFilterVisibility();
     }, 100);
   }
@@ -845,67 +676,6 @@ class EnhancedFilterSystem {
         <input type="tel" class="form-control" id="enhanced-phoneValue" placeholder="e.g. (123) 456-7890">
       </div>
     `;
-  }
-
-  // Initialize special controls like datepickers, select2, etc.
-  initializeSpecialControls(fieldType) {
-    // Set up event listeners for operator changes
-    const operatorSelect = document.getElementById("enhanced-filterOperator");
-
-    if (operatorSelect) {
-      // Remove any existing event listeners to prevent duplicates
-      const newOperatorSelect = operatorSelect.cloneNode(true);
-      operatorSelect.parentNode.replaceChild(newOperatorSelect, operatorSelect);
-
-      // Add event listener to the new select
-      newOperatorSelect.addEventListener("change", (e) => {
-        this.currentOperator = e.target.value;
-        this.toggleValueContainersByOperator();
-      });
-
-      // Trigger once to set initial state
-      this.currentOperator = newOperatorSelect.value;
-      this.toggleValueContainersByOperator();
-    } else {
-      console.error("Operator select element not found!");
-    }
-
-    // Add additional initialization based on field type
-    switch (fieldType) {
-      case "date":
-        const datePickers = document.querySelectorAll('input[type="date"]');
-
-        // Check if datepickers are visible
-        datePickers.forEach((picker, i) => {});
-        break;
-
-      case "select":
-      case "radio":
-      case "checkbox":
-        const selectElement = document.getElementById(
-          "enhanced-filterValueSelect"
-        );
-        if (selectElement) {
-          // Check if the select element is visible
-        } else {
-          console.error("Select element not found for option-based field");
-        }
-        break;
-
-      case "number":
-        const numberInputs = document.querySelectorAll('input[type="number"]');
-        break;
-
-      default:
-    }
-
-    // Force all containers to be visible
-    const allValueContainers = document.querySelectorAll(
-      ".filter-value-container"
-    );
-
-    // Check visibility of all containers
-    allValueContainers.forEach((container, i) => {});
   }
 
   // Toggle visibility of value containers based on selected operator
@@ -1133,6 +903,7 @@ class EnhancedFilterSystem {
     // Add to active filters
     this.activeFilters.push(filter);
 
+    // Log the sequential nature of the filters
     if (this.activeFilters.length > 1) {
       // Show a brief tooltip or message to the user explaining the sequential filtering
       this.showSequentialFilteringMessage();
@@ -1160,8 +931,7 @@ class EnhancedFilterSystem {
       tooltipContainer.setAttribute("role", "alert");
       tooltipContainer.innerHTML = `
         <strong>Sequential Filtering Applied</strong>
-        <p>Each filter narrows down results from previous filters. Results now match ALL selected criteria.</p>
-        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        <p>Each filter narrows down results from previous filters. Results now match all selected criteria.</p>
       `;
 
       // Find a good place to insert the tooltip
@@ -1172,11 +942,11 @@ class EnhancedFilterSystem {
           insertPoint.nextSibling
         );
 
-        // Automatically remove after 5 seconds
+        // Automatically remove after 10 seconds
         setTimeout(() => {
           tooltipContainer.classList.remove("show");
           setTimeout(() => tooltipContainer.remove(), 500);
-        }, 5000);
+        }, 10000);
       }
     }
   }
@@ -1216,9 +986,6 @@ class EnhancedFilterSystem {
                 const radioGroup = document.querySelectorAll(
                   ".enhanced-filter-value-radio"
                 );
-
-                // Log all radio buttons for debugging
-                radioGroup.forEach((radio, index) => {});
 
                 // Check if any is selected
                 const selected = Array.from(radioGroup).find(
@@ -2928,6 +2695,10 @@ class EnhancedFilterSystem {
       // Simply append the new filters to the existing ones
       this.activeFilters = [...this.activeFilters, ...newFiltersToApply];
 
+      // After adding filters, render the updated list and apply
+      // Add a visual indicator that filters are being added sequentially
+      // by highlighting the new filters briefly
+
       // Update the UI first
       this.renderActiveFilterTags();
 
@@ -3051,6 +2822,5 @@ class EnhancedFilterSystem {
 
 // Initialize when document is ready
 document.addEventListener("DOMContentLoaded", function () {
-  // No longer auto-initializing here to prevent timing issues
-  // ReportsManager will handle initialization after form fields are loaded
+  window.enhancedFilterSystem = new EnhancedFilterSystem();
 });

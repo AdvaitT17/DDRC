@@ -442,62 +442,100 @@ class ReportView {
 
     this.appliedFiltersContainer.innerHTML = "";
 
-    filters.forEach((filter, index) => {
-      const filterTag = document.createElement("div");
-      filterTag.className = "filter-tag";
+    // Ensure we have the form fields data
+    this.ensureFormFieldsLoaded().then(() => {
+      filters.forEach((filter, index) => {
+        const filterTag = document.createElement("div");
+        filterTag.className = "filter-tag";
 
-      let operatorText = "";
-      switch (filter.operator) {
-        case "equals":
-          operatorText = "=";
-          break;
-        case "not_equals":
-          operatorText = "≠";
-          break;
-        case "contains":
-          operatorText = "contains";
-          break;
-        case "starts_with":
-          operatorText = "starts with";
-          break;
-        case "ends_with":
-          operatorText = "ends with";
-          break;
-        case "greater_than":
-          operatorText = ">";
-          break;
-        case "less_than":
-          operatorText = "<";
-          break;
-        case "between":
-          operatorText = "between";
-          break;
-        case "is_empty":
-          operatorText = "is empty";
-          break;
-        case "is_not_empty":
-          operatorText = "is not empty";
-          break;
-      }
+        // Look up field display name using the fieldId
+        const fieldInfo = this.getFieldMetadata(filter.fieldId);
+        const fieldName = fieldInfo
+          ? fieldInfo.display_name
+          : `Field ${filter.fieldId}`;
 
-      // Format the value based on operator
-      let valueText = "";
-      if (["is_empty", "is_not_empty"].includes(filter.operator)) {
-        valueText = "";
-      } else if (Array.isArray(filter.values)) {
-        valueText = filter.values.join(", ");
-      } else {
-        valueText = filter.value || "";
-      }
+        let operatorText = "";
+        switch (filter.operator) {
+          case "equals":
+            operatorText = "=";
+            break;
+          case "not_equals":
+            operatorText = "≠";
+            break;
+          case "contains":
+            operatorText = "contains";
+            break;
+          case "starts_with":
+            operatorText = "starts with";
+            break;
+          case "ends_with":
+            operatorText = "ends with";
+            break;
+          case "greater_than":
+            operatorText = ">";
+            break;
+          case "less_than":
+            operatorText = "<";
+            break;
+          case "between":
+            operatorText = "between";
+            break;
+          case "is_empty":
+            operatorText = "is empty";
+            break;
+          case "is_not_empty":
+            operatorText = "is not empty";
+            break;
+        }
 
-      filterTag.innerHTML = `
-        <span class="filter-tag-name">${filter.fieldName}</span>
-        <span class="filter-tag-operator">${operatorText}</span>
-        <span class="filter-tag-value">${valueText}</span>
-      `;
+        // Format the value based on operator
+        let valueText = "";
+        if (["is_empty", "is_not_empty"].includes(filter.operator)) {
+          valueText = "";
+        } else if (Array.isArray(filter.values)) {
+          valueText = filter.values.join(", ");
+        } else {
+          valueText = filter.value || filter.values || "";
+        }
 
-      this.appliedFiltersContainer.appendChild(filterTag);
+        // Create HTML with field name, operator, and value
+        let innerHTML = "";
+
+        innerHTML += `<span class="filter-tag-name">${fieldName}</span>`;
+
+        if (valueText) {
+          innerHTML += `<span class="filter-tag-operator">${operatorText}</span>`;
+          innerHTML += `<span class="filter-tag-value">${valueText}</span>`;
+        }
+
+        filterTag.innerHTML = innerHTML;
+        this.appliedFiltersContainer.appendChild(filterTag);
+      });
     });
+  }
+
+  // Helper method to ensure form fields data is loaded
+  async ensureFormFieldsLoaded() {
+    if (!this.allFields || this.allFields.length === 0) {
+      try {
+        const response = await fetch("/api/reports/form/fields", {
+          headers: {
+            Authorization: `Bearer ${AuthManager.getAuthToken()}`,
+          },
+        });
+
+        if (!response.ok) {
+          throw new Error(`Failed to fetch form fields: ${response.status}`);
+        }
+
+        this.allFields = await response.json();
+      } catch (error) {
+        console.error("Error loading form fields:", error);
+        // Continue with what we have
+      }
+    }
+
+    return this.allFields || [];
   }
 
   async generateReportVisualization() {
@@ -804,6 +842,20 @@ class ReportView {
           } catch (err) {
             console.warn("Failed to fetch column variable options:", err);
           }
+        }
+      }
+
+      // As a final fallback, use existing data from lastReportData
+      if (
+        (!this.allRowOptions.length || !this.allColumnOptions.length) &&
+        this.lastReportData
+      ) {
+        if (!this.allRowOptions.length && this.lastReportData.rowLabels) {
+          this.allRowOptions = [...this.lastReportData.rowLabels];
+        }
+
+        if (!this.allColumnOptions.length && this.lastReportData.columnLabels) {
+          this.allColumnOptions = [...this.lastReportData.columnLabels];
         }
       }
     } catch (error) {
@@ -3016,6 +3068,23 @@ class ReportView {
       }
     }
 
+    // Fallback: Check if we have a Location field we can use for filtering
+    if (!filtersInserted && this.allFields && this.allFields.length > 0) {
+      const locationField = this.allFields.find(
+        (field) => field.field_type === "nested-select"
+      );
+
+      if (locationField) {
+        this.createNestedSelectFilter(
+          cardBody,
+          locationField.id,
+          locationField,
+          "filter"
+        );
+        filtersInserted = true;
+      }
+    }
+
     // Insert the filters into the DOM if we created any
     if (filtersInserted) {
       // Find appropriate location to insert filters
@@ -3061,6 +3130,7 @@ class ReportView {
       if (field) return field;
     }
 
+    // Check in window.formFields as a fallback
     if (window.formFields) {
       const field = window.formFields.find((f) => f.id.toString() === id);
       if (field) return field;
@@ -3180,14 +3250,12 @@ class ReportView {
         }
       });
 
-      // If we still have no structure, create an empty array
+      // If we still have no structure, try a last resort to create something usable
       if (levelsStructure.length === 0) {
-        console.warn("Could not determine levels structure");
-        levelsStructure = [];
+        console.warn("Could not determine levels structure, using fallback");
       }
     } catch (error) {
       console.error("Error processing nested select options:", error);
-      levelsStructure = [];
     }
 
     // Store the levels structure on the filter container for later access
