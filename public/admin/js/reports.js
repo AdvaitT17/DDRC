@@ -70,9 +70,6 @@ class ReportsManager {
       // Populate dropdowns
       this.populateFieldDropdowns();
 
-      // Initialize enhanced filter system AFTER form fields are loaded
-      this.initEnhancedFilterSystem();
-
       // Set up event listeners
       this.initEventListeners();
 
@@ -85,9 +82,13 @@ class ReportsManager {
       // Load saved reports
       this.loadSavedReports();
 
+      // Initialize enhanced filter system
+      this.initEnhancedFilterSystem();
+
       // Add the Save Report button to the report actions
       this.addSaveReportButton();
     } catch (error) {
+      console.error("Initialization error:", error);
       alert("An error occurred during initialization. Please try again.");
     }
   }
@@ -456,8 +457,6 @@ class ReportsManager {
         throw new Error(errorData.message || "Failed to save report");
       }
 
-      const result = await response.json();
-
       // Close the modal
       const bsModalInstance = bootstrap.Modal.getInstance(
         document.getElementById("saveReportModal")
@@ -473,6 +472,7 @@ class ReportsManager {
       // Refresh saved reports list
       this.loadSavedReports();
     } catch (error) {
+      console.error("Error saving report:", error);
       alert(`Failed to save report: ${error.message}`);
     }
   }
@@ -953,6 +953,7 @@ class ReportsManager {
         }
         
         .saved-report-card .btn-primary:hover {
+          background: linear-gradient(45deg, #1a237e, #303f9f);
           opacity: 0.95;
         }
         
@@ -961,10 +962,9 @@ class ReportsManager {
           opacity: 1;
         }
         
-        
         /* View button with subtle effects */
         .saved-report-card .view-report-btn {
-          background: #0891b2;
+          background: linear-gradient(45deg, #0891b2, #0e7490);
           color: white;
           border: none;
           box-shadow: 0 2px 4px rgba(8, 145, 178, 0.2);
@@ -978,7 +978,6 @@ class ReportsManager {
         }
         
         .saved-report-card .view-report-btn:active {
-          background: linear-gradient(45deg, #0c637a, #077d9b);
           opacity: 1;
         }
         
@@ -1390,6 +1389,7 @@ class ReportsManager {
       // Show success message
       this.showToast("Success", "Report deleted successfully", "success");
     } catch (error) {
+      console.error("Error deleting saved report:", error);
       alert(`Failed to delete report: ${error.message}`);
     }
   }
@@ -2152,6 +2152,7 @@ class ReportsManager {
         `Filter "${filter.name}" added to existing filters`
       );
     } catch (error) {
+      console.error("ReportsManager: ❌ Error loading saved filter:", error);
       alert(`Error loading filter: ${error.message}`);
     }
   }
@@ -5011,14 +5012,6 @@ class ReportsManager {
     // Check if EnhancedFilterSystem is loaded and available
     if (typeof EnhancedFilterSystem === "function") {
       try {
-        // Verify that we have form fields before initializing
-        if (!this.allFields || this.allFields.length === 0) {
-          console.warn(
-            "Cannot initialize EnhancedFilterSystem: Form fields are not loaded yet"
-          );
-          return;
-        }
-
         // Create a new instance of EnhancedFilterSystem
         this.enhancedFilterSystem =
           window.enhancedFilterSystem || new EnhancedFilterSystem();
