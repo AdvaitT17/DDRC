@@ -1264,18 +1264,39 @@ class ReportView {
 
     // Destroy existing chart if any
     if (this.chart) {
-      this.chart.destroy();
+      try {
+        this.chart.destroy();
+        this.chart = null;
+      } catch (error) {
+        console.warn("Error destroying chart:", error);
+        // Continue anyway
+      }
     }
 
-    const ctx = this.reportChart.getContext("2d");
+    try {
+      const ctx = this.reportChart.getContext("2d");
 
-    // Select the appropriate chart type
-    if (chartType === "bar") {
-      this.createBarChart(ctx, data);
-    } else if (chartType === "pie") {
-      this.createPieChart(ctx, data);
-    } else if (chartType === "heatmap") {
-      this.createHeatmap(ctx, data);
+      // Clear the canvas to prevent ghosting
+      ctx.clearRect(0, 0, this.reportChart.width, this.reportChart.height);
+
+      // Select the appropriate chart type
+      if (chartType === "bar") {
+        this.createBarChart(ctx, data);
+      } else if (chartType === "pie") {
+        this.createPieChart(ctx, data);
+      } else if (chartType === "heatmap") {
+        this.createHeatmap(ctx, data);
+      }
+    } catch (error) {
+      console.error("Error creating chart:", error);
+      // Show error message to user
+      const chartContainer = this.reportChart.parentElement;
+      chartContainer.innerHTML = `
+        <div class="alert alert-danger">
+          <i class="bi bi-exclamation-triangle me-2"></i>
+          Error rendering chart. Please try another chart type or refresh the page.
+        </div>
+      `;
     }
   }
 
@@ -1366,7 +1387,7 @@ class ReportView {
     }
 
     // Find the max value to normalize the color scale
-    const maxValue = Math.max(...heatmapData.map((d) => d.v));
+    const maxValue = Math.max(...heatmapData.map((d) => d.v), 1); // Ensure never zero
 
     // Create the chart
     this.chart = new Chart(ctx, {
@@ -1377,16 +1398,35 @@ class ReportView {
             label: "Heatmap",
             data: heatmapData,
             backgroundColor(context) {
-              const value = context.dataset.data[context.dataIndex].v;
-              const alpha = value / maxValue;
+              // Add safety check for undefined data
+              if (
+                !context ||
+                !context.dataset ||
+                !context.dataset.data ||
+                context.dataIndex === undefined ||
+                !context.dataset.data[context.dataIndex]
+              ) {
+                return "rgba(54, 162, 235, 0.1)";
+              }
+
+              const value = context.dataset.data[context.dataIndex].v || 0;
+              const alpha = maxValue > 0 ? value / maxValue : 0;
               return `rgba(54, 162, 235, ${alpha})`;
             },
             borderColor: "#ffffff",
             borderWidth: 1,
-            width: ({ chart }) =>
-              (chart.chartArea || {}).width / data.columnLabels.length - 2,
-            height: ({ chart }) =>
-              (chart.chartArea || {}).height / data.rowLabels.length - 2,
+            width: ({ chart }) => {
+              const chartArea = chart.chartArea || {};
+              return chartArea.width
+                ? chartArea.width / Math.max(data.columnLabels.length, 1) - 2
+                : 20;
+            },
+            height: ({ chart }) => {
+              const chartArea = chart.chartArea || {};
+              return chartArea.height
+                ? chartArea.height / Math.max(data.rowLabels.length, 1) - 2
+                : 20;
+            },
           },
         ],
       },
@@ -1400,6 +1440,17 @@ class ReportView {
                 return "";
               },
               label(context) {
+                // Add safety check
+                if (
+                  !context ||
+                  !context.dataset ||
+                  !context.dataset.data ||
+                  context.dataIndex === undefined ||
+                  !context.dataset.data[context.dataIndex]
+                ) {
+                  return ["No data available"];
+                }
+
                 const item = context.dataset.data[context.dataIndex];
                 return [
                   `Row: ${data.rowLabels[item.y]}`,
