@@ -223,6 +223,9 @@ class LogbookManager {
       add_user: "User Added",
       toggle_user: "Status",
       edit_response: "Edit Made",
+      edit_incomplete: "Incomplete Edit",
+      complete_registration: "Registration Completed",
+      create_registration: "Registration Created",
     };
     return formats[type] || type;
   }
@@ -253,18 +256,64 @@ class LogbookManager {
           editDetails.display_name
         }" from "${this.truncateValue(
           editDetails.previous_value
-        )}" to "${this.truncateValue(editDetails.new_value)}"`;
+        )}" to "${this.truncateValue(editDetails.new_value)}"${
+          editDetails.reason
+            ? ` (Reason: ${this.truncateValue(editDetails.reason)})`
+            : ""
+        }`;
       } catch (e) {
         return "Edited application response";
+      }
+    }
+    if (log.action_type === "edit_incomplete") {
+      try {
+        const editDetails = JSON.parse(log.edit_details);
+        return `Edited incomplete registration field "${
+          editDetails.display_name
+        }" from "${this.truncateValue(
+          editDetails.previous_value
+        )}" to "${this.truncateValue(editDetails.new_value)}"${
+          editDetails.reason
+            ? ` (Reason: ${this.truncateValue(editDetails.reason)})`
+            : ""
+        }`;
+      } catch (e) {
+        return "Edited incomplete registration response";
+      }
+    }
+    if (log.action_type === "complete_registration") {
+      try {
+        const editDetails = JSON.parse(log.edit_details);
+        return `Marked incomplete registration as complete${
+          editDetails.note ? `: ${editDetails.note}` : ""
+        }`;
+      } catch (e) {
+        return "Marked incomplete registration as complete";
+      }
+    }
+    if (log.action_type === "create_registration") {
+      try {
+        const editDetails = JSON.parse(log.edit_details);
+        return `Created new registration ${
+          editDetails.summary ? `: ${editDetails.summary}` : ""
+        }`;
+      } catch (e) {
+        return "Created new registration";
       }
     }
     return "-";
   }
 
   truncateValue(value) {
-    if (!value) return "empty";
-    if (typeof value !== "string") return String(value);
-    return value.length > 20 ? value.substring(0, 17) + "..." : value;
+    if (value === null || value === undefined) return "empty";
+    if (value === "__FILE_REMOVED__") return "File Deleted";
+
+    // Convert to string and truncate if needed
+    const str = String(value);
+    if (str.length > 30) {
+      return str.substring(0, 27) + "...";
+    }
+    return str;
   }
 }
 
