@@ -114,7 +114,7 @@ jobs:
           chmod -R 755 /home/site/wwwroot/uploads
 
           # Start the application
-          node --max-old-space-size=4096 server.js
+          node server.js
           EOL
 
           # Make startup script executable

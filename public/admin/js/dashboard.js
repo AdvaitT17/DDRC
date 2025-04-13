@@ -2,6 +2,8 @@ class DashboardManager {
   constructor() {
     this.loadStats();
     this.loadRecentApplications();
+    this.setupIncompleteRegistrationsSection();
+    this.loadIncompleteRegistrations(); // Now this will use the filter set up above
     this.applicationModal = new bootstrap.Modal(
       document.getElementById("applicationModal")
     );

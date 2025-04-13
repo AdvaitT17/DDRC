@@ -41,10 +41,17 @@ router.get("/stats", async (req, res) => {
         "SELECT COUNT(*) as count FROM registration_progress"
       );
 
-      // Get pending applications (where service_status is null or pending)
-      const [pendingApps] = await conn.query(
+      // Get applications to review (completed applications with status pending or under_review)
+      const [applicationsToReview] = await conn.query(
         `SELECT COUNT(*) as count FROM registration_progress 
-         WHERE service_status IS NULL OR service_status = 'pending'`
+         WHERE status = 'completed' 
+         AND (service_status = 'pending' OR service_status = 'under_review')`
+      );
+
+      // Get incomplete registrations count
+      const [incompleteReg] = await conn.query(
+        `SELECT COUNT(*) as count FROM registration_progress 
+         WHERE status = 'in_progress'`
       );
 
       // Get approved today
@@ -62,7 +69,8 @@ router.get("/stats", async (req, res) => {
 
       res.json({
         totalRegistrations: totalReg[0].count,
-        pendingApplications: pendingApps[0].count,
+        applicationsToReview: applicationsToReview[0].count,
+        incompleteRegistrations: incompleteReg[0].count,
         approvedToday: approvedToday[0].count,
         activeUsers: activeUsers[0].count,
       });
@@ -75,7 +83,7 @@ router.get("/stats", async (req, res) => {
   }
 });
 
-// Get recent applications
+// Get recent applications (only showing those awaiting review)
 router.get("/recent-applications", async (req, res) => {
   try {
     const [applications] = await pool.query(
@@ -95,6 +103,7 @@ router.get("/recent-applications", async (req, res) => {
       FROM registration_progress rp
       JOIN registered_users ru ON rp.user_id = ru.id
       WHERE rp.status = 'completed'
+      AND (rp.service_status = 'pending' OR rp.service_status = 'under_review')
       ORDER BY rp.completed_at DESC
       LIMIT 10`
     );
@@ -770,5 +779,429 @@ router.get(
     }
   }
 );
+
+// Update incomplete registration responses
+router.put(
+  "/incomplete-registrations/:id/responses",
+  authenticateToken,
+  requireRole(["admin", "staff"]),
+  async (req, res) => {
+    try {
+      const { id } = req.params;
+      const { responses, user_consent } = req.body;
+      const userId = req.user.id;
+
+      // Verify the registration exists and is incomplete
+      const [registration] = await pool.query(
+        "SELECT * FROM registration_progress WHERE id = ? AND status = 'in_progress'",
+        [id]
+      );
+
+      if (registration.length === 0) {
+        return res
+          .status(404)
+          .json({ message: "Incomplete registration not found" });
+      }
+
+      const conn = await pool.getConnection();
+      try {
+        await conn.beginTransaction();
+
+        // Process all responses
+        for (const response of responses) {
+          const fieldId = response.field_id; // May be string or number
+          const { value, reason, original_file_name } = response;
+
+          // Get field information
+          const [fieldInfo] = await conn.query(
+            "SELECT name, display_name, field_type FROM form_fields WHERE id = ?",
+            [fieldId]
+          );
+
+          if (fieldInfo.length === 0) {
+            continue; // Skip if field not found
+          }
+
+          // Get current value for tracking changes
+          const [currentResponse] = await conn.query(
+            "SELECT value FROM registration_responses WHERE registration_id = ? AND field_id = ?",
+            [id, fieldId]
+          );
+
+          const previousValue =
+            currentResponse.length > 0 ? currentResponse[0].value : null;
+
+          // Check if this is a file field that was deleted (indicated by __FILE_REMOVED__ value)
+          const isFileRemoval =
+            value === "__FILE_REMOVED__" &&
+            (fieldInfo[0].field_type === "file" ||
+              previousValue?.includes("/"));
+
+          // If this is a file removal, store empty string in database but preserve special value for logs
+          const valueToSave = isFileRemoval ? "" : value;
+
+          // Insert or update the response
+          if (currentResponse.length > 0) {
+            await conn.query(
+              "UPDATE registration_responses SET value = ? WHERE registration_id = ? AND field_id = ?",
+              [valueToSave, id, fieldId]
+            );
+          } else {
+            await conn.query(
+              "INSERT INTO registration_responses (registration_id, field_id, value) VALUES (?, ?, ?)",
+              [id, fieldId, valueToSave]
+            );
+          }
+
+          // For file removals, use the provided original file name if available
+          let logPreviousValue = previousValue;
+          if (
+            isFileRemoval &&
+            original_file_name &&
+            (previousValue === null || previousValue === "")
+          ) {
+            // If we're removing a file but the database already has an empty value
+            // (because file was deleted from server first), use the original_file_name
+            logPreviousValue = `uploads/forms/${original_file_name}`;
+          }
+
+          // Log the edit
+          await conn.query(
+            `INSERT INTO action_logs 
+             (user_id, action_type, application_id, edit_details) 
+             VALUES (?, 'edit_incomplete', ?, ?)`,
+            [
+              userId,
+              registration[0].application_id || `TEMP-${id}`,
+              JSON.stringify({
+                field_id: parseInt(fieldId) || fieldId,
+                field_name: fieldInfo[0].name,
+                display_name: fieldInfo[0].display_name,
+                field_type: fieldInfo[0].field_type,
+                previous_value: logPreviousValue,
+                new_value: isFileRemoval ? "__FILE_REMOVED__" : value,
+                reason: reason || "No reason provided",
+                user_consent: user_consent || false,
+                registration_id: parseInt(id),
+                registration_status: "in_progress",
+                user_email: registration[0].email,
+                timestamp: new Date().toISOString(),
+                modification_type: "incomplete_registration_field_edit",
+                summary: `Staff member edited field "${fieldInfo[0].display_name}" in an incomplete registration.`,
+              }),
+            ]
+          );
+        }
+
+        // Update the last modified time
+        await conn.query(
+          "UPDATE registration_progress SET updated_at = CURRENT_TIMESTAMP, last_updated_by = ? WHERE id = ?",
+          [userId, id]
+        );
+
+        await conn.commit();
+
+        // Get user info for response
+        const [userInfo] = await pool.query(
+          `SELECT full_name FROM users WHERE id = ?`,
+          [userId]
+        );
+
+        res.json({
+          message: "Registration responses updated successfully",
+          updatedBy: userInfo[0].full_name,
+          updatedAt: new Date().toISOString(),
+        });
+      } catch (error) {
+        await conn.rollback();
+        console.error("Database error updating registration:", error);
+        throw error;
+      } finally {
+        conn.release();
+      }
+    } catch (error) {
+      console.error("Error updating incomplete registration:", error);
+      res.status(500).json({
+        message: "Error updating responses",
+        details: error.message,
+      });
+    }
+  }
+);
+
+// Mark incomplete registration as complete
+router.post(
+  "/incomplete-registrations/:id/complete",
+  authenticateToken,
+  requireRole(["admin", "staff"]),
+  async (req, res) => {
+    try {
+      const { id } = req.params;
+      const userId = req.user.id;
+
+      // Verify the registration exists and is incomplete
+      const [registration] = await pool.query(
+        "SELECT * FROM registration_progress WHERE id = ? AND status = 'in_progress'",
+        [id]
+      );
+
+      if (registration.length === 0) {
+        return res
+          .status(404)
+          .json({ message: "Incomplete registration not found" });
+      }
+
+      const conn = await pool.getConnection();
+      try {
+        await conn.beginTransaction();
+
+        // Generate application ID (Year-Month-Sequential Number)
+        const [lastApp] = await conn.query(
+          `SELECT application_id FROM registration_progress 
+           WHERE application_id IS NOT NULL 
+           ORDER BY id DESC LIMIT 1`
+        );
+
+        const date = new Date();
+        const year = date.getFullYear();
+        const month = String(date.getMonth() + 1).padStart(2, "0");
+        const lastNum = lastApp.length
+          ? parseInt(lastApp[0].application_id.split("-")[2])
+          : 0;
+        const appNum = String(lastNum + 1).padStart(4, "0");
+        const applicationId = `${year}-${month}-${appNum}`;
+
+        // Update the registration status to completed
+        await conn.query(
+          `UPDATE registration_progress SET 
+           status = 'completed', 
+           service_status = 'pending',
+           completed_at = CURRENT_TIMESTAMP,
+           last_updated_by = ?,
+           last_action_at = CURRENT_TIMESTAMP,
+           application_id = ?
+           WHERE id = ?`,
+          [userId, applicationId, id]
+        );
+
+        // Log the action
+        await conn.query(
+          `INSERT INTO action_logs 
+           (user_id, action_type, application_id, previous_status, new_status, edit_details) 
+           VALUES (?, 'complete_registration', ?, 'in_progress', 'completed', ?)`,
+          [
+            userId,
+            applicationId,
+            JSON.stringify({
+              registration_id: parseInt(id),
+              action: "Mark incomplete registration as complete",
+              note: "Registration completed by department staff",
+              timestamp: new Date().toISOString(),
+              user_email: registration[0].email,
+              current_section: registration[0].current_section_id,
+              created_at: registration[0].created_at,
+              updated_at: registration[0].updated_at,
+              completion_details:
+                "Moved from incomplete status to awaiting review queue",
+              summary:
+                "Department staff marked an incomplete registration as complete, moving it to the applications queue for review.",
+            }),
+          ]
+        );
+
+        await conn.commit();
+
+        // Get user info for response
+        const [userInfo] = await pool.query(
+          `SELECT full_name FROM users WHERE id = ?`,
+          [userId]
+        );
+
+        res.json({
+          message: "Registration marked as complete",
+          updatedBy: userInfo[0].full_name,
+          updatedAt: new Date().toISOString(),
+          applicationId: applicationId, // Send back the generated application ID
+        });
+      } catch (error) {
+        await conn.rollback();
+        throw error;
+      } finally {
+        conn.release();
+      }
+    } catch (error) {
+      console.error("Error completing registration:", error);
+      res
+        .status(500)
+        .json({ message: "Error marking registration as complete" });
+    }
+  }
+);
+
+// Create a registration record for a user who hasn't started any form
+router.post(
+  "/incomplete-registrations/create",
+  authenticateToken,
+  requireRole(["admin", "staff"]),
+  async (req, res) => {
+    try {
+      const { userId } = req.body;
+      const staffUserId = req.user.id;
+
+      if (!userId) {
+        return res.status(400).json({ message: "User ID is required" });
+      }
+
+      // Verify the user exists
+      const [userExists] = await pool.query(
+        "SELECT id, email FROM registered_users WHERE id = ?",
+        [userId]
+      );
+
+      if (userExists.length === 0) {
+        return res.status(404).json({ message: "User not found" });
+      }
+
+      // Check if user already has an in_progress registration
+      const [existingReg] = await pool.query(
+        "SELECT id FROM registration_progress WHERE user_id = ? AND status = 'in_progress'",
+        [userId]
+      );
+
+      let registrationId;
+
+      if (existingReg.length > 0) {
+        // Use existing registration
+        registrationId = existingReg[0].id;
+      } else {
+        // Create a new registration record
+        const [result] = await pool.query(
+          `INSERT INTO registration_progress 
+           (user_id, status, current_section_id, created_at, updated_at, last_updated_by) 
+           VALUES (?, 'in_progress', NULL, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, ?)`,
+          [userId, staffUserId]
+        );
+
+        registrationId = result.insertId;
+
+        // Log the action
+        await pool.query(
+          `INSERT INTO action_logs 
+           (user_id, action_type, edit_details) 
+           VALUES (?, 'create_registration', ?)`,
+          [
+            staffUserId,
+            JSON.stringify({
+              action: "Create registration record",
+              user_id: parseInt(userId),
+              registration_id: registrationId,
+              created_by: staffUserId,
+              timestamp: new Date().toISOString(),
+              note: "Registration record created by department staff for user who hasn't started filling the form",
+              summary:
+                "Created new registration record for user who hasn't started the form",
+              // Get the user's email to display in logs
+              user_email: userExists[0].email || "Unknown",
+              modification_type: "create_registration",
+              registration_status: "in_progress",
+            }),
+          ]
+        );
+      }
+
+      res.status(201).json({
+        message: "Registration record created successfully",
+        registrationId: registrationId,
+      });
+    } catch (error) {
+      console.error("Error creating registration record:", error);
+      res.status(500).json({ message: "Error creating registration record" });
+    }
+  }
+);
+
+// Delete file for incomplete registrations
+router.delete(
+  "/incomplete-registrations/delete-file/:fieldId",
+  async (req, res) => {
+    try {
+      const { fieldId } = req.params;
+      const { filePath, registrationId } = req.body;
+
+      if (!fieldId) {
+        return res.status(400).json({ message: "Field ID is required" });
+      }
+
+      if (!filePath) {
+        return res.status(400).json({ message: "File path is required" });
+      }
+
+      // Physically delete the file from the server
+      const fullPath = path.join(uploadsDir, filePath);
+      if (fs.existsSync(fullPath)) {
+        fs.unlinkSync(fullPath);
+      } else {
+      }
+
+      // If registration ID is provided, also update the database record
+      if (registrationId) {
+        await pool.query(
+          `UPDATE registration_responses SET value = '' 
+           WHERE registration_id = ? AND field_id = ?`,
+          [registrationId, fieldId]
+        );
+      }
+
+      res.json({
+        message: "File deleted successfully",
+        fieldId: fieldId,
+      });
+    } catch (error) {
+      console.error("File deletion error:", error);
+      res.status(500).json({ message: "Error deleting file" });
+    }
+  }
+);
+
+// Delete file for regular applications
+router.delete("/applications/delete-file/:fieldId", async (req, res) => {
+  try {
+    const { fieldId } = req.params;
+    const { filePath, applicationId } = req.body;
+
+    if (!fieldId) {
+      return res.status(400).json({ message: "Field ID is required" });
+    }
+
+    if (!filePath) {
+      return res.status(400).json({ message: "File path is required" });
+    }
+
+    // Physically delete the file from the server
+    const fullPath = path.join(uploadsDir, filePath);
+    if (fs.existsSync(fullPath)) {
+      fs.unlinkSync(fullPath);
+    } else {
+    }
+
+    // If application ID is provided, also update the database record
+    if (applicationId) {
+      await pool.query(
+        `UPDATE registration_responses SET value = '' 
+           WHERE registration_id = (SELECT id FROM registration_progress WHERE application_id = ?) 
+           AND field_id = ?`,
+        [applicationId, fieldId]
+      );
+    }
+
+    res.json({
+      message: "File deleted successfully",
+      fieldId: fieldId,
+    });
+  } catch (error) {
+    console.error("File deletion error:", error);
+    res.status(500).json({ message: "Error deleting file" });
+  }
+});
 
 module.exports = router;
