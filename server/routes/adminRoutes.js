@@ -6,6 +6,10 @@ const {
   requireRole,
 } = require("../middleware/authMiddleware");
 const tokenManager = require("../utils/temporaryAccess");
+const { upload, handleMulterError } = require("../middleware/uploadMiddleware");
+const path = require("path");
+const fs = require("fs");
+const { uploadsDir, generateUniqueFilename } = require("../config/upload");
 
 // Generate temporary file access URL
 router.get(
@@ -99,7 +103,13 @@ router.get("/recent-applications", async (req, res) => {
           JOIN form_fields ff ON rr.field_id = ff.id
           WHERE rr.registration_id = rp.id 
           AND ff.name = 'disabilitytype'
-        ) as disability_type
+        ) as disability_type,
+        (
+          SELECT rr.value 
+          FROM registration_responses rr
+          WHERE rr.registration_id = rp.id 
+          AND rr.field_id = 13
+        ) as location_data
       FROM registration_progress rp
       JOIN registered_users ru ON rp.user_id = ru.id
       WHERE rp.status = 'completed'
@@ -133,6 +143,8 @@ router.get("/recent-applications", async (req, res) => {
           email: app.email,
           submittedAt: app.completed_at,
           disabilityType: app.disability_type,
+          status: app.service_status || "pending",
+          location: app.location_data || "", // Include location data
         };
       })
     );
@@ -143,6 +155,304 @@ router.get("/recent-applications", async (req, res) => {
     res.status(500).json({ message: "Error fetching applications" });
   }
 });
+
+// Get all applications
+router.get("/all-applications", async (req, res) => {
+  try {
+    const [applications] = await pool.query(
+      `SELECT DISTINCT
+        rp.application_id,
+        rp.completed_at,
+        rp.service_status,
+        rp.id,
+        ru.email,
+        (
+          SELECT rr.value 
+          FROM registration_responses rr
+          JOIN form_fields ff ON rr.field_id = ff.id
+          WHERE rr.registration_id = rp.id 
+          AND ff.name = 'disabilitytype'
+        ) as disability_type,
+        (
+          SELECT rr.value 
+          FROM registration_responses rr
+          WHERE rr.registration_id = rp.id 
+          AND rr.field_id = 13
+        ) as location_data
+      FROM registration_progress rp
+      JOIN registered_users ru ON rp.user_id = ru.id
+      WHERE rp.status = 'completed'
+      ORDER BY rp.completed_at DESC`
+    );
+
+    // Get form data for each application
+    const formattedApplications = await Promise.all(
+      applications.map(async (app) => {
+        // Get basic form data
+        const [responses] = await pool.query(
+          `SELECT ff.name, rr.value
+           FROM registration_responses rr
+           JOIN form_fields ff ON rr.field_id = ff.id
+           WHERE rr.registration_id = ?`,
+          [app.id]
+        );
+
+        const formData = responses.reduce((acc, curr) => {
+          acc[curr.name] = curr.value;
+          return acc;
+        }, {});
+
+        return {
+          applicationId: app.application_id,
+          applicantName: `${formData.firstname || ""} ${
+            formData.lastname || ""
+          }`.trim(),
+          email: app.email,
+          submittedAt: app.completed_at,
+          disabilityType: app.disability_type,
+          status: app.service_status || "pending",
+          location: app.location_data || "", // Include location data
+        };
+      })
+    );
+
+    res.json(formattedApplications);
+  } catch (error) {
+    console.error("Error fetching applications:", error);
+    res.status(500).json({ message: "Error fetching applications" });
+  }
+});
+
+// Get incomplete registrations
+router.get("/incomplete-registrations", async (req, res) => {
+  try {
+    // Get inactivity threshold from query params (in hours)
+    const inactivityThreshold = parseInt(req.query.inactivityThreshold || 0);
+
+    // First get all registration records with in_progress status
+    const [registrations] = await pool.query(
+      `SELECT 
+        rp.id,
+        rp.user_id,
+        rp.application_id,
+        rp.created_at,
+        rp.updated_at,
+        ru.email,
+        ru.phone,
+        ru.username,
+        rp.current_section_id,
+        rp.status
+      FROM registration_progress rp
+      JOIN registered_users ru ON rp.user_id = ru.id
+      WHERE rp.status = 'in_progress'
+      ORDER BY rp.updated_at DESC`
+    );
+
+    // Now get registered users who don't have any registration_progress record
+    // or whose registration is neither completed nor in progress
+    const [usersWithoutProgress] = await pool.query(
+      `SELECT 
+        ru.id as user_id,
+        ru.email,
+        ru.phone,
+        ru.username,
+        ru.created_at
+      FROM registered_users ru
+      LEFT JOIN registration_progress rp ON ru.id = rp.user_id
+      WHERE (rp.id IS NULL OR (rp.status != 'completed' AND rp.status != 'in_progress'))
+      ORDER BY ru.created_at DESC`
+    );
+
+    // Create placeholder registration objects for users without progress
+    const newUserPlaceholders = usersWithoutProgress.map((user) => ({
+      id: null,
+      userId: user.user_id,
+      applicationId: `TEMP-${user.user_id}`,
+      createdAt: user.created_at,
+      lastUpdated: user.created_at,
+      email: user.email,
+      phone: user.phone,
+      applicantName: user.username,
+      currentSection: "Not started",
+      responses: [],
+      disabilityType: "Not specified",
+      inactive: getInactiveTime(user.created_at), // Add inactive time in hours
+    }));
+
+    // Get whatever form data has been filled for each incomplete registration
+    const formattedRegistrations = await Promise.all(
+      registrations.map(async (reg) => {
+        // Get whatever responses are available
+        const [responses] = await pool.query(
+          `SELECT ff.name, rr.value, ff.display_name
+           FROM registration_responses rr
+           JOIN form_fields ff ON rr.field_id = ff.id
+           WHERE rr.registration_id = ?`,
+          [reg.id]
+        );
+
+        // Get the current section name
+        const [currentSection] = reg.current_section_id
+          ? await pool.query(`SELECT name FROM form_sections WHERE id = ?`, [
+              reg.current_section_id,
+            ])
+          : [[]];
+
+        const formData = responses.reduce((acc, curr) => {
+          acc[curr.name] = curr.value;
+          acc.displayNames = acc.displayNames || {};
+          acc.displayNames[curr.name] = curr.display_name;
+          return acc;
+        }, {});
+
+        const firstName = formData.firstname || "";
+        const lastName = formData.lastname || "";
+        const fullName = `${firstName} ${lastName}`.trim() || reg.username;
+
+        return {
+          id: reg.id,
+          userId: reg.user_id,
+          applicationId: reg.application_id || `TEMP-${reg.id}`,
+          createdAt: reg.created_at,
+          lastUpdated: reg.updated_at,
+          email: reg.email,
+          phone: reg.phone,
+          applicantName: fullName,
+          currentSection: currentSection[0]?.name || "Not started",
+          responses: responses.map((r) => ({
+            fieldName: r.name,
+            displayName: r.display_name,
+            value: r.value,
+          })),
+          disabilityType: formData.disabilitytype || "Not specified",
+          inactive: getInactiveTime(reg.updated_at), // Add inactive time in hours
+        };
+      })
+    );
+
+    // Helper function to calculate inactive time in hours
+    function getInactiveTime(timestamp) {
+      const lastUpdated = new Date(timestamp);
+      const now = new Date();
+      const diffMs = now - lastUpdated;
+      const diffHours = Math.floor(diffMs / (1000 * 60 * 60));
+      return diffHours;
+    }
+
+    // Combine the existing registrations with the placeholder ones
+    let allIncompleteRegistrations = [
+      ...formattedRegistrations,
+      ...newUserPlaceholders,
+    ];
+
+    // Apply inactivity threshold filter in memory rather than in SQL
+    // This ensures we filter based on the exact hours of inactivity
+    if (inactivityThreshold > 0) {
+      allIncompleteRegistrations = allIncompleteRegistrations.filter(
+        (reg) => reg.inactive >= inactivityThreshold
+      );
+    } else {
+    }
+
+    // Sort by last updated/created date
+    allIncompleteRegistrations.sort(
+      (a, b) => new Date(b.lastUpdated) - new Date(a.lastUpdated)
+    );
+
+    res.json(allIncompleteRegistrations);
+  } catch (error) {
+    console.error("Error fetching incomplete registrations:", error);
+    res
+      .status(500)
+      .json({ message: "Error fetching incomplete registrations" });
+  }
+});
+
+// Add file upload endpoint for incomplete registrations
+router.post(
+  "/incomplete-registrations/upload-file",
+  upload.single("file"),
+  handleMulterError,
+  async (req, res) => {
+    try {
+      if (!req.file) {
+        return res.status(400).json({ message: "No file uploaded" });
+      }
+
+      const fieldId = req.body.fieldId;
+      if (!fieldId) {
+        return res.status(400).json({ message: "Field ID is required" });
+      }
+
+      // Generate a unique filename
+      const originalName = req.file.originalname;
+      const uniqueFilename = generateUniqueFilename(originalName);
+
+      // Move the file to the forms upload directory
+      const targetPath = path.join(
+        uploadsDir,
+        "forms",
+        uniqueFilename.split("/").pop()
+      );
+      fs.renameSync(req.file.path, targetPath);
+
+      // Return the relative path that will be stored in the database
+      const filePath = `forms/${uniqueFilename.split("/").pop()}`;
+
+      res.json({
+        message: "File uploaded successfully",
+        filePath: filePath,
+        fieldId: fieldId,
+      });
+    } catch (error) {
+      console.error("File upload error:", error);
+      res.status(500).json({ message: "Error uploading file" });
+    }
+  }
+);
+
+// Add file upload endpoint for regular applications
+router.post(
+  "/applications/upload-file",
+  upload.single("file"),
+  handleMulterError,
+  async (req, res) => {
+    try {
+      if (!req.file) {
+        return res.status(400).json({ message: "No file uploaded" });
+      }
+
+      const fieldId = req.body.fieldId;
+      if (!fieldId) {
+        return res.status(400).json({ message: "Field ID is required" });
+      }
+
+      // Generate a unique filename
+      const originalName = req.file.originalname;
+      const uniqueFilename = generateUniqueFilename(originalName);
+
+      // Move the file to the forms upload directory
+      const targetPath = path.join(
+        uploadsDir,
+        "forms",
+        uniqueFilename.split("/").pop()
+      );
+      fs.renameSync(req.file.path, targetPath);
+
+      // Return the relative path that will be stored in the database
+      const filePath = `forms/${uniqueFilename.split("/").pop()}`;
+
+      res.json({
+        message: "File uploaded successfully",
+        filePath: filePath,
+        fieldId: fieldId,
+      });
+    } catch (error) {
+      console.error("File upload error:", error);
+      res.status(500).json({ message: "Error uploading file" });
+    }
+  }
+);
 
 // Add undo status endpoint
 router.post("/application/:id/undo", async (req, res) => {
@@ -488,7 +798,7 @@ router.put(
   async (req, res) => {
     try {
       const { id, field_id } = req.params;
-      const { value, reason, user_consent } = req.body;
+      const { value, reason, user_consent, original_file_name } = req.body;
       const userId = req.user.id;
 
       // Get the registration ID from the application ID
@@ -522,17 +832,37 @@ router.put(
         return res.status(404).json({ message: "Field not found" });
       }
 
-      // Update the response
+      // Check if this is a file field that was deleted (indicated by __FILE_REMOVED__ value)
+      const isFileRemoval =
+        value === "__FILE_REMOVED__" &&
+        (fieldInfo[0].field_type === "file" || previousValue?.includes("/"));
+
+      // If this is a file removal, store empty string in database but preserve special value for logs
+      const valueToSave = isFileRemoval ? "" : value;
+
+      // Update the response in the database
       if (currentResponse.length > 0) {
         await pool.query(
           "UPDATE registration_responses SET value = ? WHERE registration_id = ? AND field_id = ?",
-          [value, registrationId, field_id]
+          [valueToSave, registrationId, field_id]
         );
       } else {
         await pool.query(
           "INSERT INTO registration_responses (registration_id, field_id, value) VALUES (?, ?, ?)",
-          [registrationId, field_id, value]
+          [registrationId, field_id, valueToSave]
         );
+      }
+
+      // For file removals, use the provided original file name if available
+      let logPreviousValue = previousValue;
+      if (
+        isFileRemoval &&
+        original_file_name &&
+        (previousValue === null || previousValue === "")
+      ) {
+        // If we're removing a file but the database already has an empty value
+        // (because file was deleted from server first), use the original_file_name
+        logPreviousValue = `uploads/forms/${original_file_name}`;
       }
 
       // Create edit details JSON
@@ -541,8 +871,8 @@ router.put(
         field_name: fieldInfo[0].name,
         display_name: fieldInfo[0].display_name,
         field_type: fieldInfo[0].field_type,
-        previous_value: previousValue,
-        new_value: value,
+        previous_value: logPreviousValue,
+        new_value: isFileRemoval ? "__FILE_REMOVED__" : value, // Keep special value for logs
         reason: reason || "No reason provided",
         user_consent: user_consent || false,
       };
@@ -613,7 +943,7 @@ router.put(
 
         // Process each response
         for (const response of responses) {
-          const { field_id, value, reason } = response;
+          const { field_id, value, reason, original_file_name } = response;
 
           // Get the current value of the field
           const [currentResponse] = await conn.query(
@@ -634,17 +964,38 @@ router.put(
             continue; // Skip this field if not found
           }
 
-          // Update the response
+          // Check if this is a file field that was deleted (indicated by __FILE_REMOVED__ value)
+          const isFileRemoval =
+            value === "__FILE_REMOVED__" &&
+            (fieldInfo[0].field_type === "file" ||
+              previousValue?.includes("/"));
+
+          // If this is a file removal, store empty string in database but preserve special value for logs
+          const valueToSave = isFileRemoval ? "" : value;
+
+          // Update the response in the database
           if (currentResponse.length > 0) {
             await conn.query(
               "UPDATE registration_responses SET value = ? WHERE registration_id = ? AND field_id = ?",
-              [value, registrationId, field_id]
+              [valueToSave, registrationId, field_id]
             );
           } else {
             await conn.query(
               "INSERT INTO registration_responses (registration_id, field_id, value) VALUES (?, ?, ?)",
-              [registrationId, field_id, value]
+              [registrationId, field_id, valueToSave]
             );
+          }
+
+          // For file removals, use the provided original file name if available
+          let logPreviousValue = previousValue;
+          if (
+            isFileRemoval &&
+            original_file_name &&
+            (previousValue === null || previousValue === "")
+          ) {
+            // If we're removing a file but the database already has an empty value
+            // (because file was deleted from server first), use the original_file_name
+            logPreviousValue = `uploads/forms/${original_file_name}`;
           }
 
           // Create edit details JSON
@@ -653,8 +1004,8 @@ router.put(
             field_name: fieldInfo[0].name,
             display_name: fieldInfo[0].display_name,
             field_type: fieldInfo[0].field_type,
-            previous_value: previousValue,
-            new_value: value,
+            previous_value: logPreviousValue,
+            new_value: isFileRemoval ? "__FILE_REMOVED__" : value, // Keep special value for logs
             reason: reason || "No reason provided",
             user_consent: user_consent || false,
           };

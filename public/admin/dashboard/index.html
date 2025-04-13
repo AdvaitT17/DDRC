@@ -19,6 +19,20 @@
         padding: 0 !important;
       }
 
+      /* Style for action buttons to ensure consistent spacing */
+      .action-buttons {
+        display: flex;
+        align-items: center;
+      }
+
+      .action-buttons button {
+        margin-right: 8px;
+      }
+
+      .action-buttons button:last-child {
+        margin-right: 0;
+      }
+
       .edit-summary-item {
         background-color: white;
         border-radius: 10px;
@@ -385,6 +399,60 @@
         min-width: 0 !important; /* Important for children to not overflow */
       }
 
+      /* Styling for file upload elements */
+      .file-upload-container {
+        margin-top: 10px;
+      }
+
+      .file-upload-container .form-control {
+        border-radius: 8px;
+        border: 1px solid #d1d5db;
+        padding: 8px 12px;
+        transition: all 0.2s ease;
+      }
+
+      .file-upload-container .form-control:focus {
+        border-color: #6366f1;
+        box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.15);
+      }
+
+      .upload-progress {
+        margin-top: 8px;
+      }
+
+      .upload-progress .progress {
+        height: 6px;
+        border-radius: 10px;
+        overflow: hidden;
+      }
+
+      .upload-progress .progress-bar {
+        background-color: #6366f1;
+        border-radius: 10px;
+        transition: width 0.2s ease;
+      }
+
+      .current-file {
+        display: flex;
+        align-items: center;
+        padding: 10px 12px;
+        background-color: #f9fafb;
+        border: 1px solid #e5e7eb;
+        border-radius: 8px;
+        color: #4b5563;
+      }
+
+      .current-file svg {
+        margin-right: 8px;
+        color: #6b7280;
+      }
+
+      .current-file span {
+        flex: 1;
+        word-break: break-all;
+        font-size: 0.9rem;
+      }
+
       /* Style for the history button in header - enhanced glass effect with rectangular shape */
       #historyBtn {
         font-size: 0.875rem;
@@ -542,7 +610,24 @@
         <!-- Stats Grid -->
         <div class="stats-grid">
           <div class="stat-card">
-            <div class="stat-icon">👥</div>
+            <div class="stat-icon">
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                width="28"
+                height="28"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+              >
+                <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
+                <circle cx="9" cy="7" r="4"></circle>
+                <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
+                <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
+              </svg>
+            </div>
             <div class="stat-info">
               <h3>Total Registrations</h3>
               <div class="stat-value" id="totalRegistrations">Loading...</div>
@@ -550,18 +635,78 @@
           </div>
 
           <div class="stat-card">
-            <div class="stat-icon">📝</div>
+            <div class="stat-icon">
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                width="28"
+                height="28"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+              >
+                <path
+                  d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"
+                ></path>
+                <path d="M14 2v6h6"></path>
+                <path d="M16 13H8"></path>
+                <path d="M16 17H8"></path>
+                <path d="M10 9H8"></path>
+              </svg>
+            </div>
             <div class="stat-info">
-              <h3>Pending Applications</h3>
-              <div class="stat-value" id="pendingApplications">Loading...</div>
+              <h3>Awaiting Review</h3>
+              <div class="stat-value" id="applicationsToReview">Loading...</div>
             </div>
           </div>
 
           <div class="stat-card">
-            <div class="stat-icon">✅</div>
+            <div class="stat-icon">
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                width="28"
+                height="28"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+              >
+                <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
+                <polyline points="22 4 12 14.01 9 11.01"></polyline>
+              </svg>
+            </div>
             <div class="stat-info">
               <h3>Approved Today</h3>
               <div class="stat-value" id="approvedToday">Loading...</div>
+            </div>
+          </div>
+
+          <div class="stat-card">
+            <div class="stat-icon">
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                width="28"
+                height="28"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+              >
+                <circle cx="12" cy="12" r="10"></circle>
+                <polyline points="12 6 12 12 16 14"></polyline>
+              </svg>
+            </div>
+            <div class="stat-info">
+              <h3>Partial Registrations</h3>
+              <div class="stat-value" id="incompleteRegistrations">
+                Loading...
+              </div>
             </div>
           </div>
         </div>
@@ -571,7 +716,7 @@
           <div
             class="card-header d-flex justify-content-between align-items-center"
           >
-            <h2>Recent Applications</h2>
+            <h2>Awaiting Review</h2>
             <a href="/admin/applications" class="btn btn-primary btn-sm"
               >View All</a
             >
@@ -584,9 +729,37 @@
                   <th>Applicant Name</th>
                   <th>Submission Date</th>
                   <th>Type of Disability</th>
+                  <th>Location</th>
                 </tr>
               </thead>
               <tbody id="recentApplications">
+                <!-- Will be populated by JavaScript -->
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- Incomplete Registrations -->
+        <div class="content-card mt-4">
+          <div
+            class="card-header d-flex justify-content-between align-items-center"
+          >
+            <h2 data-label="Partial Registrations">Partial Registrations</h2>
+          </div>
+          <div class="table-responsive">
+            <table class="table">
+              <thead>
+                <tr>
+                  <th>ID</th>
+                  <th>Name</th>
+                  <th>Email</th>
+                  <th>Phone</th>
+                  <th>Last Updated</th>
+                  <th>Inactive For</th>
+                  <th>Current Section</th>
+                </tr>
+              </thead>
+              <tbody id="incompleteRegistrationsList">
                 <!-- Will be populated by JavaScript -->
               </tbody>
             </table>
