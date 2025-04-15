@@ -226,18 +226,39 @@ class EnhancedFilterSystem {
       this.filterFieldSelect.remove(1);
     }
 
+    // Group fields by sections
+    const fieldsBySection = {};
     this.allFields.forEach((field, index) => {
       if (!field.id || (!field.label && !field.display_name && !field.name)) {
         console.warn(`Field at index ${index} is missing id or label:`, field);
         return;
       }
 
-      const option = document.createElement("option");
-      option.value = field.id;
-      option.textContent =
-        field.label || field.display_name || field.name || field.id;
-      this.filterFieldSelect.appendChild(option);
+      const sectionName = field.section_name || "Other";
+      if (!fieldsBySection[sectionName]) {
+        fieldsBySection[sectionName] = [];
+      }
+      fieldsBySection[sectionName].push(field);
     });
+
+    // Add fields to select, grouped by section
+    Object.keys(fieldsBySection)
+      .sort()
+      .forEach((sectionName) => {
+        // Create optgroup for this section
+        const optgroup = document.createElement("optgroup");
+        optgroup.label = sectionName;
+        this.filterFieldSelect.appendChild(optgroup);
+
+        // Add fields for this section
+        fieldsBySection[sectionName].forEach((field) => {
+          const option = document.createElement("option");
+          option.value = field.id;
+          option.textContent =
+            field.label || field.display_name || field.name || field.id;
+          optgroup.appendChild(option);
+        });
+      });
 
     // Force a refresh of the select element
     $(this.filterFieldSelect).trigger("change");

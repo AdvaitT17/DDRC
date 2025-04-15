@@ -1520,27 +1520,73 @@ class ReportsManager {
     this.filterFieldSelect.innerHTML =
       '<option value="">Select a field</option>';
 
-    // Add categorical fields to row and column variable selects
+    // Group fields by sections
+    const fieldsBySection = {};
+
+    // Group categorical fields by section for row and column variables
     this.categoricalFields.forEach((field) => {
-      const rowOption = document.createElement("option");
-      rowOption.value = field.id;
-      rowOption.textContent = field.display_name;
-      this.rowVariableSelect.appendChild(rowOption);
-
-      const colOption = document.createElement("option");
-      colOption.value = field.id;
-      colOption.textContent = field.display_name;
-      this.columnVariableSelect.appendChild(colOption);
+      const sectionName = field.section_name || "Other";
+      if (!fieldsBySection[sectionName]) {
+        fieldsBySection[sectionName] = [];
+      }
+      fieldsBySection[sectionName].push(field);
     });
 
-    // Add all fields to filter field select
+    // Group all fields by section for filter field select
+    const allFieldsBySection = {};
     this.allFields.forEach((field) => {
-      const option = document.createElement("option");
-      option.value = field.id;
-      option.textContent = field.display_name;
-      option.dataset.fieldType = field.field_type;
-      this.filterFieldSelect.appendChild(option);
+      const sectionName = field.section_name || "Other";
+      if (!allFieldsBySection[sectionName]) {
+        allFieldsBySection[sectionName] = [];
+      }
+      allFieldsBySection[sectionName].push(field);
     });
+
+    // Add categorical fields to row and column variable selects, grouped by section
+    Object.keys(fieldsBySection)
+      .sort()
+      .forEach((sectionName) => {
+        // Create optgroup for this section
+        const rowOptgroup = document.createElement("optgroup");
+        rowOptgroup.label = sectionName;
+        this.rowVariableSelect.appendChild(rowOptgroup);
+
+        const colOptgroup = document.createElement("optgroup");
+        colOptgroup.label = sectionName;
+        this.columnVariableSelect.appendChild(colOptgroup);
+
+        // Add fields for this section
+        fieldsBySection[sectionName].forEach((field) => {
+          const rowOption = document.createElement("option");
+          rowOption.value = field.id;
+          rowOption.textContent = field.display_name;
+          rowOptgroup.appendChild(rowOption);
+
+          const colOption = document.createElement("option");
+          colOption.value = field.id;
+          colOption.textContent = field.display_name;
+          colOptgroup.appendChild(colOption);
+        });
+      });
+
+    // Add all fields to filter field select, grouped by section
+    Object.keys(allFieldsBySection)
+      .sort()
+      .forEach((sectionName) => {
+        // Create optgroup for this section
+        const filterOptgroup = document.createElement("optgroup");
+        filterOptgroup.label = sectionName;
+        this.filterFieldSelect.appendChild(filterOptgroup);
+
+        // Add fields for this section
+        allFieldsBySection[sectionName].forEach((field) => {
+          const option = document.createElement("option");
+          option.value = field.id;
+          option.textContent = field.display_name;
+          option.dataset.fieldType = field.field_type;
+          filterOptgroup.appendChild(option);
+        });
+      });
   }
 
   initEventListeners() {
