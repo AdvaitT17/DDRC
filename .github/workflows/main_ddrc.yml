@@ -26,6 +26,12 @@ jobs:
           npm install
           cd ..
 
+      - name: Run tests
+        run: |
+          cd server
+          npm test
+          cd ..
+
       - name: Apply path fixes for Azure
         run: |
           cp server/server.js server/server.js.bak
