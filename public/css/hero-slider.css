@@ -1,0 +1,314 @@
+/* Hero Slider Styles */
+.hero-section {
+  position: relative;
+  height: 450px;
+  background: linear-gradient(
+    135deg,
+    rgba(0, 32, 91, 0.8) 0%,
+    rgba(0, 32, 91, 0.4) 100%
+  );
+  overflow: hidden;
+}
+
+.hero-slider {
+  position: relative;
+  width: 100%;
+  height: 100%;
+}
+
+/* Hero Slides */
+.hero-slide {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: calc(100% - 42px); /* Adjusted to account for note height */
+  opacity: 0;
+  z-index: 1;
+  transition: opacity 0.8s ease-in-out;
+}
+
+.hero-slide.active {
+  opacity: 1;
+  z-index: 2;
+}
+
+/* Hero Content */
+.hero-content {
+  position: absolute;
+  top: 50%;
+  left: 80px;
+  transform: translateY(-50%);
+  max-width: 550px;
+  color: white;
+  z-index: 3;
+  animation: fadeInUp 0.8s ease-out;
+}
+
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(-40%);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(-50%);
+  }
+}
+
+.hero-content h2 {
+  font-size: 38px;
+  margin-bottom: 15px;
+  font-weight: 700;
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+}
+
+.hero-content p {
+  font-size: 18px;
+  margin-bottom: 25px;
+  line-height: 1.5;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
+  opacity: 0.9;
+}
+
+/* Background Image */
+.hero-bg-image {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 1;
+}
+
+.hero-bg-image img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  opacity: 0.25;
+  transform: scale(1.05);
+  animation: slowZoom 20s infinite alternate;
+}
+
+@keyframes slowZoom {
+  from {
+    transform: scale(1);
+  }
+  to {
+    transform: scale(1.1);
+  }
+}
+
+/* Buttons */
+.hero-buttons {
+  display: flex;
+  gap: 15px;
+  margin-top: 10px;
+}
+
+.hero-buttons .primary-btn {
+  background: #f47920;
+  color: white;
+  text-decoration: none;
+  padding: 12px 25px;
+  border-radius: 4px;
+  font-size: 15px;
+  font-weight: 600;
+  border: none;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+  transition: all 0.3s ease;
+  text-align: center;
+  letter-spacing: 0.5px;
+}
+
+.hero-buttons .primary-btn:hover {
+  background: #e06810;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+}
+
+.hero-buttons .primary-btn:active {
+  transform: translateY(0);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+}
+
+/* Slider Controls - Completely independent positioning */
+.hero-controls {
+  position: absolute;
+  bottom: 55px; /* Just above the note */
+  right: 50px;
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  z-index: 20; /* Higher z-index to ensure it appears above all content */
+}
+
+.hero-control-btn {
+  background: rgba(255, 255, 255, 0.2);
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  color: white;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background-color 0.3s, transform 0.2s;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+  font-size: 18px;
+}
+
+.hero-control-btn:hover {
+  background: rgba(255, 255, 255, 0.3);
+  transform: translateY(-2px);
+}
+
+.hero-control-btn:active {
+  transform: translateY(0);
+}
+
+/* Indicators */
+.hero-indicators {
+  display: flex;
+  gap: 8px;
+}
+
+.hero-indicator {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.3);
+  border: 1px solid rgba(255, 255, 255, 0.5);
+  cursor: pointer;
+  transition: background-color 0.3s, transform 0.2s;
+}
+
+.hero-indicator.active {
+  background: #f47920;
+  border-color: #f47920;
+  transform: scale(1.2);
+}
+
+.hero-indicator:hover {
+  background: rgba(255, 255, 255, 0.5);
+}
+
+/* Note Section */
+.important-note {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  background: rgba(0, 0, 0, 0.75);
+  color: white;
+  padding: 12px 20px;
+  font-size: 13px;
+  line-height: 1.4;
+  z-index: 10;
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+  height: 42px; /* Fixed height for calculation purposes */
+}
+
+/* Responsive Adjustments */
+@media (max-width: 992px) {
+  .hero-content {
+    left: 40px;
+    max-width: 500px;
+  }
+
+  .hero-content h2 {
+    font-size: 32px;
+  }
+
+  .hero-content p {
+    font-size: 16px;
+  }
+
+  .hero-controls {
+    right: 30px;
+  }
+}
+
+@media (max-width: 768px) {
+  .hero-section {
+    height: 400px;
+  }
+
+  .hero-content {
+    left: 30px;
+    max-width: 450px;
+  }
+
+  .hero-content h2 {
+    font-size: 28px;
+    margin-bottom: 10px;
+  }
+
+  .hero-content p {
+    font-size: 15px;
+    margin-bottom: 20px;
+  }
+
+  .hero-buttons {
+    gap: 10px;
+  }
+
+  .hero-buttons .primary-btn {
+    padding: 10px 20px;
+    font-size: 14px;
+  }
+
+  .hero-controls {
+    right: 20px;
+    gap: 15px;
+  }
+
+  .hero-control-btn {
+    width: 35px;
+    height: 35px;
+  }
+}
+
+@media (max-width: 576px) {
+  .hero-section {
+    height: 380px;
+  }
+
+  .hero-content {
+    left: 20px;
+    max-width: 320px;
+  }
+
+  .hero-content h2 {
+    font-size: 24px;
+  }
+
+  .hero-content p {
+    font-size: 14px;
+    margin-bottom: 15px;
+  }
+
+  .hero-buttons {
+    flex-direction: column;
+    gap: 8px;
+    width: 180px;
+  }
+
+  .hero-buttons .primary-btn {
+    padding: 8px 15px;
+    font-size: 13px;
+    width: 100%;
+  }
+
+  .hero-controls {
+    right: 10px;
+    gap: 10px;
+  }
+
+  .hero-control-btn {
+    width: 30px;
+    height: 30px;
+    font-size: 16px;
+  }
+}

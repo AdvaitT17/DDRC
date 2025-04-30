@@ -11,6 +11,7 @@
     <link rel="stylesheet" href="/css/main.css" />
     <link rel="stylesheet" href="/css/header.css" />
     <link rel="stylesheet" href="/css/footer.css" />
+    <link rel="stylesheet" href="/css/accessibility.css" />
     <style>
       /* Custom styles for news page */
       .page-header {
@@ -387,21 +388,61 @@
     </style>
   </head>
   <body>
+    <!-- Accessibility Announcement for Screen Readers -->
+    <div
+      id="screenReaderAnnouncer"
+      class="sr-only"
+      role="alert"
+      aria-live="polite"
+    ></div>
+
     <!-- Top Bar -->
-    <div class="top-bar">
+    <div class="top-bar" role="navigation" aria-label="Top Navigation">
       <div class="left-links">
-        <a href="/">Home</a>
-        <a href="/sitemap">Sitemap</a>
+        <a href="/" aria-label="Home">Home</a>
+        <a href="/sitemap" aria-label="Sitemap">Sitemap</a>
       </div>
       <div class="right-links">
-        <a href="#main-content" class="skip-main">Skip to Main Content</a>
-        <a href="#" class="screen-reader">Screen Reader Access</a>
-        <div class="font-size-controls">
-          <button class="font-size-btn" id="decreaseFont">T-</button>
-          <button class="font-size-btn" id="defaultFont">T</button>
-          <button class="font-size-btn" id="increaseFont">T+</button>
+        <a
+          href="#main-content"
+          class="skip-main"
+          aria-label="Skip to main content"
+          >Skip to Main Content</a
+        >
+        <a
+          href="#"
+          class="screen-reader"
+          aria-label="Toggle screen reader optimized view"
+          >Screen Reader Access</a
+        >
+        <div class="font-size-controls" aria-label="Font size controls">
+          <button
+            class="font-size-btn"
+            id="decreaseFont"
+            aria-label="Decrease font size"
+          >
+            T-
+          </button>
+          <button
+            class="font-size-btn"
+            id="defaultFont"
+            aria-label="Default font size"
+          >
+            T
+          </button>
+          <button
+            class="font-size-btn"
+            id="increaseFont"
+            aria-label="Increase font size"
+          >
+            T+
+          </button>
         </div>
-        <select class="language-select" id="languageSelect">
+        <select
+          class="language-select"
+          id="languageSelect"
+          aria-label="Select language"
+        >
           <option value="en">English</option>
           <option value="hi">हिंदी</option>
         </select>
@@ -409,7 +450,7 @@
     </div>
 
     <!-- Main Header -->
-    <header class="main-header">
+    <header class="main-header" role="banner" aria-label="Site header">
       <div class="logo-section">
         <img
           src="/images/emblem.png"
@@ -426,38 +467,46 @@
     </header>
 
     <!-- Navigation Menu -->
-    <nav class="main-nav">
-      <a href="/" class="nav-icon">
+    <nav class="main-nav" role="navigation" aria-label="Main Navigation">
+      <a href="/" class="nav-icon" aria-label="Home">
         <img src="/images/home-icons.png" alt="Home" />
       </a>
-      <a href="/apply">Apply For UDID</a>
-      <a href="/track">Track Your Application</a>
-      <a href="/data">Aggregated-Data</a>
-      <a href="/reports">Pendency-Report</a>
-      <a href="/media">Media</a>
-      <a href="/faqs">FAQs</a>
-      <a href="/contact">Contact Us</a>
+      <a href="/apply" aria-label="Apply For UDID">Apply For UDID</a>
+      <a href="/track" aria-label="Track Your Application"
+        >Track Your Application</a
+      >
+      <a href="/data" aria-label="View Aggregated Data">Aggregated-Data</a>
+      <a href="/reports" aria-label="View Pendency Reports">Pendency-Report</a>
+      <a href="/media" aria-label="Media">Media</a>
+      <a href="/faqs" aria-label="FAQs">FAQs</a>
+      <a href="/contact" aria-label="Contact Us">Contact Us</a>
 
       <!-- Add spacer to push login buttons to the right -->
       <div class="nav-spacer"></div>
 
       <!-- Add login buttons -->
-      <a href="/login" class="nav-login-btn">
+      <a href="/login" class="nav-login-btn" aria-label="Divyangjan Login">
         <img src="/images/login.svg" alt="Login Icon" />
         Divyangjan Login
       </a>
-      <a href="/department-login" class="nav-login-btn">
+      <a
+        href="/department-login"
+        class="nav-login-btn"
+        aria-label="Department User Login"
+      >
         <img src="/images/user-plus.svg" alt="User Icon" />
         Department User Login
       </a>
     </nav>
 
     <!-- Page Header -->
-    <div class="page-header">
+    <div class="page-header" role="region" aria-label="Page header">
       <div class="container">
         <nav aria-label="breadcrumb">
           <ol class="breadcrumb">
-            <li class="breadcrumb-item"><a href="/">Home</a></li>
+            <li class="breadcrumb-item">
+              <a href="/" aria-label="Home">Home</a>
+            </li>
             <li class="breadcrumb-item active" aria-current="page">
               News & Updates
             </li>
@@ -470,17 +519,17 @@
       </div>
     </div>
 
-    <main id="main-content">
+    <main id="main-content" role="main" tabindex="-1">
       <div class="container">
         <div class="news-container">
           <div class="table-responsive">
-            <table class="news-table">
+            <table class="news-table" aria-label="News and updates table">
               <thead>
                 <tr>
-                  <th>DATE</th>
-                  <th>TITLE</th>
-                  <th>DESCRIPTION</th>
-                  <th>FILE</th>
+                  <th scope="col">DATE</th>
+                  <th scope="col">TITLE</th>
+                  <th scope="col">DESCRIPTION</th>
+                  <th scope="col">FILE</th>
                 </tr>
               </thead>
               <tbody>
@@ -493,17 +542,33 @@
     </main>
 
     <!-- Footer -->
-    <footer>
+    <footer role="contentinfo" aria-label="Site Footer">
       <div class="footer-content">
         <div class="footer-section">
           <h3>About</h3>
           <ul>
-            <li><a href="/about-udid">Know more about DDRC</a></li>
             <li>
-              <a href="/schemes">Schemes for Persons with Disabilities</a>
+              <a href="/about-udid" aria-label="Know more about DDRC"
+                >Know more about DDRC</a
+              >
             </li>
-            <li><a href="/about-department">About Department</a></li>
-            <li><a href="/medical-camps">Medical Camps / Hospitals</a></li>
+            <li>
+              <a
+                href="/schemes"
+                aria-label="Schemes for Persons with Disabilities"
+                >Schemes for Persons with Disabilities</a
+              >
+            </li>
+            <li>
+              <a href="/about-department" aria-label="About Department"
+                >About Department</a
+              >
+            </li>
+            <li>
+              <a href="/medical-camps" aria-label="Medical Camps and Hospitals"
+                >Medical Camps / Hospitals</a
+              >
+            </li>
           </ul>
         </div>
         <div class="footer-section">
@@ -536,14 +601,19 @@
         </p>
       </div>
       <div class="footer-links">
-        <a href="/terms">Terms & Conditions</a>
-        <a href="/privacy">Privacy Policy</a>
-        <a href="/copyright">Copyright Policy</a>
-        <a href="/accessibility">Accessibility Statement</a>
+        <a href="/terms" aria-label="Terms and Conditions"
+          >Terms & Conditions</a
+        >
+        <a href="/privacy" aria-label="Privacy Policy">Privacy Policy</a>
+        <a href="/copyright" aria-label="Copyright Policy">Copyright Policy</a>
+        <a href="/accessibility" aria-label="Accessibility Statement"
+          >Accessibility Statement</a
+        >
       </div>
     </footer>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="/js/accessibility.js"></script>
     <script>
       document.addEventListener("DOMContentLoaded", async () => {
         const tbody = document.querySelector(".news-table tbody");
@@ -574,12 +644,27 @@
                 }</td>
                 ${
                   news.file_path
-                    ? `<td class="file-cell" data-label="FILE"><a href="${news.file_path}" target="_blank" class="btn-view-file">View File</a></td>`
+                    ? `<td class="file-cell" data-label="FILE"><a href="${news.file_path}" target="_blank" class="btn-view-file" aria-label="View file for ${news.title}">View File</a></td>`
                     : `<td class="file-cell" data-label="FILE">No file available</td>`
                 }
               `;
               tbody.appendChild(row);
             });
+
+            // Announce to screen readers - use the global function from accessibility.js
+            if (typeof window.announceScreenReaderMessage === "function") {
+              window.announceScreenReaderMessage(
+                `${data.news.length} news items loaded`
+              );
+            } else {
+              // Fallback if the global function isn't available yet
+              const announcer = document.getElementById(
+                "screenReaderAnnouncer"
+              );
+              if (announcer) {
+                announcer.textContent = `${data.news.length} news items loaded`;
+              }
+            }
           } else {
             tbody.innerHTML = `
               <tr>
@@ -591,6 +676,21 @@
                 </td>
               </tr>
             `;
+
+            // Announce to screen readers - use the global function
+            if (typeof window.announceScreenReaderMessage === "function") {
+              window.announceScreenReaderMessage(
+                "No news items available at the moment"
+              );
+            } else {
+              // Fallback
+              const announcer = document.getElementById(
+                "screenReaderAnnouncer"
+              );
+              if (announcer) {
+                announcer.textContent = "No news items available at the moment";
+              }
+            }
           }
         } catch (error) {
           console.error("Error loading news:", error);
@@ -604,8 +704,22 @@
               </td>
             </tr>
           `;
+
+          // Announce to screen readers - use the global function
+          if (typeof window.announceScreenReaderMessage === "function") {
+            window.announceScreenReaderMessage("Error loading news items");
+          } else {
+            // Fallback
+            const announcer = document.getElementById("screenReaderAnnouncer");
+            if (announcer) {
+              announcer.textContent = "Error loading news items";
+            }
+          }
         }
       });
+
+      // Remove the duplicate announceScreenReaderMessage function to prevent recursion
+      // The function is already defined in accessibility.js
     </script>
   </body>
 </html>

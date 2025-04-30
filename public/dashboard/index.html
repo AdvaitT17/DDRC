@@ -3,7 +3,9 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>User Dashboard - DDRC</title>
+    <title>
+      User Dashboard - District Disability Rehabilitation Centre, Mumbai
+    </title>
     <link
       href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css"
       rel="stylesheet"
@@ -11,30 +13,83 @@
     <link rel="stylesheet" href="/css/main.css" />
     <link rel="stylesheet" href="/css/header.css" />
     <link rel="stylesheet" href="/dashboard/css/style.css" />
+    <link rel="stylesheet" href="/css/accessibility.css" />
   </head>
   <body>
+    <!-- Accessibility Announcement for Screen Readers -->
+    <div
+      id="screenReaderAnnouncer"
+      class="sr-only"
+      role="alert"
+      aria-live="polite"
+    ></div>
+
     <!-- Auth Loader -->
-    <div id="authLoader" class="auth-loader">
-      <div class="spinner"></div>
+    <div
+      id="authLoader"
+      class="auth-loader"
+      aria-label="Checking authentication status"
+    >
+      <div class="spinner" role="status" aria-label="Loading..."></div>
     </div>
+
+    <!-- Timeline Event Announcement for Screen Readers -->
+    <div
+      id="timelineAnnouncer"
+      class="sr-only"
+      role="status"
+      aria-live="assertive"
+    ></div>
 
     <!-- Main content will be hidden until auth check -->
     <div id="mainContent" style="display: none">
       <!-- Top Bar -->
-      <div class="top-bar">
+      <div class="top-bar" role="navigation" aria-label="Top Navigation">
         <div class="left-links">
-          <a href="/">Home</a>
-          <a href="/sitemap">Sitemap</a>
+          <a href="/" aria-label="Home">Home</a>
+          <a href="/sitemap" aria-label="Sitemap">Sitemap</a>
         </div>
         <div class="right-links">
-          <a href="#" class="skip-main">Skip to Main Content</a>
-          <a href="#" class="screen-reader">Screen Reader Access</a>
-          <div class="font-size-controls">
-            <button class="font-size-btn" id="decreaseFont">T-</button>
-            <button class="font-size-btn" id="defaultFont">T</button>
-            <button class="font-size-btn" id="increaseFont">T+</button>
+          <a
+            href="#main-content"
+            class="skip-main"
+            aria-label="Skip to main content"
+            >Skip to Main Content</a
+          >
+          <a
+            href="#"
+            class="screen-reader"
+            aria-label="Toggle screen reader optimized view"
+            >Screen Reader Access</a
+          >
+          <div class="font-size-controls" aria-label="Font size controls">
+            <button
+              class="font-size-btn"
+              id="decreaseFont"
+              aria-label="Decrease font size"
+            >
+              T-
+            </button>
+            <button
+              class="font-size-btn"
+              id="defaultFont"
+              aria-label="Default font size"
+            >
+              T
+            </button>
+            <button
+              class="font-size-btn"
+              id="increaseFont"
+              aria-label="Increase font size"
+            >
+              T+
+            </button>
           </div>
-          <select class="language-select" id="languageSelect">
+          <select
+            class="language-select"
+            id="languageSelect"
+            aria-label="Select language"
+          >
             <option value="en">English</option>
             <option value="hi">हिंदी</option>
           </select>
@@ -42,7 +97,7 @@
       </div>
 
       <!-- Main Header -->
-      <header class="main-header">
+      <header class="main-header" role="banner" aria-label="Site header">
         <div class="logo-section">
           <img
             src="/images/emblem.png"
@@ -59,50 +114,56 @@
       </header>
 
       <!-- Navigation Menu -->
-      <nav class="main-nav">
-        <a href="/" class="nav-icon">
+      <nav class="main-nav" role="navigation" aria-label="Main Navigation">
+        <a href="/" class="nav-icon" aria-label="Home">
           <img src="/images/home-icons.png" alt="Home" />
         </a>
-        <a href="/profile">Profile</a>
-        <a href="/documents">Documents</a>
+        <a href="/profile" aria-label="View Profile">Profile</a>
+        <a href="/documents" aria-label="Access Documents">Documents</a>
 
         <!-- Add spacer to push user info and logout to the right -->
         <div class="nav-spacer"></div>
 
-        <span id="userInfo" class="nav-user-info"></span>
-        <a href="#" id="logoutBtn" class="nav-logout-btn">
+        <span id="userInfo" class="nav-user-info" aria-live="polite"></span>
+        <a href="#" id="logoutBtn" class="nav-logout-btn" aria-label="Logout">
           <img src="/images/logout.svg" alt="Logout" />
           Logout
         </a>
       </nav>
 
       <!-- Dashboard Content -->
-      <div class="dashboard-container">
+      <div
+        class="dashboard-container"
+        id="main-content"
+        role="main"
+        tabindex="-1"
+      >
         <!-- Application Status Card -->
-        <div class="status-card">
+        <div class="status-card" role="region" aria-labelledby="status-heading">
           <div class="status-header">
-            <h2>Application Status</h2>
+            <h2 id="status-heading">Application Status</h2>
             <span class="application-id"
-              >Application ID: <strong id="applicationId">-</strong></span
+              >Application ID:
+              <strong id="applicationId" aria-live="polite">-</strong></span
             >
           </div>
-          <div class="status-timeline">
-            <div class="timeline-item active completed">
-              <div class="timeline-icon"></div>
+          <div class="status-timeline" aria-label="Application status timeline">
+            <div class="timeline-item active completed" role="listitem">
+              <div class="timeline-icon" aria-hidden="true"></div>
               <div class="timeline-content">
                 <h3>Submitted</h3>
-                <p id="submittedDate">-</p>
+                <p id="submittedDate" aria-live="polite">-</p>
               </div>
             </div>
-            <div class="timeline-item" id="reviewStep">
-              <div class="timeline-icon">⋯</div>
+            <div class="timeline-item" id="reviewStep" role="listitem">
+              <div class="timeline-icon" aria-hidden="true">⋯</div>
               <div class="timeline-content">
                 <h3>Under Review</h3>
                 <p>Application is being processed</p>
               </div>
             </div>
-            <div class="timeline-item" id="completedStep">
-              <div class="timeline-icon">⋯</div>
+            <div class="timeline-item" id="completedStep" role="listitem">
+              <div class="timeline-icon" aria-hidden="true">⋯</div>
               <div class="timeline-content">
                 <h3>Completed</h3>
                 <p>Final status will be updated here</p>
@@ -112,28 +173,48 @@
         </div>
 
         <!-- Quick Actions -->
-        <div class="actions-grid">
+        <div class="actions-grid" role="region" aria-label="Quick actions">
           <div class="action-card">
             <h3>Download Application</h3>
             <p>Get a copy of your submitted application</p>
-            <button class="btn-primary" id="downloadBtn">
-              <img src="/images/download.svg" alt="Download" />
+            <button
+              class="btn-primary"
+              id="downloadBtn"
+              aria-label="Download application as PDF"
+            >
+              <img
+                src="/images/download.svg"
+                alt="Download icon"
+                aria-hidden="true"
+              />
               Download PDF
             </button>
           </div>
           <div class="action-card">
             <h3>Update Profile</h3>
             <p>Manage your personal information</p>
-            <a href="/dashboard/profile" class="btn-primary">
-              <img src="/images/user.svg" alt="Profile" />
+            <a
+              href="/dashboard/profile"
+              class="btn-primary"
+              aria-label="View and update your profile"
+            >
+              <img
+                src="/images/user.svg"
+                alt="Profile icon"
+                aria-hidden="true"
+              />
               View Profile
             </a>
           </div>
           <div class="action-card">
             <h3>Support</h3>
             <p>Need help? Contact our support team</p>
-            <a href="/contact" class="btn-primary">
-              <img src="/images/help.svg" alt="Help" />
+            <a
+              href="/contact"
+              class="btn-primary"
+              aria-label="Get help from support"
+            >
+              <img src="/images/help.svg" alt="Help icon" aria-hidden="true" />
               Get Help
             </a>
           </div>
@@ -144,6 +225,33 @@
     <!-- Scripts -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
     <script src="/js/auth.js"></script>
+    <script src="/js/accessibility.js"></script>
     <script src="/dashboard/js/dashboard.js"></script>
+    <script>
+      // Add DOM ready event to announce page loaded
+      document.addEventListener("DOMContentLoaded", function () {
+        // Check if announceScreenReaderMessage is available
+        if (typeof window.announceScreenReaderMessage === "function") {
+          // Wait for the dashboard to load
+          setTimeout(() => {
+            window.announceScreenReaderMessage(
+              "Dashboard loaded. You can view your application status and access quick actions."
+            );
+          }, 1000);
+        }
+
+        // Additional focus management for the timeline
+        const timelineItems = document.querySelectorAll(".timeline-item");
+        timelineItems.forEach((item) => {
+          item.addEventListener("focus", () => {
+            const heading = item.querySelector("h3").textContent;
+            const details = item.querySelector("p").textContent;
+            document.getElementById(
+              "timelineAnnouncer"
+            ).textContent = `${heading}: ${details}`;
+          });
+        });
+      });
+    </script>
   </body>
 </html>

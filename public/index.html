@@ -3,7 +3,7 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>DDRC - District Disability Rehabilitation Centre</title>
+    <title>DDRC - District Disability Rehabilitation Centre, Mumbai</title>
     <link
       href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css"
       rel="stylesheet"
@@ -11,23 +11,28 @@
     <link rel="stylesheet" href="/css/main.css" />
     <link rel="stylesheet" href="/css/header.css" />
     <link rel="stylesheet" href="/css/footer.css" />
+    <link rel="stylesheet" href="/css/accessibility.css" />
+    <link rel="stylesheet" href="/css/hero-slider.css" />
   </head>
   <body>
+    <!-- Accessibility Announcement for Screen Readers -->
+    <div id="screenReaderAnnouncer" class="sr-only" role="alert" aria-live="polite"></div>
+    
     <!-- Top Bar -->
-    <div class="top-bar">
+    <div class="top-bar" role="navigation" aria-label="Top Navigation">
       <div class="left-links">
-        <a href="/">Home</a>
-        <a href="/sitemap">Sitemap</a>
+        <a href="/" aria-label="Home">Home</a>
+        <a href="/sitemap" aria-label="Sitemap">Sitemap</a>
       </div>
       <div class="right-links">
-        <a href="#" class="skip-main">Skip to Main Content</a>
-        <a href="#" class="screen-reader">Screen Reader Access</a>
-        <div class="font-size-controls">
-          <button class="font-size-btn" id="decreaseFont">T-</button>
-          <button class="font-size-btn" id="defaultFont">T</button>
-          <button class="font-size-btn" id="increaseFont">T+</button>
+        <a href="#main-content" class="skip-main" aria-label="Skip to main content">Skip to Main Content</a>
+        <a href="#" class="screen-reader" aria-label="Toggle screen reader optimized view">Screen Reader Access</a>
+        <div class="font-size-controls" aria-label="Font size controls">
+          <button class="font-size-btn" id="decreaseFont" aria-label="Decrease font size">T-</button>
+          <button class="font-size-btn" id="defaultFont" aria-label="Default font size">T</button>
+          <button class="font-size-btn" id="increaseFont" aria-label="Increase font size">T+</button>
         </div>
-        <select class="language-select" id="languageSelect">
+        <select class="language-select" id="languageSelect" aria-label="Select language">
           <option value="en">English</option>
           <option value="hi">हिंदी</option>
         </select>
@@ -35,7 +40,7 @@
     </div>
 
     <!-- Main Header -->
-    <header class="main-header">
+    <header class="main-header" role="banner" aria-label="Site header">
       <div class="logo-section">
         <img
           src="/images/emblem.png"
@@ -52,46 +57,93 @@
     </header>
 
     <!-- Navigation Menu -->
-    <nav class="main-nav">
-      <a href="/" class="nav-icon">
+    <nav class="main-nav" role="navigation" aria-label="Main Navigation">
+      <a href="/" class="nav-icon" aria-label="Home">
         <img src="/images/home-icons.png" alt="Home" />
       </a>
-      <a href="/apply">Apply For UDID</a>
-      <a href="/track">Track Your Application</a>
-      <a href="/data">Aggregated-Data</a>
-      <a href="/reports">Pendency-Report</a>
-      <a href="/media">Media</a>
-      <a href="/faqs">FAQs</a>
-      <a href="/contact">Contact Us</a>
+      <a href="/apply" aria-label="Apply For UDID">Apply For UDID</a>
+      <a href="/track" aria-label="Track Your Application">Track Your Application</a>
+      <a href="/data" aria-label="View Aggregated Data">Aggregated-Data</a>
+      <a href="/reports" aria-label="View Pendency Reports">Pendency-Report</a>
+      <a href="/media" aria-label="Media">Media</a>
+      <a href="/faqs" aria-label="FAQs">FAQs</a>
+      <a href="/contact" aria-label="Contact Us">Contact Us</a>
 
       <!-- Add spacer to push login buttons to the right -->
       <div class="nav-spacer"></div>
 
       <!-- Add login buttons -->
-      <a href="/login" class="nav-login-btn">
+      <a href="/login" class="nav-login-btn" aria-label="Divyangjan Login">
         <img src="/images/login.svg" alt="Login Icon" />
         Divyangjan Login
       </a>
-      <a href="/department-login" class="nav-login-btn">
+      <a href="/department-login" class="nav-login-btn" aria-label="Department User Login">
         <img src="/images/user-plus.svg" alt="User Icon" />
         Department User Login
       </a>
     </nav>
 
     <!-- Main Content -->
-    <main>
+    <main id="main-content" role="main" tabindex="-1">
       <!-- Hero Section -->
-      <section class="hero-section">
-        <div class="hero-content">
-          <h2>Some Title for the Header</h2>
-          <div class="hero-buttons">
-            <a href="/apply" class="primary-btn">APPLY NOW</a>
-            <a href="/track" class="primary-btn">TRACK YOUR APPLICATION</a>
+      <section class="hero-section" aria-label="Hero Section">
+        <div class="hero-slider" aria-label="Hero Slider">
+          <div class="hero-slide active" id="slide1">
+            <div class="hero-content">
+              <h2>Welcome to DDRC Mumbai</h2>
+              <p>Empowering persons with disabilities through comprehensive rehabilitation services</p>
+              <div class="hero-buttons">
+                <a href="/apply" class="primary-btn" aria-label="Apply Now">APPLY NOW</a>
+                <a href="/track" class="primary-btn" aria-label="Track Your Application">TRACK YOUR APPLICATION</a>
+              </div>
+            </div>
+            <div class="hero-bg-image">
+              <img src="/images/hero-bg-1.jpg" alt="" aria-hidden="true">
+            </div>
+          </div>
+          
+          <div class="hero-slide" id="slide2">
+            <div class="hero-content">
+              <h2>Accessible Rehabilitation Services</h2>
+              <p>Professional therapeutic services to enhance quality of life</p>
+              <div class="hero-buttons">
+                <a href="/services" class="primary-btn" aria-label="Our Services">OUR SERVICES</a>
+                <a href="/contact" class="primary-btn" aria-label="Contact Us">CONTACT US</a>
+              </div>
+            </div>
+            <div class="hero-bg-image">
+              <img src="/images/hero-bg-2.jpg" alt="" aria-hidden="true">
+            </div>
+          </div>
+          
+          <div class="hero-slide" id="slide3">
+            <div class="hero-content">
+              <h2>Making Mumbai Accessible</h2>
+              <p>Advocating for inclusion, accessibility, and equal rights</p>
+              <div class="hero-buttons">
+                <a href="/events" class="primary-btn" aria-label="Upcoming Events">UPCOMING EVENTS</a>
+                <a href="/join" class="primary-btn" aria-label="Get Involved">GET INVOLVED</a>
+              </div>
+            </div>
+            <div class="hero-bg-image">
+              <img src="/images/hero-bg-3.jpg" alt="" aria-hidden="true">
+            </div>
+          </div>
+          
+          <!-- Navigation controls for hero slider -->
+          <div class="hero-controls" aria-label="Slider controls">
+            <button class="hero-control-btn prev-btn" onclick="prevHeroSlide()" aria-label="Previous slide">❮</button>
+            <div class="hero-indicators">
+              <button class="hero-indicator active" onclick="jumpToHeroSlide(0)" aria-label="Go to slide 1"></button>
+              <button class="hero-indicator" onclick="jumpToHeroSlide(1)" aria-label="Go to slide 2"></button>
+              <button class="hero-indicator" onclick="jumpToHeroSlide(2)" aria-label="Go to slide 3"></button>
+            </div>
+            <button class="hero-control-btn next-btn" onclick="nextHeroSlide()" aria-label="Next slide">❯</button>
           </div>
         </div>
 
         <!-- Note section -->
-        <div class="important-note">
+        <div class="important-note" role="note">
           <strong>Note : </strong>As per the RPwD Rules 2017, disability
           certificate/ UDID card can be issued by notified hospital at home
           district as well as the hospital where the PwD is taking medical
@@ -103,55 +155,53 @@
       <div class="main-content">
         <div class="grid-layout">
           <!-- First Row -->
-          <div class="about-section">
+          <div class="about-section" role="region" aria-labelledby="about-heading">
             <h3>About</h3>
-            <h2>UNIQUE DISABILITY ID CARD</h2>
+            <h2 id="about-heading">DDRC Mumbai</h2>
             <p>
-              UDID sub scheme is being implemented with a view of creating a
-              National Database for Persons with Disabilities across the
-              country. Under the UDID project, certificates of disability and
-              Unique Disability Identity cards are issued to Persons with
-              Disabilities through competent medical authorities notified by the
-              respective State Governments/Union Territories. The project aims
-              to encourage transparency, efficiency in the system of delivering
-              the government benefits to the person with disabilities.
+              District Disability Rehabilitation Centre (DDRC) Mumbai is a comprehensive facility 
+              providing rehabilitation services to persons with disabilities. Established under 
+              the Department of Empowerment of Persons with Disabilities, Ministry of Social Justice 
+              and Empowerment, Government of India, DDRC Mumbai aims to provide comprehensive services 
+              including prevention, early intervention, rehabilitation, vocational training, and community 
+              awareness to ensure equal opportunities and social inclusion for persons with disabilities in Mumbai.
             </p>
           </div>
 
-          <div class="news-section wide">
+          <div class="news-section wide" role="region" aria-labelledby="news-heading">
             <div class="news-header">
-              <h2>News & Updates</h2>
-              <a href="/news" class="view-all">View All <span>❯</span></a>
+              <h2 id="news-heading">News & Updates</h2>
+              <a href="/news" class="view-all" aria-label="View all news and updates">View All <span>❯</span></a>
             </div>
-            <div class="news-list" id="latestNews">
+            <div class="news-list" id="latestNews" aria-label="Latest news items">
               <!-- News items will be loaded dynamically -->
             </div>
           </div>
 
-          <div class="events-section wide">
+          <div class="events-section wide" role="region" aria-labelledby="events-heading">
             <div class="events-header">
-              <h2>Latest Events</h2>
-              <a href="/events" class="view-all">View All <span>❯</span></a>
+              <h2 id="events-heading">Latest Events</h2>
+              <a href="/events" class="view-all" aria-label="View all events">View All <span>❯</span></a>
             </div>
-            <div class="events-list" id="latestEvents">
+            <div class="events-list" id="latestEvents" aria-label="Latest events">
               <div class="event-slideshow">
                 <div class="event-slide-container">
                   <!-- Events will be loaded here -->
                 </div>
-                <div class="event-controls">
-                  <button class="control-btn prev-btn" onclick="prevEvent()">❮</button>
-                  <button class="control-btn pause-btn" onclick="togglePause()">⏸</button>
-                  <button class="control-btn next-btn" onclick="nextEvent()">❯</button>
+                <div class="event-controls" aria-label="Event slideshow controls">
+                  <button class="control-btn prev-btn" onclick="prevEvent()" aria-label="Previous event">❮</button>
+                  <button class="control-btn pause-btn" onclick="togglePause()" aria-label="Pause slideshow">⏸</button>
+                  <button class="control-btn next-btn" onclick="nextEvent()" aria-label="Next event">❯</button>
                 </div>
               </div>
             </div>
           </div>
 
           <!-- Second Row -->
-          <div class="faq-section">
+          <div class="faq-section" role="region" aria-labelledby="faq-heading">
             <div class="faq-header">
-              <h2>Frequently Asked Questions</h2>
-              <a href="/faqs" class="view-all">View All <span>❯</span></a>
+              <h2 id="faq-heading">Frequently Asked Questions</h2>
+              <a href="/faqs" class="view-all" aria-label="View all FAQs">View All <span>❯</span></a>
             </div>
             <div class="accordion" id="faqAccordion">
               <div class="accordion-item">
@@ -161,18 +211,22 @@
                     type="button"
                     data-bs-toggle="collapse"
                     data-bs-target="#faq1"
+                    aria-expanded="true"
+                    aria-controls="faq1"
                   >
-                    What is UDID Card?
+                    What services does DDRC Mumbai offer?
                   </button>
                 </h3>
                 <div
                   id="faq1"
                   class="accordion-collapse collapse show"
                   data-bs-parent="#faqAccordion"
+                  aria-labelledby="faq1-heading"
                 >
                   <div class="accordion-body">
-                    UDID card is a unique document issued to persons with
-                    disabilities for their identification and verification.
+                    DDRC Mumbai offers assessment and early intervention services, therapeutic services (physiotherapy, 
+                    occupational therapy, speech therapy), assistive device distribution, skill development programs, 
+                    counseling for persons with disabilities and their families, and outreach camps.
                   </div>
                 </div>
               </div>
@@ -184,18 +238,21 @@
                     type="button"
                     data-bs-toggle="collapse"
                     data-bs-target="#faq2"
+                    aria-expanded="false"
+                    aria-controls="faq2"
                   >
-                    How to apply for UDID Card?
+                    How can I access DDRC services?
                   </button>
                 </h3>
                 <div
                   id="faq2"
                   class="accordion-collapse collapse"
                   data-bs-parent="#faqAccordion"
+                  aria-labelledby="faq2-heading"
                 >
                   <div class="accordion-body">
-                    You can apply online through our portal or visit your
-                    nearest medical authority for assistance.
+                    You can visit DDRC Mumbai in person during working hours, call our helpline, or apply through our online portal.
+                    Our team will guide you through the assessment process and recommend appropriate services based on individual needs.
                   </div>
                 </div>
               </div>
@@ -207,18 +264,22 @@
                     type="button"
                     data-bs-toggle="collapse"
                     data-bs-target="#faq3"
+                    aria-expanded="false"
+                    aria-controls="faq3"
                   >
-                    What documents are required?
+                    Are DDRC services free of cost?
                   </button>
                 </h3>
                 <div
                   id="faq3"
                   class="accordion-collapse collapse"
                   data-bs-parent="#faqAccordion"
+                  aria-labelledby="faq3-heading"
                 >
                   <div class="accordion-body">
-                    Address proof, Identity proof, Disability certificate, and
-                    Recent passport size photograph.
+                    Yes, most of the services provided at DDRC Mumbai are free of cost as they are funded by the Government of India.
+                    This includes assessment, therapy services, counseling, and skill development programs. Some specialized services
+                    or assistive devices may have nominal charges based on income criteria.
                   </div>
                 </div>
               </div>
@@ -229,17 +290,17 @@
     </main>
 
     <!-- Footer -->
-    <footer>
+    <footer role="contentinfo" aria-label="Site Footer">
       <div class="footer-content">
         <div class="footer-section">
           <h3>About</h3>
           <ul>
-            <li><a href="/about-udid">Know more about DDRC</a></li>
+            <li><a href="/about-udid" aria-label="Know more about DDRC">Know more about DDRC</a></li>
             <li>
-              <a href="/schemes">Schemes for Persons with Disabilities</a>
+              <a href="/schemes" aria-label="Schemes for Persons with Disabilities">Schemes for Persons with Disabilities</a>
             </li>
-            <li><a href="/about-department">About Department</a></li>
-            <li><a href="/medical-camps">Medical Camps / Hospitals</a></li>
+            <li><a href="/about-department" aria-label="About Department">About Department</a></li>
+            <li><a href="/medical-camps" aria-label="Medical Camps and Hospitals">Medical Camps / Hospitals</a></li>
           </ul>
         </div>
         <div class="footer-section">
@@ -268,15 +329,17 @@
             </p>
           </div>
         <div class="footer-links">
-          <a href="/terms">Terms & Conditions</a>
-          <a href="/privacy">Privacy Policy</a>
-          <a href="/copyright">Copyright Policy</a>
-          <a href="/accessibility">Accessibility Statement</a>
+          <a href="/terms" aria-label="Terms and Conditions">Terms & Conditions</a>
+          <a href="/privacy" aria-label="Privacy Policy">Privacy Policy</a>
+          <a href="/copyright" aria-label="Copyright Policy">Copyright Policy</a>
+          <a href="/accessibility" aria-label="Accessibility Statement">Accessibility Statement</a>
         </div>
       </div>
     </footer>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="/js/accessibility.js"></script>
+    <script src="/js/hero-slider.js"></script>
     <script>
       document.addEventListener("DOMContentLoaded", async () => {
         // Load latest news
@@ -356,7 +419,7 @@
               const slide = document.createElement('div');
               slide.className = `event-slide ${index === 0 ? 'active' : ''}`;
               slide.innerHTML = `
-                <a href="/events/event?id=${event.id}" class="event-slide-content">
+                <a href="/events/event?id=${event.id}" class="event-slide-content" aria-label="${event.title}">
                   <div class="event-image">
                     <img src="${event.image_path || '/images/event-placeholder.jpg'}" alt="${event.title}">
                   </div>
@@ -398,8 +461,6 @@
           // Hide controls if error
           document.querySelector('.event-controls').style.display = 'none';
         }
-
-        window.formManager = new FormManager();
       });
 
       // Slideshow functionality
@@ -423,13 +484,20 @@
         slides.forEach(slide => {
           slide.classList.remove('active');
           slide.style.display = 'none';
+          // ARIA - announce slide change to screen readers
+          slide.setAttribute('aria-hidden', 'true');
         });
         
         // Show current slide with animation
         setTimeout(() => {
           slides[index].style.display = 'block';
+          slides[index].setAttribute('aria-hidden', 'false');
           setTimeout(() => {
             slides[index].classList.add('active');
+            // Announce slide change to screen readers
+            if (typeof window.announceScreenReaderMessage === 'function') {
+              window.announceScreenReaderMessage(`Showing slide ${index + 1} of ${slides.length}`);
+            }
           }, 50);
         }, 50);
         
@@ -449,9 +517,17 @@
         if (isPaused) {
           startSlideshow();
           pauseBtn.innerHTML = '⏸';
+          pauseBtn.setAttribute('aria-label', 'Pause slideshow');
+          if (typeof window.announceScreenReaderMessage === 'function') {
+            window.announceScreenReaderMessage('Slideshow resumed');
+          }
         } else {
           clearInterval(slideshowInterval);
           pauseBtn.innerHTML = '▶';
+          pauseBtn.setAttribute('aria-label', 'Play slideshow');
+          if (typeof window.announceScreenReaderMessage === 'function') {
+            window.announceScreenReaderMessage('Slideshow paused');
+          }
         }
         isPaused = !isPaused;
       }

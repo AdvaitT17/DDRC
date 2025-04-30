@@ -12,26 +12,73 @@
     <link rel="stylesheet" href="/css/header.css" />
     <link rel="stylesheet" href="/css/footer.css" />
     <link rel="stylesheet" href="/registration/css/form.css" />
+    <link rel="stylesheet" href="/css/accessibility.css" />
   </head>
   <body>
+    <!-- Accessibility Announcement for Screen Readers -->
+    <div
+      id="screenReaderAnnouncer"
+      class="sr-only"
+      role="alert"
+      aria-live="polite"
+    ></div>
+
     <!-- Auth check loader -->
-    <div id="authLoader" class="auth-loader">
-      <div class="spinner"></div>
+    <div
+      id="authLoader"
+      class="auth-loader"
+      aria-label="Checking authentication status"
+    >
+      <div class="spinner" role="status" aria-label="Loading..."></div>
     </div>
 
     <!-- Top Bar -->
-    <div class="top-bar">
+    <div class="top-bar" role="navigation" aria-label="Top Navigation">
       <div class="left-links">
-        <a href="/">Home</a>
-        <a href="/sitemap">Sitemap</a>
+        <a href="/" aria-label="Home">Home</a>
+        <a href="/sitemap" aria-label="Sitemap">Sitemap</a>
       </div>
       <div class="right-links">
-        <div class="font-size-controls">
-          <button class="font-size-btn" id="decreaseFont">T-</button>
-          <button class="font-size-btn" id="defaultFont">T</button>
-          <button class="font-size-btn" id="increaseFont">T+</button>
+        <a
+          href="#main-content"
+          class="skip-main"
+          aria-label="Skip to main content"
+          >Skip to Main Content</a
+        >
+        <a
+          href="#"
+          class="screen-reader"
+          aria-label="Toggle screen reader optimized view"
+          >Screen Reader Access</a
+        >
+        <div class="font-size-controls" aria-label="Font size controls">
+          <button
+            class="font-size-btn"
+            id="decreaseFont"
+            aria-label="Decrease font size"
+          >
+            T-
+          </button>
+          <button
+            class="font-size-btn"
+            id="defaultFont"
+            aria-label="Default font size"
+          >
+            T
+          </button>
+          <button
+            class="font-size-btn"
+            id="increaseFont"
+            aria-label="Increase font size"
+          >
+            T+
+          </button>
         </div>
-        <select class="language-select" id="languageSelect">
+        <select
+          class="language-select"
+          id="languageSelect"
+          aria-label="Select language"
+        >
           <option value="en">English</option>
           <option value="hi">हिंदी</option>
         </select>
@@ -39,7 +86,7 @@
     </div>
 
     <!-- Main Header -->
-    <header class="main-header">
+    <header class="main-header" role="banner" aria-label="Site header">
       <div class="logo-section">
         <img
           src="/images/emblem.png"
@@ -55,22 +102,24 @@
       </div>
     </header>
     <!-- Navigation Menu -->
-    <nav class="main-nav">
-      <a href="/" class="nav-icon">
+    <nav class="main-nav" role="navigation" aria-label="Main Navigation">
+      <a href="/" class="nav-icon" aria-label="Home">
         <img src="/images/home-icons.png" alt="Home" />
       </a>
-      <a href="/apply">Apply For UDID</a>
-      <a href="/track">Track Your Application</a>
-      <a href="/data">Aggregated-Data</a>
-      <a href="/reports">Pendency-Report</a>
-      <a href="/media">Media</a>
-      <a href="/faqs">FAQs</a>
-      <a href="/contact">Contact Us</a>
+      <a href="/apply" aria-label="Apply For UDID">Apply For UDID</a>
+      <a href="/track" aria-label="Track Your Application"
+        >Track Your Application</a
+      >
+      <a href="/data" aria-label="View Aggregated Data">Aggregated-Data</a>
+      <a href="/reports" aria-label="View Pendency Reports">Pendency-Report</a>
+      <a href="/media" aria-label="Media">Media</a>
+      <a href="/faqs" aria-label="FAQs">FAQs</a>
+      <a href="/contact" aria-label="Contact Us">Contact Us</a>
 
       <!-- Add spacer to push login buttons to the right -->
       <div class="nav-spacer"></div>
 
-      <a href="#" id="logoutBtn" class="nav-logout-btn">
+      <a href="#" id="logoutBtn" class="nav-logout-btn" aria-label="Logout">
         <img src="/images/logout.svg" alt="Logout Icon" />
         Logout
       </a>
@@ -78,39 +127,80 @@
     <div id="mainContent" style="display: none">
       <div class="registration-header">
         <h1>Registration Form</h1>
-        <div class="progress-indicator">
+        <div class="progress-indicator" aria-label="Form progress indicator">
           <!-- Will be populated by JavaScript -->
         </div>
       </div>
 
-      <div class="registration-content">
-        <div class="form-section">
+      <div
+        class="registration-content"
+        id="main-content"
+        role="main"
+        tabindex="-1"
+      >
+        <div
+          class="form-section"
+          role="form"
+          aria-label="Registration form section"
+        >
           <!-- Will be populated by JavaScript -->
         </div>
 
         <div class="navigation-buttons">
-          <button id="prevBtn" class="btn btn-secondary" style="display: none">
+          <button
+            id="prevBtn"
+            class="btn btn-secondary"
+            style="display: none"
+            aria-label="Go to previous section"
+          >
             Previous
           </button>
-          <button id="nextBtn" class="btn btn-primary">Next</button>
-          <button id="submitBtn" class="btn btn-success" style="display: none">
+          <button
+            id="nextBtn"
+            class="btn btn-primary"
+            aria-label="Go to next section"
+          >
+            Next
+          </button>
+          <button
+            id="submitBtn"
+            class="btn btn-success"
+            style="display: none"
+            aria-label="Submit registration form"
+          >
             Submit
           </button>
         </div>
       </div>
     </div>
     <!-- Footer -->
-    <footer>
+    <footer role="contentinfo" aria-label="Site Footer">
       <div class="footer-content">
         <div class="footer-section">
           <h3>About</h3>
           <ul>
-            <li><a href="/about-udid">Know more about DDRC</a></li>
             <li>
-              <a href="/schemes">Schemes for Persons with Disabilities</a>
+              <a href="/about-udid" aria-label="Know more about DDRC"
+                >Know more about DDRC</a
+              >
             </li>
-            <li><a href="/about-department">About Department</a></li>
-            <li><a href="/medical-camps">Medical Camps / Hospitals</a></li>
+            <li>
+              <a
+                href="/schemes"
+                aria-label="Schemes for Persons with Disabilities"
+                >Schemes for Persons with Disabilities</a
+              >
+            </li>
+            <li>
+              <a href="/about-department" aria-label="About Department"
+                >About Department</a
+              >
+            </li>
+            <li>
+              <a href="/medical-camps" aria-label="Medical Camps and Hospitals"
+                >Medical Camps / Hospitals</a
+              >
+            </li>
           </ul>
         </div>
         <div class="footer-section">
@@ -142,18 +232,34 @@
           Reserved.
         </p>
         <div class="footer-links">
-          <a href="/terms">Terms & Conditions</a>
-          <a href="/privacy">Privacy Policy</a>
-          <a href="/copyright">Copyright Policy</a>
-          <a href="/accessibility">Accessibility Statement</a>
+          <a href="/terms" aria-label="Terms and Conditions"
+            >Terms & Conditions</a
+          >
+          <a href="/privacy" aria-label="Privacy Policy">Privacy Policy</a>
+          <a href="/copyright" aria-label="Copyright Policy"
+            >Copyright Policy</a
+          >
+          <a href="/accessibility" aria-label="Accessibility Statement"
+            >Accessibility Statement</a
+          >
         </div>
       </div>
     </footer>
     <!-- Scripts -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
     <script src="/js/auth.js"></script>
+    <script src="/js/accessibility.js"></script>
     <script src="/registration/js/form-renderer.js"></script>
     <script src="/registration/js/form-handler.js"></script>
     <script src="/registration/js/file-handler.js"></script>
+    <script>
+      // Add DOM ready event to announce page loaded
+      document.addEventListener("DOMContentLoaded", function () {
+        // Check if announceScreenReaderMessage is available
+        if (typeof window.announceScreenReaderMessage === "function") {
+          window.announceScreenReaderMessage("Registration form page loaded");
+        }
+      });
+    </script>
   </body>
 </html>
