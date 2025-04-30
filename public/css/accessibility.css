@@ -1,0 +1,232 @@
+/* Accessibility Styles */
+
+/* Screen reader only element - visually hidden but accessible to screen readers */
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+/* Skip to main content link */
+.skip-main {
+  position: absolute;
+  top: -50px;
+  left: 10px;
+  background-color: #ffffff;
+  color: #004a9f;
+  padding: 8px 15px;
+  border-radius: 0 0 5px 5px;
+  z-index: 9999;
+  transition: top 0.3s ease;
+  border: 2px solid #004a9f;
+  font-weight: 600;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+}
+
+.skip-main:focus {
+  top: 0;
+  outline: 3px solid #f47920;
+}
+
+/* Font Size Classes */
+.font-small {
+  font-size: 0.875rem !important;
+}
+
+.font-default {
+  font-size: 1rem !important;
+}
+
+.font-medium {
+  font-size: 1.125rem !important;
+}
+
+/* Ensure font size changes apply to all text elements */
+.font-small p,
+.font-small h1,
+.font-small h2,
+.font-small h3,
+.font-small h4,
+.font-small h5,
+.font-small h6,
+.font-small span,
+.font-small a,
+.font-small li,
+.font-small td,
+.font-small th,
+.font-small label,
+.font-small button,
+.font-small input,
+.font-small textarea,
+.font-small select {
+  font-size: 0.875rem !important;
+}
+
+.font-default p,
+.font-default h1,
+.font-default h2,
+.font-default h3,
+.font-default h4,
+.font-default h5,
+.font-default h6,
+.font-default span,
+.font-default a,
+.font-default li,
+.font-default td,
+.font-default th,
+.font-default label,
+.font-default button,
+.font-default input,
+.font-default textarea,
+.font-default select {
+  font-size: 1rem !important;
+}
+
+.font-medium p,
+.font-medium h1,
+.font-medium h2,
+.font-medium h3,
+.font-medium h4,
+.font-medium h5,
+.font-medium h6,
+.font-medium span,
+.font-medium a,
+.font-medium li,
+.font-medium td,
+.font-medium th,
+.font-medium label,
+.font-medium button,
+.font-medium input,
+.font-medium textarea,
+.font-medium select {
+  font-size: 1.125rem !important;
+}
+
+/* High contrast mode */
+.high-contrast {
+  filter: invert(100%) hue-rotate(180deg);
+  background-color: #000 !important;
+}
+
+.high-contrast img,
+.high-contrast video,
+.high-contrast iframe {
+  filter: invert(100%) hue-rotate(180deg);
+}
+
+/* Screen reader announcer */
+#screenReaderAnnouncer {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+/* High contrast toggle button */
+.contrast-toggle {
+  background-color: #333;
+  color: #fff;
+  border: none;
+  border-radius: 3px;
+  padding: 3px 10px;
+  font-size: 13px;
+  cursor: pointer;
+  margin-left: 10px;
+  transition: background-color 0.2s;
+}
+
+.contrast-toggle:hover {
+  background-color: #555;
+}
+
+.contrast-toggle:focus {
+  outline: 2px solid #f47920;
+  outline-offset: 2px;
+}
+
+/* Improved focus styles for better accessibility */
+a:focus,
+button:focus,
+input:focus,
+select:focus,
+textarea:focus {
+  outline: 3px solid #f47920;
+  outline-offset: 2px;
+}
+
+/* Screen reader mode enhancements */
+.screen-reader-mode .news-item,
+.screen-reader-mode .event-item,
+.screen-reader-mode .accordion-item {
+  border: 2px solid #004a9f;
+  margin-bottom: 1rem;
+}
+
+.screen-reader-mode a {
+  text-decoration: underline;
+}
+
+.screen-reader-mode button:after {
+  content: attr(aria-label);
+  display: inline-block;
+  margin-left: 5px;
+}
+
+/* Enhanced focus indication for navigation */
+.main-nav a:focus {
+  outline: 3px solid #f47920;
+  outline-offset: -3px;
+  background-color: rgba(255, 255, 255, 0.2);
+}
+
+/* Make sure interactive elements have focus styles */
+.nav-login-btn:focus,
+.btn:focus,
+.accordion-button:focus {
+  outline: 3px solid #f47920;
+  outline-offset: 2px;
+}
+
+/* Improve form field accessibility */
+input[type="text"]:focus,
+input[type="email"]:focus,
+input[type="password"]:focus,
+textarea:focus,
+select:focus {
+  border-color: #004a9f;
+  box-shadow: 0 0 0 3px rgba(0, 74, 159, 0.25);
+}
+
+/* Enhanced focus indication for footer links */
+footer a:focus {
+  outline: 3px solid #f47920;
+  outline-offset: 2px;
+  text-decoration: underline;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .font-size-large {
+    font-size: 115% !important;
+  }
+
+  .font-size-larger {
+    font-size: 130% !important;
+  }
+
+  .skip-main:focus {
+    width: auto;
+    max-width: 70%;
+  }
+}
