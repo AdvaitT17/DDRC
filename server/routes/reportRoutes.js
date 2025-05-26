@@ -491,7 +491,37 @@ router.post(
                   const colIndex = columnLabels.indexOf(result.col_value);
 
                   if (rowIndex >= 0 && colIndex >= 0) {
-                    data[rowIndex][colIndex] = result.count;
+                    data[rowIndex][colIndex] =
+                      data[rowIndex][colIndex] + result.count;
+
+                    // If this is a nested-select field with no specific level filter,
+                    // we also need to add this count to all parent levels
+                    if (
+                      rowField[0].field_type === "nested-select" &&
+                      (!filters ||
+                        !filters.some((f) => f.fieldId === rowVariableId))
+                    ) {
+                      // Get the full hierarchical path
+                      const levelParts = result.row_value.split(",");
+
+                      // If we have multiple levels, add counts to parent levels
+                      if (levelParts.length > 1) {
+                        // For each parent level in the hierarchy
+                        for (let i = 0; i < levelParts.length - 1; i++) {
+                          const parentValue = levelParts[i];
+                          const parentRowIndex = rowLabels.indexOf(parentValue);
+
+                          // If the parent is in our row labels, add the count there too
+                          if (
+                            parentRowIndex >= 0 &&
+                            parentRowIndex !== rowIndex
+                          ) {
+                            data[parentRowIndex][colIndex] =
+                              data[parentRowIndex][colIndex] + result.count;
+                          }
+                        }
+                      }
+                    }
                   }
                 });
 
