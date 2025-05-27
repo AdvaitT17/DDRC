@@ -381,6 +381,90 @@
           transform: rotate(360deg);
         }
       }
+
+      .chart-container {
+        height: 400px;
+        position: relative;
+      }
+
+      /* Time Filter Section Styles */
+      .time-filter-section {
+        background-color: #f8f9fa;
+        border-radius: 8px;
+        border-left: 4px solid #0d6efd;
+      }
+
+      .time-filter-section h5 {
+        color: #0d6efd;
+        font-weight: 500;
+      }
+
+      .time-filter-section .form-label {
+        font-weight: 500;
+        font-size: 0.9rem;
+      }
+
+      #applyTimeFilterBtn {
+        height: 38px;
+        display: flex;
+        align-items: center;
+      }
+
+      .active-time-filter {
+        background-color: #e8f4ff;
+        border-radius: 6px;
+        padding: 8px 12px;
+        margin-top: 10px;
+        border: 1px solid #b8daff;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+      }
+
+      .active-time-filter .filter-text {
+        font-weight: 500;
+      }
+
+      .active-time-filter .clear-filter {
+        color: #dc3545;
+        cursor: pointer;
+        padding: 2px 6px;
+        border-radius: 4px;
+      }
+
+      .active-time-filter .clear-filter:hover {
+        background-color: #ffeaea;
+      }
+
+      /* Filter Tags Styles */
+      .filter-tags {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+      }
+
+      .filter-tag {
+        background-color: #e9ecef;
+        border-radius: 20px;
+        padding: 6px 12px;
+        font-size: 0.9rem;
+        display: flex;
+        align-items: center;
+      }
+
+      .filter-tag-name {
+        font-weight: 500;
+        margin-right: 5px;
+      }
+
+      .filter-tag-operator {
+        color: #0d6efd;
+        margin: 0 5px;
+      }
+
+      .filter-tag-value {
+        font-style: italic;
+      }
     </style>
   </head>
   <body>
@@ -467,255 +551,337 @@
           </div>
         </div>
 
-        <!-- Tab Controls -->
-        <ul class="nav nav-pills tab-controls" id="reportTabs">
-          <li class="nav-item">
-            <a
-              class="nav-link active"
-              id="tableTab"
-              data-bs-toggle="tab"
-              href="#tableContent"
-            >
-              <i class="bi bi-table"></i> Table View
-            </a>
-          </li>
-          <li class="nav-item">
-            <a
-              class="nav-link"
-              id="chartTab"
-              data-bs-toggle="tab"
-              href="#chartContent"
-            >
-              <i class="bi bi-bar-chart"></i> Chart View
-            </a>
-          </li>
-          <li class="nav-item">
-            <a
-              class="nav-link"
-              id="filtersTab"
-              data-bs-toggle="tab"
-              href="#filtersContent"
-            >
-              <i class="bi bi-funnel"></i> Filters
-            </a>
-          </li>
-          <li class="nav-item">
-            <a
-              class="nav-link"
-              id="exportTab"
-              data-bs-toggle="tab"
-              href="#exportContent"
-            >
-              <i class="bi bi-download"></i> Export
-            </a>
-          </li>
-        </ul>
-
-        <!-- Tab Content -->
-        <div class="tab-content">
-          <!-- Table View Tab -->
-          <div class="tab-pane fade show active" id="tableContent">
-            <div class="report-card">
-              <div
-                class="report-header d-flex justify-content-between align-items-center"
-              >
-                <h4 class="mb-0">Report Data</h4>
-                <div class="d-flex align-items-center gap-3">
-                  <div class="form-check form-switch">
-                    <input
-                      class="form-check-input"
-                      type="checkbox"
-                      id="toggleFullTableView"
-                      data-bs-toggle="tooltip"
-                      data-bs-placement="top"
-                      title="When enabled, shows all available options in the table, even those with zero responses"
-                    />
-                    <label class="form-check-label" for="toggleFullTableView">
-                      Show All Options
-                      <span
-                        class="full-table-badge"
-                        id="fullTableBadge"
-                        style="display: none"
-                        >FULL VIEW</span
-                      >
-                    </label>
-                  </div>
-                  <div class="aggregation-type-selector">
-                    <div
-                      class="btn-group"
-                      role="group"
-                      aria-label="Aggregation Type"
-                    >
-                      <input
-                        type="radio"
-                        class="btn-check"
-                        name="aggregationType"
-                        id="countAggregation"
-                        value="count"
-                        checked
-                      />
-                      <label
-                        class="btn btn-outline-primary"
-                        for="countAggregation"
-                        >Count</label
-                      >
-
-                      <input
-                        type="radio"
-                        class="btn-check"
-                        name="aggregationType"
-                        id="percentTotalAggregation"
-                        value="percent_total"
-                      />
-                      <label
-                        class="btn btn-outline-primary"
-                        for="percentTotalAggregation"
-                        >% of Total</label
-                      >
-                    </div>
-                  </div>
-                </div>
-              </div>
-              <div class="report-body">
-                <div class="cross-tab-container">
-                  <div id="reportLoading" class="report-loader">
-                    <div class="spinner-border text-primary" role="status">
-                      <span class="visually-hidden">Loading...</span>
-                    </div>
-                  </div>
-                  <table
-                    class="table table-bordered cross-tab-table"
-                    id="crossTabTable"
-                    style="display: none"
-                  >
-                    <!-- Will be populated by JavaScript -->
-                  </table>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          <!-- Chart View Tab -->
-          <div class="tab-pane fade" id="chartContent">
-            <div class="report-card">
-              <div
-                class="report-header d-flex justify-content-between align-items-center"
-              >
-                <h4 class="mb-0">Chart View</h4>
-                <div
-                  class="btn-group chart-type-selector"
-                  role="group"
-                  aria-label="Chart type"
+        <!-- Time Filter Section -->
+        <div class="time-filter-section mb-4 p-3 border rounded bg-light">
+          <h5 class="mb-3">
+            <i class="bi bi-calendar-range me-2"></i>Report Timeframe
+          </h5>
+          <div class="row">
+            <div class="col-md-4">
+              <div class="form-group">
+                <label for="timeFilterType" class="form-label"
+                  >Time Period</label
                 >
-                  <input
-                    type="radio"
-                    class="btn-check"
-                    name="chartType"
-                    id="barChartInput"
-                    value="bar"
-                    checked
-                  />
-                  <label
-                    class="btn btn-outline-primary"
-                    for="barChartInput"
-                    id="barChartBtn"
-                    >Bar Chart</label
-                  >
-
-                  <input
-                    type="radio"
-                    class="btn-check"
-                    name="chartType"
-                    id="pieChartInput"
-                    value="pie"
-                  />
-                  <label
-                    class="btn btn-outline-primary"
-                    for="pieChartInput"
-                    id="pieChartBtn"
-                    >Pie Chart</label
-                  >
-
-                  <input
-                    type="radio"
-                    class="btn-check"
-                    name="chartType"
-                    id="heatmapInput"
-                    value="heatmap"
-                  />
-                  <label
-                    class="btn btn-outline-primary"
-                    for="heatmapInput"
-                    id="heatmapBtn"
-                    >Heatmap</label
-                  >
-                </div>
+                <select class="form-select" id="timeFilterType">
+                  <option value="all">All Time (Lifetime)</option>
+                  <option value="year">By Year</option>
+                  <option value="month">By Month</option>
+                  <option value="custom">Custom Range</option>
+                </select>
               </div>
-              <div class="report-body">
-                <div
-                  class="chart-container p-3 bg-white border rounded shadow-sm"
+            </div>
+            <div
+              class="col-md-4"
+              id="yearFilterContainer"
+              style="display: none"
+            >
+              <div class="form-group">
+                <label for="yearFilter" class="form-label">Select Year</label>
+                <select class="form-select" id="yearFilter">
+                  <!-- Years will be populated dynamically -->
+                </select>
+              </div>
+            </div>
+            <div
+              class="col-md-4"
+              id="monthFilterContainer"
+              style="display: none"
+            >
+              <div class="form-group">
+                <label for="monthFilter" class="form-label">Select Month</label>
+                <select class="form-select" id="monthFilter">
+                  <option value="1">January</option>
+                  <option value="2">February</option>
+                  <option value="3">March</option>
+                  <option value="4">April</option>
+                  <option value="5">May</option>
+                  <option value="6">June</option>
+                  <option value="7">July</option>
+                  <option value="8">August</option>
+                  <option value="9">September</option>
+                  <option value="10">October</option>
+                  <option value="11">November</option>
+                  <option value="12">December</option>
+                </select>
+              </div>
+            </div>
+            <div
+              class="col-md-4"
+              id="customRangeContainer"
+              style="display: none"
+            >
+              <div class="form-group">
+                <label for="startDateFilter" class="form-label"
+                  >Start Date</label
                 >
-                  <canvas id="reportChart" width="400" height="300"></canvas>
-                </div>
+                <input type="date" class="form-control" id="startDateFilter" />
               </div>
             </div>
-          </div>
-
-          <!-- Filters Tab -->
-          <div class="tab-pane fade" id="filtersContent">
-            <div class="report-card">
-              <div class="report-header">
-                <h4 class="mb-0">Applied Filters</h4>
-              </div>
-              <div class="report-body">
-                <div id="appliedFiltersContainer">
-                  <!-- Will be populated by JavaScript -->
-                  <p class="text-muted">No filters applied to this report.</p>
-                </div>
+            <div class="col-md-4" id="endDateContainer" style="display: none">
+              <div class="form-group">
+                <label for="endDateFilter" class="form-label">End Date</label>
+                <input type="date" class="form-control" id="endDateFilter" />
               </div>
             </div>
+            <div class="col-md-4 d-flex align-items-end">
+              <button id="applyTimeFilterBtn" class="btn btn-primary mt-3">
+                <i class="bi bi-funnel me-1"></i> Apply Timeframe
+              </button>
+            </div>
           </div>
+        </div>
 
-          <!-- Export Tab -->
-          <div class="tab-pane fade" id="exportContent">
-            <div class="report-card">
-              <div class="report-header">
-                <h4 class="mb-0">Export Options</h4>
-              </div>
-              <div class="report-body">
-                <div class="row g-3">
-                  <div class="col-md-6">
-                    <div class="card h-100">
-                      <div class="card-body">
-                        <h5 class="card-title">
-                          <i
-                            class="bi bi-file-earmark-excel text-success me-2"
-                          ></i
-                          >Excel
-                        </h5>
-                        <p class="card-text">
-                          Download the report data as an Excel file that can be
-                          opened in Microsoft Excel or Google Sheets.
-                        </p>
-                        <button class="btn btn-primary" id="exportCsvBtn">
-                          <i class="bi bi-download me-2"></i>Download Excel
-                        </button>
+        <div id="reportVisualization" class="report-view-content">
+          <!-- Tab Controls -->
+          <ul class="nav nav-pills tab-controls" id="reportTabs">
+            <li class="nav-item">
+              <a
+                class="nav-link active"
+                id="tableTab"
+                data-bs-toggle="tab"
+                href="#tableContent"
+              >
+                <i class="bi bi-table"></i> Table View
+              </a>
+            </li>
+            <li class="nav-item">
+              <a
+                class="nav-link"
+                id="chartTab"
+                data-bs-toggle="tab"
+                href="#chartContent"
+              >
+                <i class="bi bi-bar-chart"></i> Chart View
+              </a>
+            </li>
+            <li class="nav-item">
+              <a
+                class="nav-link"
+                id="filtersTab"
+                data-bs-toggle="tab"
+                href="#filtersContent"
+              >
+                <i class="bi bi-funnel"></i> Filters
+              </a>
+            </li>
+            <li class="nav-item">
+              <a
+                class="nav-link"
+                id="exportTab"
+                data-bs-toggle="tab"
+                href="#exportContent"
+              >
+                <i class="bi bi-download"></i> Export
+              </a>
+            </li>
+          </ul>
+
+          <!-- Tab Content -->
+          <div class="tab-content">
+            <!-- Table View Tab -->
+            <div class="tab-pane fade show active" id="tableContent">
+              <div class="report-card">
+                <div
+                  class="report-header d-flex justify-content-between align-items-center"
+                >
+                  <h4 class="mb-0">Report Data</h4>
+                  <div class="d-flex align-items-center gap-3">
+                    <div class="form-check form-switch">
+                      <input
+                        class="form-check-input"
+                        type="checkbox"
+                        id="toggleFullTableView"
+                        data-bs-toggle="tooltip"
+                        data-bs-placement="top"
+                        title="When enabled, shows all available options in the table, even those with zero responses"
+                      />
+                      <label class="form-check-label" for="toggleFullTableView">
+                        Show All Options
+                        <span
+                          class="full-table-badge"
+                          id="fullTableBadge"
+                          style="display: none"
+                          >FULL VIEW</span
+                        >
+                      </label>
+                    </div>
+                    <div class="aggregation-type-selector">
+                      <div
+                        class="btn-group"
+                        role="group"
+                        aria-label="Aggregation Type"
+                      >
+                        <input
+                          type="radio"
+                          class="btn-check"
+                          name="aggregationType"
+                          id="countAggregation"
+                          value="count"
+                          checked
+                        />
+                        <label
+                          class="btn btn-outline-primary"
+                          for="countAggregation"
+                          >Count</label
+                        >
+
+                        <input
+                          type="radio"
+                          class="btn-check"
+                          name="aggregationType"
+                          id="percentTotalAggregation"
+                          value="percent_total"
+                        />
+                        <label
+                          class="btn btn-outline-primary"
+                          for="percentTotalAggregation"
+                          >% of Total</label
+                        >
                       </div>
                     </div>
                   </div>
-                  <div class="col-md-6">
-                    <div class="card h-100">
-                      <div class="card-body">
-                        <h5 class="card-title">
-                          <i class="bi bi-printer me-2"></i>Print Report
-                        </h5>
-                        <p class="card-text">
-                          Generate a printer-friendly version of the report for
-                          printing or saving as PDF.
-                        </p>
-                        <button class="btn btn-primary" id="printReportBtn">
-                          <i class="bi bi-printer me-2"></i>Print Report
-                        </button>
+                </div>
+                <div class="report-body">
+                  <div class="cross-tab-container">
+                    <div id="reportLoading" class="report-loader">
+                      <div class="spinner-border text-primary" role="status">
+                        <span class="visually-hidden">Loading...</span>
+                      </div>
+                    </div>
+                    <table
+                      class="table table-bordered cross-tab-table"
+                      id="crossTabTable"
+                      style="display: none"
+                    >
+                      <!-- Will be populated by JavaScript -->
+                    </table>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Chart View Tab -->
+            <div class="tab-pane fade" id="chartContent">
+              <div class="report-card">
+                <div
+                  class="report-header d-flex justify-content-between align-items-center"
+                >
+                  <h4 class="mb-0">Chart View</h4>
+                  <div
+                    class="btn-group chart-type-selector"
+                    role="group"
+                    aria-label="Chart type"
+                  >
+                    <input
+                      type="radio"
+                      class="btn-check"
+                      name="chartType"
+                      id="barChartInput"
+                      value="bar"
+                      checked
+                    />
+                    <label
+                      class="btn btn-outline-primary"
+                      for="barChartInput"
+                      id="barChartBtn"
+                      >Bar Chart</label
+                    >
+
+                    <input
+                      type="radio"
+                      class="btn-check"
+                      name="chartType"
+                      id="pieChartInput"
+                      value="pie"
+                    />
+                    <label
+                      class="btn btn-outline-primary"
+                      for="pieChartInput"
+                      id="pieChartBtn"
+                      >Pie Chart</label
+                    >
+
+                    <input
+                      type="radio"
+                      class="btn-check"
+                      name="chartType"
+                      id="heatmapInput"
+                      value="heatmap"
+                    />
+                    <label
+                      class="btn btn-outline-primary"
+                      for="heatmapInput"
+                      id="heatmapBtn"
+                      >Heatmap</label
+                    >
+                  </div>
+                </div>
+                <div class="report-body">
+                  <div
+                    class="chart-container p-3 bg-white border rounded shadow-sm"
+                  >
+                    <canvas id="reportChart" width="400" height="300"></canvas>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Filters Tab -->
+            <div class="tab-pane fade" id="filtersContent">
+              <div class="report-card">
+                <div class="report-header">
+                  <h4 class="mb-0">Applied Filters</h4>
+                </div>
+                <div class="report-body">
+                  <div id="appliedFiltersContainer">
+                    <!-- Will be populated by JavaScript -->
+                    <p class="text-muted">No filters applied to this report.</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Export Tab -->
+            <div class="tab-pane fade" id="exportContent">
+              <div class="report-card">
+                <div class="report-header">
+                  <h4 class="mb-0">Export Options</h4>
+                </div>
+                <div class="report-body">
+                  <div class="row g-3">
+                    <div class="col-md-6">
+                      <div class="card h-100">
+                        <div class="card-body">
+                          <h5 class="card-title">
+                            <i
+                              class="bi bi-file-earmark-excel text-success me-2"
+                            ></i
+                            >Excel
+                          </h5>
+                          <p class="card-text">
+                            Download the report data as an Excel file that can
+                            be opened in Microsoft Excel or Google Sheets.
+                          </p>
+                          <button class="btn btn-primary" id="exportCsvBtn">
+                            <i class="bi bi-download me-2"></i>Download Excel
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+                    <div class="col-md-6">
+                      <div class="card h-100">
+                        <div class="card-body">
+                          <h5 class="card-title">
+                            <i class="bi bi-printer me-2"></i>Print Report
+                          </h5>
+                          <p class="card-text">
+                            Generate a printer-friendly version of the report
+                            for printing or saving as PDF.
+                          </p>
+                          <button class="btn btn-primary" id="printReportBtn">
+                            <i class="bi bi-printer me-2"></i>Print Report
+                          </button>
+                        </div>
                       </div>
                     </div>
                   </div>

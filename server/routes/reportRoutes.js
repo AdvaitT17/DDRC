@@ -44,8 +44,13 @@ router.post(
   checkDepartmentUser,
   async (req, res) => {
     try {
-      const { rowVariableId, columnVariableId, filters, aggregationType } =
-        req.body;
+      const {
+        rowVariableId,
+        columnVariableId,
+        filters,
+        aggregationType,
+        timeFilter,
+      } = req.body;
 
       // Validate required fields
       if (!rowVariableId || !columnVariableId) {
@@ -289,27 +294,6 @@ router.post(
                   )`
                   )
                   .join(" ");
-
-                // Debug - Print out the full query with filters
-                const fullQuery = `
-                SELECT 
-                  row_responses.value AS row_value,
-                  col_responses.value AS col_value,
-                  COUNT(DISTINCT row_responses.registration_id) AS count
-                FROM 
-                  registration_responses row_responses
-                JOIN 
-                  registration_responses col_responses 
-                  ON row_responses.registration_id = col_responses.registration_id
-                WHERE 
-                  row_responses.field_id = '${rowVariableId}'
-                  AND col_responses.field_id = '${columnVariableId}'
-                  ${filterConditions}
-                GROUP BY 
-                  row_responses.value, col_responses.value
-                ORDER BY 
-                  row_responses.value, col_responses.value
-              `;
               }
             } catch (filterError) {
               console.error("Error processing filters:", filterError);
@@ -319,6 +303,35 @@ router.post(
                 stack: filterError.stack,
               });
             }
+          }
+
+          // Add time filter condition if provided
+          let timeFilterCondition = "";
+          if (timeFilter && timeFilter.type !== "all") {
+            // Join with registration_progress table to filter by completed_at
+            timeFilterCondition = `
+              AND EXISTS (
+                SELECT 1 FROM registration_progress rp 
+                WHERE rp.id = row_responses.registration_id 
+                AND rp.status = 'completed'
+            `;
+
+            switch (timeFilter.type) {
+              case "year":
+                timeFilterCondition += ` AND YEAR(rp.completed_at) = ?`;
+                filterParams.push(timeFilter.year);
+                break;
+              case "month":
+                timeFilterCondition += ` AND YEAR(rp.completed_at) = ? AND MONTH(rp.completed_at) = ?`;
+                filterParams.push(timeFilter.year, timeFilter.month);
+                break;
+              case "custom":
+                timeFilterCondition += ` AND DATE(rp.completed_at) BETWEEN ? AND ?`;
+                filterParams.push(timeFilter.startDate, timeFilter.endDate);
+                break;
+            }
+
+            timeFilterCondition += ")";
           }
 
           // Query to get the cross-tabulation data
@@ -336,6 +349,7 @@ router.post(
             row_responses.field_id = ?
             AND col_responses.field_id = ?
             ${filterConditions}
+            ${timeFilterCondition}
           GROUP BY 
             row_responses.value, col_responses.value
           ORDER BY 
