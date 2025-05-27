@@ -201,29 +201,46 @@ Chart.register(MatrixController);
 
 class ReportView {
   constructor() {
-    // Cache DOM elements
+    // DOM elements
     this.reportTitle = document.getElementById("reportTitle");
     this.reportDescription = document.getElementById("reportDescription");
     this.reportMetadata = document.getElementById("reportMetadata");
-    this.crossTabTable = document.getElementById("crossTabTable");
-    this.reportLoading = document.getElementById("reportLoading");
-    this.fullTableBadge = document.getElementById("fullTableBadge");
-    this.toggleFullTableView = document.getElementById("toggleFullTableView");
-    this.reportChart = document.getElementById("reportChart");
     this.appliedFiltersContainer = document.getElementById(
       "appliedFiltersContainer"
     );
+    this.reportVisualization = document.getElementById("reportVisualization");
+    this.crossTabTable = document.getElementById("crossTabTable");
+    this.reportChart = document.getElementById("reportChart");
+    this.reportLoading = document.getElementById("reportLoading");
     this.loadingOverlay = document.getElementById("loadingOverlay");
+    this.errorContainer = document.getElementById("errorContainer");
 
-    // Initialize state
-    this.reportId = null;
+    // Time filter elements
+    this.timeFilterType = document.getElementById("timeFilterType");
+    this.yearFilter = document.getElementById("yearFilter");
+    this.monthFilter = document.getElementById("monthFilter");
+    this.startDateFilter = document.getElementById("startDateFilter");
+    this.endDateFilter = document.getElementById("endDateFilter");
+    this.applyTimeFilterBtn = document.getElementById("applyTimeFilterBtn");
+
+    // State variables
+    this.reportId = this.getReportIdFromUrl();
     this.reportData = null;
     this.lastReportData = null;
-    this.allFields = [];
+    this.formFields = [];
+    this.showFullTableView = false;
     this.allRowOptions = [];
     this.allColumnOptions = [];
-    this.showFullTableView = false;
     this.hierarchicalFiltersInitialized = false;
+
+    // Time filter state
+    this.timeFilter = {
+      type: "all", // all, year, month, custom
+      year: new Date().getFullYear(),
+      month: new Date().getMonth() + 1,
+      startDate: null,
+      endDate: null,
+    };
 
     // Initialize
     this.init();
@@ -275,14 +292,14 @@ class ReportView {
         });
 
         if (fieldsResponse.ok) {
-          this.allFields = await fieldsResponse.json();
+          this.formFields = await fieldsResponse.json();
         } else {
           console.error("Failed to load form fields");
-          this.allFields = [];
+          this.formFields = [];
         }
       } catch (fieldsError) {
         console.error("Error loading form fields:", fieldsError);
-        this.allFields = [];
+        this.formFields = [];
       }
 
       // Load report data
@@ -516,7 +533,7 @@ class ReportView {
 
   // Helper method to ensure form fields data is loaded
   async ensureFormFieldsLoaded() {
-    if (!this.allFields || this.allFields.length === 0) {
+    if (!this.formFields || this.formFields.length === 0) {
       try {
         const response = await fetch("/api/reports/form/fields", {
           headers: {
@@ -528,14 +545,14 @@ class ReportView {
           throw new Error(`Failed to fetch form fields: ${response.status}`);
         }
 
-        this.allFields = await response.json();
+        this.formFields = await response.json();
       } catch (error) {
         console.error("Error loading form fields:", error);
         // Continue with what we have
       }
     }
 
-    return this.allFields || [];
+    return this.formFields || [];
   }
 
   async generateReportVisualization() {
@@ -557,6 +574,27 @@ class ReportView {
         filters: this.reportData.config.filters || [],
         aggregationType: this.reportData.config.aggregationType || "count",
       };
+
+      // Add time filter if applicable
+      if (this.timeFilter.type !== "all") {
+        payload.timeFilter = {
+          type: this.timeFilter.type,
+        };
+
+        switch (this.timeFilter.type) {
+          case "year":
+            payload.timeFilter.year = parseInt(this.timeFilter.year);
+            break;
+          case "month":
+            payload.timeFilter.year = parseInt(this.timeFilter.year);
+            payload.timeFilter.month = parseInt(this.timeFilter.month);
+            break;
+          case "custom":
+            payload.timeFilter.startDate = this.timeFilter.startDate;
+            payload.timeFilter.endDate = this.timeFilter.endDate;
+            break;
+        }
+      }
 
       // If full table view is enabled, request all options
       if (this.showFullTableView) {
@@ -1509,6 +1547,19 @@ class ReportView {
         this.loadReportData();
       });
 
+    // Time filter type change
+    this.timeFilterType.addEventListener("change", () => {
+      this.handleTimeFilterTypeChange();
+    });
+
+    // Apply time filter button
+    this.applyTimeFilterBtn.addEventListener("click", () => {
+      this.applyTimeFilter();
+    });
+
+    // Initialize the year dropdown with available years
+    this.populateYearDropdown();
+
     // Aggregation type change
     document
       .querySelectorAll('input[name="aggregationType"]')
@@ -1518,7 +1569,21 @@ class ReportView {
         });
       });
 
-    // Export Excel button
+    // Full table view toggle
+    document
+      .getElementById("toggleFullTableView")
+      .addEventListener("change", (e) => {
+        this.handleFullTableViewToggle(e.target.checked);
+      });
+
+    // Chart type change
+    document.querySelectorAll('input[name="chartType"]').forEach((radio) => {
+      radio.addEventListener("change", (e) => {
+        this.updateChart(e.target.value, this.lastReportData);
+      });
+    });
+
+    // Export button
     document.getElementById("exportCsvBtn").addEventListener("click", () => {
       this.exportToExcel();
     });
@@ -1528,18 +1593,122 @@ class ReportView {
       this.printReport();
     });
 
-    // Toggle full table view
-    document
-      .getElementById("toggleFullTableView")
-      .addEventListener("change", (e) => {
-        this.handleFullTableViewToggle(e.target.checked);
-      });
-
     // Initialize tooltips
     const tooltips = document.querySelectorAll('[data-bs-toggle="tooltip"]');
     tooltips.forEach((tooltip) => {
       new bootstrap.Tooltip(tooltip);
     });
+  }
+
+  // Populate the year dropdown with years from current year to 5 years back
+  populateYearDropdown() {
+    const currentYear = new Date().getFullYear();
+    this.yearFilter.innerHTML = "";
+
+    // Add years from current year to 5 years back
+    for (let year = currentYear; year >= currentYear - 5; year--) {
+      const option = document.createElement("option");
+      option.value = year;
+      option.textContent = year;
+      this.yearFilter.appendChild(option);
+    }
+  }
+
+  // Handle time filter type change
+  handleTimeFilterTypeChange() {
+    const filterType = this.timeFilterType.value;
+
+    // Hide all filter containers first
+    document.getElementById("yearFilterContainer").style.display = "none";
+    document.getElementById("monthFilterContainer").style.display = "none";
+    document.getElementById("customRangeContainer").style.display = "none";
+    document.getElementById("endDateContainer").style.display = "none";
+
+    // Show relevant containers based on filter type
+    switch (filterType) {
+      case "year":
+        document.getElementById("yearFilterContainer").style.display = "block";
+        break;
+      case "month":
+        document.getElementById("yearFilterContainer").style.display = "block";
+        document.getElementById("monthFilterContainer").style.display = "block";
+        break;
+      case "custom":
+        document.getElementById("customRangeContainer").style.display = "block";
+        document.getElementById("endDateContainer").style.display = "block";
+        break;
+    }
+
+    // Update time filter state
+    this.timeFilter.type = filterType;
+  }
+
+  // Apply the time filter
+  applyTimeFilter() {
+    // Get values based on filter type
+    switch (this.timeFilter.type) {
+      case "year":
+        this.timeFilter.year = this.yearFilter.value;
+        break;
+      case "month":
+        this.timeFilter.year = this.yearFilter.value;
+        this.timeFilter.month = this.monthFilter.value;
+        break;
+      case "custom":
+        this.timeFilter.startDate = this.startDateFilter.value;
+        this.timeFilter.endDate = this.endDateFilter.value;
+
+        // Validate dates
+        if (!this.timeFilter.startDate) {
+          this.showToast("Error", "Please select a start date", "danger");
+          return;
+        }
+        if (!this.timeFilter.endDate) {
+          this.showToast("Error", "Please select an end date", "danger");
+          return;
+        }
+
+        // Ensure end date is after start date
+        if (
+          new Date(this.timeFilter.startDate) >
+          new Date(this.timeFilter.endDate)
+        ) {
+          this.showToast(
+            "Error",
+            "End date must be after start date",
+            "danger"
+          );
+          return;
+        }
+        break;
+    }
+
+    // Generate report with time filter
+    this.generateReportVisualization();
+
+    // Show toast notification
+    let filterMessage = "Showing data for ";
+    switch (this.timeFilter.type) {
+      case "all":
+        filterMessage += "all time";
+        break;
+      case "year":
+        filterMessage += `year ${this.timeFilter.year}`;
+        break;
+      case "month": {
+        const monthName = new Date(
+          this.timeFilter.year,
+          this.timeFilter.month - 1
+        ).toLocaleString("default", { month: "long" });
+        filterMessage += `${monthName} ${this.timeFilter.year}`;
+        break;
+      }
+      case "custom":
+        filterMessage += `${this.timeFilter.startDate} to ${this.timeFilter.endDate}`;
+        break;
+    }
+
+    this.showToast("Time Filter Applied", filterMessage, "success");
   }
 
   handleAggregationChange() {
@@ -3120,8 +3289,8 @@ class ReportView {
     }
 
     // Fallback: Check if we have a Location field we can use for filtering
-    if (!filtersInserted && this.allFields && this.allFields.length > 0) {
-      const locationField = this.allFields.find(
+    if (!filtersInserted && this.formFields && this.formFields.length > 0) {
+      const locationField = this.formFields.find(
         (field) => field.field_type === "nested-select"
       );
 
@@ -3175,9 +3344,9 @@ class ReportView {
       }
     }
 
-    // Then check in the allFields array
-    if (this.allFields && this.allFields.length > 0) {
-      const field = this.allFields.find((f) => f.id.toString() === id);
+    // Then check in the formFields array
+    if (this.formFields && this.formFields.length > 0) {
+      const field = this.formFields.find((f) => f.id.toString() === id);
       if (field) return field;
     }
 
