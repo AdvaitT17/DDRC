@@ -215,6 +215,19 @@ class ReportView {
     this.loadingOverlay = document.getElementById("loadingOverlay");
     this.errorContainer = document.getElementById("errorContainer");
 
+    // Notification elements
+    this.notificationToggle = document.getElementById("notificationToggle");
+    this.notificationEmail = document.getElementById("notificationEmail");
+    this.emailInputContainer = document.getElementById("emailInputContainer");
+    this.saveNotificationBtn = document.getElementById("saveNotificationBtn");
+    this.addRecipientBtn = document.getElementById("addRecipientBtn");
+    this.notificationStatus = document.getElementById("notificationStatus");
+    this.notificationStatusText = document.getElementById(
+      "notificationStatusText"
+    );
+    this.recipientsContainer = document.getElementById("recipientsContainer");
+    this.recipientsList = document.getElementById("recipientsList");
+
     // Time filter elements
     this.timeFilterType = document.getElementById("timeFilterType");
     this.yearFilter = document.getElementById("yearFilter");
@@ -232,6 +245,8 @@ class ReportView {
     this.allRowOptions = [];
     this.allColumnOptions = [];
     this.hierarchicalFiltersInitialized = false;
+    this.notificationEnabled = false;
+    this.notificationPreferences = null;
 
     // Time filter state
     this.timeFilter = {
@@ -366,6 +381,9 @@ class ReportView {
 
       // Generate the report visualization
       await this.generateReportVisualization();
+
+      // Fetch notification preferences
+      await this.fetchNotificationStatus();
 
       this.hideLoading();
     } catch (error) {
@@ -1598,6 +1616,42 @@ class ReportView {
     tooltips.forEach((tooltip) => {
       new bootstrap.Tooltip(tooltip);
     });
+
+    // Add notification toggle event listener
+    if (this.notificationToggle) {
+      this.notificationToggle.addEventListener("change", () => {
+        this.handleNotificationToggle();
+      });
+    }
+
+    // Add save notification button event listener
+    if (this.saveNotificationBtn) {
+      this.saveNotificationBtn.addEventListener("click", () => {
+        this.saveNotificationPreferences();
+      });
+    }
+
+    // Add recipient button event listener
+    if (this.addRecipientBtn) {
+      this.addRecipientBtn.addEventListener("click", () => {
+        this.addRecipient();
+      });
+    }
+
+    // Add email input event listener
+    if (this.notificationEmail) {
+      this.notificationEmail.addEventListener("keypress", (e) => {
+        if (e.key === "Enter") {
+          e.preventDefault();
+          this.addRecipient();
+        }
+      });
+    }
+  }
+
+  // Populate the year dropdown with years from current year to 5 years back
+  populateYearDropdown() {
+    const currentYear = new Date().getFullYear();
   }
 
   // Populate the year dropdown with years from current year to 5 years back
@@ -1703,9 +1757,24 @@ class ReportView {
         filterMessage += `${monthName} ${this.timeFilter.year}`;
         break;
       }
-      case "custom":
-        filterMessage += `${this.timeFilter.startDate} to ${this.timeFilter.endDate}`;
+      case "custom": {
+        // Format dates as DD-MM-YYYY for display
+        const startDate = new Date(this.timeFilter.startDate);
+        const endDate = new Date(this.timeFilter.endDate);
+        
+        const formatDateDDMMYYYY = (date) => {
+          const day = date.getDate().toString().padStart(2, '0');
+          const month = (date.getMonth() + 1).toString().padStart(2, '0');
+          const year = date.getFullYear();
+          return `${day}-${month}-${year}`;
+        };
+        
+        const formattedStartDate = formatDateDDMMYYYY(startDate);
+        const formattedEndDate = formatDateDDMMYYYY(endDate);
+        
+        filterMessage += `${formattedStartDate} to ${formattedEndDate}`;
         break;
+      }
     }
 
     this.showToast("Time Filter Applied", filterMessage, "success");
@@ -3849,8 +3918,889 @@ class ReportView {
 
   // For backward compatibility
   exportToCsv() {
-    // Call the new Excel export function instead
+    // Call the Excel export function instead
     this.exportToExcel();
+  }
+
+  /**
+   * Fetch the current notification status for this report
+   */
+  async fetchNotificationStatus() {
+    try {
+      const response = await fetch("/api/report-notifications/notifications", {
+        method: "GET",
+        headers: {
+          Authorization: `Bearer ${AuthManager.getAuthToken()}`,
+        },
+      });
+
+      if (!response.ok) {
+        throw new Error(`Server returned ${response.status}`);
+      }
+
+      const notifications = await response.json();
+
+      // Find notification for this report
+      const reportNotification = notifications.find(
+        (n) => n.report_id === parseInt(this.reportId)
+      );
+
+      if (reportNotification) {
+        this.notificationPreferences = reportNotification;
+        this.notificationEnabled = reportNotification.enabled;
+
+        // Update UI
+        if (this.notificationToggle) {
+          this.notificationToggle.checked = reportNotification.enabled;
+        }
+
+        // Fetch recipients and populate the UI
+        if (
+          reportNotification.recipients &&
+          reportNotification.recipients.length > 0
+        ) {
+          this.updateRecipientsUI(reportNotification.recipients);
+        }
+
+        this.updateNotificationStatusUI();
+      }
+    } catch (error) {
+      console.error("Error fetching notification status:", error);
+      // Don't show error to user, just log it
+    }
+  }
+
+  /**
+   * Update the recipients UI with the list of recipients
+   * @param {Array} recipients - List of email recipients
+   */
+  updateRecipientsUI(recipients) {
+    // Clear existing recipients
+    this.recipientsList.innerHTML = "";
+
+    // Add each recipient to the UI
+    recipients.forEach((recipient) => {
+      this.addRecipientToUI(recipient.email, recipient.is_primary);
+    });
+  }
+
+  /**
+   * Add a recipient to the UI
+   * @param {string} email - The recipient email
+   * @param {boolean} isPrimary - Whether this is the primary email
+   */
+  addRecipientToUI(email, isPrimary = false) {
+    const recipientItem = document.createElement("div");
+    recipientItem.className =
+      "recipient-item d-flex align-items-center justify-content-between mb-2 p-2 border rounded";
+
+    const emailSpan = document.createElement("span");
+    emailSpan.textContent = email;
+    if (isPrimary) {
+      emailSpan.innerHTML +=
+        ' <span class="badge bg-primary ms-2">Primary</span>';
+    }
+
+    const removeButton = document.createElement("button");
+    removeButton.className = "btn btn-sm btn-outline-danger";
+    removeButton.innerHTML = '<i class="bi bi-x"></i>';
+    removeButton.setAttribute("type", "button");
+    removeButton.addEventListener("click", () => {
+      // Don't allow removing primary email if it's the only one
+      if (isPrimary && this.recipientsList.children.length <= 1) {
+        this.showToast("Error", "Cannot remove primary email", "danger");
+        return;
+      }
+      recipientItem.remove();
+    });
+
+    recipientItem.appendChild(emailSpan);
+    recipientItem.appendChild(removeButton);
+
+    this.recipientsList.appendChild(recipientItem);
+  }
+
+  /**
+   * Fetch the user's primary email from their profile
+   */
+  async fetchUserEmail() {
+    try {
+      const userInfo = AuthManager.getUserInfo();
+      if (userInfo && userInfo.email) {
+        return userInfo.email;
+      }
+
+      // If email not in userInfo, try to fetch from server
+      const response = await fetch("/api/users/profile", {
+        headers: {
+          Authorization: `Bearer ${AuthManager.getAuthToken()}`,
+        },
+      });
+
+      if (response.ok) {
+        const userData = await response.json();
+        if (userData && userData.email) {
+          return userData.email;
+        }
+      }
+
+      return null;
+    } catch (error) {
+      console.error("Error fetching user email:", error);
+      return null;
+    }
+  }
+
+  /**
+   * Handle notification toggle change
+   */
+  async handleNotificationToggle() {
+    const notificationToggle = document.getElementById("notificationToggle");
+    const notificationStatus = document.getElementById("notificationStatus");
+    const emailInputContainer = document.getElementById("emailInputContainer");
+    const recipientsContainer = document.getElementById("recipientsContainer");
+
+    if (!notificationToggle || !notificationStatus) return;
+
+    try {
+      const reportId = this.getReportIdFromUrl();
+      if (!reportId) {
+        throw new Error("Report ID not found");
+      }
+
+      // Check if toggling on or off
+      const enableNotification = notificationToggle.checked;
+
+      // Display loading status
+      notificationStatus.innerHTML = `
+        <div class="alert alert-info">
+          <i class="bi bi-hourglass-split me-2"></i>
+          ${enableNotification ? "Enabling" : "Disabling"} notifications...
+        </div>
+      `;
+
+      // Toggle notification on the server
+      const response = await fetch(
+        `/api/report-notifications/${reportId}/toggle`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${AuthManager.getAuthToken()}`,
+          },
+          body: JSON.stringify({
+            enabled: enableNotification,
+          }),
+        }
+      );
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.message || "Failed to toggle notification");
+      }
+
+      const result = await response.json();
+
+      // Update our local preferences with the server response
+      this.notificationPreferences = result;
+      this.notificationEnabled = enableNotification;
+
+      if (enableNotification) {
+        // If enabling notifications
+        notificationStatus.innerHTML = `
+          <div class="alert alert-success">
+            <i class="bi bi-check-circle-fill me-2"></i>
+            Notifications enabled successfully.
+            <small class="d-block mt-1">The report will be sent on the 1st of each month.</small>
+          </div>
+        `;
+
+        // Show email input and recipients container
+        if (emailInputContainer) emailInputContainer.style.display = "block";
+        if (recipientsContainer) recipientsContainer.style.display = "block";
+
+        // Check if we have existing recipients from the response
+        if (result.recipients && result.recipients.length > 0) {
+          this.updateRecipientsUI(result.recipients);
+        } else {
+          // No existing recipients, try to get user's primary email
+          const recipientsList = document.getElementById("recipientsList");
+          if (recipientsList && recipientsList.children.length === 0) {
+            const userEmail = await this.fetchUserEmail();
+            if (userEmail) {
+              this.addRecipientToUI(userEmail, true);
+            }
+          }
+        }
+
+        // Create the send now button
+        this.createSendNowButton();
+      } else {
+        // If disabling notifications
+        notificationStatus.innerHTML = `
+          <div class="alert alert-secondary">
+            <i class="bi bi-bell-slash me-2"></i>
+            Notifications disabled successfully.
+          </div>
+        `;
+
+        // Hide email input and recipients container
+        if (emailInputContainer) emailInputContainer.style.display = "none";
+        if (recipientsContainer) recipientsContainer.style.display = "none";
+
+        // Hide the send now button
+        const sendNowBtnContainer = document.getElementById(
+          "sendNowBtnContainer"
+        );
+        if (sendNowBtnContainer) {
+          sendNowBtnContainer.style.display = "none";
+        }
+      }
+    } catch (error) {
+      console.error("Error toggling notification:", error);
+      notificationStatus.innerHTML = `
+        <div class="alert alert-danger">
+          <i class="bi bi-exclamation-triangle-fill me-2"></i>
+          ${error.message || "Failed to toggle notification"}
+        </div>
+      `;
+
+      // Revert toggle state
+      notificationToggle.checked = !notificationToggle.checked;
+    }
+  }
+
+  /**
+   * Add a new recipient to the list
+   */
+  addRecipient() {
+    const email = this.notificationEmail.value.trim();
+
+    if (!email) {
+      this.showToast("Error", "Please enter an email address", "danger");
+      this.notificationEmail.focus();
+      return;
+    }
+
+    // Basic email validation
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(email)) {
+      this.showToast("Error", "Please enter a valid email address", "danger");
+      this.notificationEmail.focus();
+      return;
+    }
+
+    // Check if this email is already in the list
+    const existingEmails = Array.from(this.recipientsList.children).map(
+      (item) => item.querySelector("span").textContent.split(" ")[0]
+    );
+
+    if (existingEmails.includes(email)) {
+      this.showToast("Error", "This email is already in the list", "danger");
+      this.notificationEmail.focus();
+      return;
+    }
+
+    // Add to UI
+    this.addRecipientToUI(email, existingEmails.length === 0);
+
+    // Clear input
+    this.notificationEmail.value = "";
+    this.notificationEmail.focus();
+  }
+
+  /**
+   * Get all recipients from the UI
+   */
+  getRecipients() {
+    return Array.from(this.recipientsList.children).map((item) => {
+      const emailText = item.querySelector("span").textContent;
+      const email = emailText.split(" ")[0]; // Get just the email part
+      const isPrimary = emailText.includes("Primary");
+
+      return {
+        email,
+        is_primary: isPrimary,
+      };
+    });
+  }
+
+  /**
+   * Save notification preferences with email recipients
+   */
+  async saveNotificationPreferences() {
+    const notificationEmail = document.getElementById("notificationEmail");
+    const saveNotificationBtn = document.getElementById("saveNotificationBtn");
+    const notificationStatus = document.getElementById("notificationStatus");
+
+    if (!notificationEmail || !saveNotificationBtn || !notificationStatus)
+      return;
+
+    try {
+      // Get the report ID
+      const reportId = this.getReportIdFromUrl();
+      if (!reportId) {
+        throw new Error("Report ID not found");
+      }
+
+      // Validate if we're adding a new recipient
+      if (notificationEmail.value.trim()) {
+        const email = notificationEmail.value.trim();
+
+        // Validate email format
+        if (!this.validateEmail(email)) {
+          throw new Error("Please enter a valid email address");
+        }
+
+        // Check if this email is already in the list
+        const existingEmails = this.getRecipients().map((r) => r.email);
+        if (existingEmails.includes(email)) {
+          throw new Error("This email is already in the recipients list");
+        }
+
+        // Add to the UI (not as primary since we're adding additional recipients)
+        this.addRecipientToUI(email, false);
+
+        // Clear the input field
+        notificationEmail.value = "";
+      }
+
+      // Get all recipients from the UI
+      const recipients = this.getRecipients();
+
+      // Validate that we have at least one recipient
+      if (recipients.length === 0) {
+        throw new Error("Please add at least one recipient email");
+      }
+
+      // Show loading state
+      saveNotificationBtn.disabled = true;
+      saveNotificationBtn.innerHTML =
+        '<i class="bi bi-hourglass-split me-2"></i>Saving...';
+      notificationStatus.innerHTML = `
+        <div class="alert alert-info">
+          <i class="bi bi-info-circle me-2"></i>
+          Saving notification preferences...
+        </div>
+      `;
+
+      // Save notification preferences
+      const response = await fetch(
+        `/api/report-notifications/${reportId}/update`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${AuthManager.getAuthToken()}`,
+          },
+          body: JSON.stringify({
+            recipients: recipients,
+            enabled: true, // Ensure notifications are enabled
+          }),
+        }
+      );
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(
+          errorData.message || "Failed to save notification preferences"
+        );
+      }
+
+      // Update UI
+      notificationStatus.innerHTML = `
+        <div class="alert alert-success">
+          <i class="bi bi-check-circle-fill me-2"></i>
+          Notification preferences saved successfully.
+        </div>
+      `;
+
+      // Reset button
+      saveNotificationBtn.disabled = false;
+      saveNotificationBtn.innerHTML =
+        '<i class="bi bi-check-circle me-1"></i> Save Notification Settings';
+
+      // Make sure the send now button is visible
+      this.createSendNowButton();
+    } catch (error) {
+      console.error("Error saving notification preferences:", error);
+      notificationStatus.innerHTML = `
+        <div class="alert alert-danger">
+          <i class="bi bi-exclamation-triangle-fill me-2"></i>
+          ${error.message || "Failed to save notification preferences"}
+        </div>
+      `;
+
+      // Reset button
+      if (saveNotificationBtn) {
+        saveNotificationBtn.disabled = false;
+        saveNotificationBtn.innerHTML =
+          '<i class="bi bi-check-circle me-1"></i> Save Notification Settings';
+      }
+    }
+  }
+
+  /**
+   * Validate email format
+   * @param {string} email - Email to validate
+   * @returns {boolean} - True if valid
+   */
+  validateEmail(email) {
+    const re = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    return re.test(email);
+  }
+
+  /**
+   * Update the notification status UI
+   */
+  async updateNotificationStatusUI() {
+    const notificationStatus = document.getElementById("notificationStatus");
+    const notificationToggle = document.getElementById("notificationToggle");
+    const emailInputContainer = document.getElementById("emailInputContainer");
+    const recipientsContainer = document.getElementById("recipientsContainer");
+
+    if (!notificationStatus || !notificationToggle) return;
+
+    try {
+      // Fetch current notification status if needed
+      if (!this.notificationPreferences) {
+        await this.fetchNotificationStatus();
+      }
+
+      const enabled = notificationToggle.checked;
+
+      if (enabled) {
+        // Notification is enabled
+        notificationStatus.innerHTML = `
+          <div class="alert alert-success">
+            <i class="bi bi-check-circle-fill me-2"></i>
+            Email notifications are enabled for this report. 
+            <small class="d-block mt-1">The report will be sent on the 1st of each month.</small>
+          </div>
+        `;
+
+        // Always show recipient management when notifications are enabled
+        if (emailInputContainer) emailInputContainer.style.display = "block";
+        if (recipientsContainer) recipientsContainer.style.display = "block";
+
+        // Check if we need to populate the recipients list
+        const recipientsList = document.getElementById("recipientsList");
+        if (recipientsList && recipientsList.children.length === 0) {
+          if (this.notificationPreferences?.recipients?.length > 0) {
+            // Populate with saved recipients
+            this.updateRecipientsUI(this.notificationPreferences.recipients);
+          } else {
+            // If no recipients found, try to get the user's email
+            try {
+              const userEmail = await this.fetchUserEmail();
+              if (userEmail) {
+                this.addRecipientToUI(userEmail, true);
+              }
+            } catch (err) {
+              console.error("Error fetching user email:", err);
+            }
+          }
+        }
+
+        // Create the send now button if it doesn't exist
+        this.createSendNowButton();
+      } else {
+        // Notification is disabled
+        notificationStatus.innerHTML = `
+          <div class="alert alert-secondary">
+            <i class="bi bi-bell-slash me-2"></i>
+            Email notifications are disabled for this report.
+          </div>
+        `;
+
+        // Hide the recipient management controls
+        if (emailInputContainer) emailInputContainer.style.display = "none";
+        if (recipientsContainer) recipientsContainer.style.display = "none";
+
+        // Hide the send now button
+        const sendNowBtnContainer = document.getElementById(
+          "sendNowBtnContainer"
+        );
+        if (sendNowBtnContainer) {
+          sendNowBtnContainer.style.display = "none";
+        }
+      }
+    } catch (error) {
+      console.error("Error updating notification status UI:", error);
+      if (notificationStatus) {
+        notificationStatus.innerHTML = `
+          <div class="alert alert-danger">
+            <i class="bi bi-exclamation-triangle-fill me-2"></i>
+            Error loading notification status: ${
+              error.message || "Unknown error"
+            }
+          </div>
+        `;
+      }
+    }
+  }
+
+  /**
+   * Creates the send now button in the notification panel
+   */
+  createSendNowButton() {
+    // Check if the button already exists
+    if (document.getElementById("sendNowBtnContainer")) {
+      // Button already exists, just make sure it's visible
+      document.getElementById("sendNowBtnContainer").style.display = "block";
+      return;
+    }
+
+    // Find the notification card
+    const notificationCard = document.querySelector(".card-body");
+    if (!notificationCard) return;
+
+    // Create container for the send now button
+    const container = document.createElement("div");
+    container.id = "sendNowBtnContainer";
+    container.className = "mt-4";
+
+    // Create the button
+    container.innerHTML = `
+      <div class="card bg-light">
+        <div class="card-body">
+          <h6 class="mb-3"><i class="bi bi-send me-2"></i>Send Report Immediately</h6>
+          <p class="text-muted small mb-3">
+            Generate and send this report with data from the 1st of the month to today.
+          </p>
+          <button id="sendNowBtn" class="btn btn-primary">
+            <i class="bi bi-send-fill me-2"></i>Send Report Now
+          </button>
+          <div id="sendNowStatus" class="mt-2"></div>
+        </div>
+      </div>
+    `;
+
+    // Insert after the notification status element
+    const notificationStatus = document.getElementById("notificationStatus");
+    if (notificationStatus) {
+      notificationStatus.parentNode.insertBefore(
+        container,
+        notificationStatus.nextSibling
+      );
+    } else {
+      // If notification status not found, append to the notification card
+      notificationCard.appendChild(container);
+    }
+
+    // Add event listener
+    document.getElementById("sendNowBtn").addEventListener("click", () => {
+      this.sendReportNow();
+    });
+  }
+
+  /**
+   * Helper method to format date as DD-MM-YYYY
+   */
+  formatDateDDMMYYYY(date) {
+    const day = date.getDate().toString().padStart(2, '0');
+    const month = (date.getMonth() + 1).toString().padStart(2, '0');
+    const year = date.getFullYear();
+    return `${day}-${month}-${year}`;
+  }
+  
+  /**
+   * Helper method to format date as YYYY-MM-DD (for API)
+   */
+  formatDateYYYYMMDD(date) {
+    const day = date.getDate().toString().padStart(2, '0');
+    const month = (date.getMonth() + 1).toString().padStart(2, '0');
+    const year = date.getFullYear();
+    return `${year}-${month}-${day}`;
+  }
+
+  /**
+   * Sends the report immediately via email
+   */
+  async sendReportNow() {
+    try {
+      // Show a modal with date range picker
+      const reportId = this.getReportIdFromUrl();
+      if (!reportId) {
+        this.showToast("Error", "Report ID not found", "danger");
+        return;
+      }
+
+      // Create modal if it doesn't exist
+      let dateRangeModal = document.getElementById("dateRangeModal");
+      if (dateRangeModal) {
+        // If modal exists, remove it first to avoid duplicates
+        dateRangeModal.remove();
+      }
+      
+      // Create a fresh modal
+      dateRangeModal = document.createElement("div");
+      dateRangeModal.id = "dateRangeModal";
+      dateRangeModal.className = "modal fade";
+      dateRangeModal.setAttribute("tabindex", "-1");
+      dateRangeModal.setAttribute("role", "dialog");
+      dateRangeModal.setAttribute("aria-labelledby", "dateRangeModalLabel");
+      dateRangeModal.setAttribute("aria-hidden", "true");
+      
+      // Simplified HTML structure with inline styles to ensure visibility
+      dateRangeModal.innerHTML = `
+        <div class="modal-dialog" role="document">
+          <div class="modal-content">
+            <div class="modal-header">
+              <h5 class="modal-title" id="dateRangeModalLabel">Select Date Range for Report</h5>
+              <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+              <p>Select the date range for your report.</p>
+              
+              <div class="form-group mb-3">
+                <label for="dateRangeType" class="form-label">Date Range Type</label>
+                <select id="dateRangeType" class="form-select">
+                  <option value="currentMonth" selected>Current Month</option>
+                  <option value="previousMonth">Previous Month</option>
+                  <option value="lastQuarter">Last Quarter</option>
+                  <option value="lastYear">Last Year</option>
+                  <option value="custom">Custom Range</option>
+                </select>
+              </div>
+              
+              <div id="customDateFields" style="display:none;">
+                <div class="row">
+                  <div class="col-md-6">
+                    <div class="form-group mb-3">
+                      <label for="startDate" class="form-label">From Date:</label>
+                      <input type="date" id="startDate" class="form-control">
+                    </div>
+                  </div>
+                  <div class="col-md-6">
+                    <div class="form-group mb-3">
+                      <label for="endDate" class="form-label">To Date:</label>
+                      <input type="date" id="endDate" class="form-control">
+                    </div>
+                  </div>
+                </div>
+              </div>
+              
+              <div class="alert alert-info mt-3">
+                <strong>Selected range:</strong> <span id="displayDateRange">Current month</span>
+              </div>
+            </div>
+            <div class="modal-footer">
+              <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+              <button type="button" id="confirmSendBtn" class="btn btn-primary">Send Report Now</button>
+            </div>
+          </div>
+        </div>
+      `;
+      
+      // Append the modal to the body
+      document.body.appendChild(dateRangeModal);
+      
+      // Initialize the modal
+      const modal = new bootstrap.Modal(dateRangeModal);
+      
+      // Function to update the displayed date range
+      const updateDisplayedDateRange = () => {
+        const dateRangeType = document.getElementById("dateRangeType").value;
+        const displayElement = document.getElementById("displayDateRange");
+        const today = new Date();
+        let rangeText = "";
+        
+        switch (dateRangeType) {
+          case "currentMonth": {
+            const firstDay = new Date(today.getFullYear(), today.getMonth(), 1);
+            rangeText = `${this.formatDateDDMMYYYY(firstDay)} to ${this.formatDateDDMMYYYY(today)}`;
+            break;
+          }
+          case "previousMonth": {
+            const firstDay = new Date(today.getFullYear(), today.getMonth() - 1, 1);
+            const lastDay = new Date(today.getFullYear(), today.getMonth(), 0);
+            rangeText = `${this.formatDateDDMMYYYY(firstDay)} to ${this.formatDateDDMMYYYY(lastDay)}`;
+            break;
+          }
+          case "lastQuarter": {
+            const currentQuarter = Math.floor(today.getMonth() / 3);
+            const previousQuarter = currentQuarter - 1 >= 0 ? currentQuarter - 1 : 3;
+            const year = previousQuarter === 3 ? today.getFullYear() - 1 : today.getFullYear();
+            
+            const firstDay = new Date(year, previousQuarter * 3, 1);
+            const lastDay = new Date(year, previousQuarter * 3 + 3, 0);
+            rangeText = `${this.formatDateDDMMYYYY(firstDay)} to ${this.formatDateDDMMYYYY(lastDay)}`;
+            break;
+          }
+          case "lastYear": {
+            const firstDay = new Date(today.getFullYear() - 1, 0, 1);
+            const lastDay = new Date(today.getFullYear() - 1, 11, 31);
+            rangeText = `${this.formatDateDDMMYYYY(firstDay)} to ${this.formatDateDDMMYYYY(lastDay)}`;
+            break;
+          }
+          case "custom": {
+            const startDate = document.getElementById("startDate").valueAsDate;
+            const endDate = document.getElementById("endDate").valueAsDate;
+            
+            if (startDate && endDate) {
+              rangeText = `${this.formatDateDDMMYYYY(startDate)} to ${this.formatDateDDMMYYYY(endDate)}`;
+            } else {
+              rangeText = "Please select both start and end dates";
+            }
+            break;
+          }
+        }
+        
+        displayElement.textContent = rangeText;
+      };
+      
+      // Set up event listeners
+      document.getElementById("dateRangeType").addEventListener("change", (e) => {
+        const customFields = document.getElementById("customDateFields");
+        
+        if (e.target.value === "custom") {
+          customFields.style.display = "block";
+          
+          // Set default dates for custom range
+          const today = new Date();
+          const firstDayOfMonth = new Date(today.getFullYear(), today.getMonth(), 1);
+          
+          document.getElementById("startDate").valueAsDate = firstDayOfMonth;
+          document.getElementById("endDate").valueAsDate = today;
+        } else {
+          customFields.style.display = "none";
+        }
+        
+        updateDisplayedDateRange();
+      });
+      
+      document.getElementById("startDate").addEventListener("change", updateDisplayedDateRange);
+      document.getElementById("endDate").addEventListener("change", updateDisplayedDateRange);
+      
+      // Set up confirm button
+      document.getElementById("confirmSendBtn").addEventListener("click", async () => {
+        // Get date range
+        const dateRangeType = document.getElementById("dateRangeType").value;
+        let startDate, endDate;
+        const today = new Date();
+        
+        switch (dateRangeType) {
+          case "currentMonth":
+            // First day of current month to today
+            startDate = new Date(today.getFullYear(), today.getMonth(), 1);
+            endDate = today;
+            break;
+            
+          case "previousMonth":
+            // First and last day of previous month (full calendar month)
+            startDate = new Date(today.getFullYear(), today.getMonth() - 1, 1);
+            endDate = new Date(today.getFullYear(), today.getMonth(), 0);
+            break;
+            
+          case "lastQuarter":
+            // Calculate the previous quarter
+            const currentQuarter = Math.floor(today.getMonth() / 3);
+            const previousQuarter = currentQuarter - 1 >= 0 ? currentQuarter - 1 : 3;
+            const year = previousQuarter === 3 ? today.getFullYear() - 1 : today.getFullYear();
+            
+            // First day of previous quarter
+            startDate = new Date(year, previousQuarter * 3, 1);
+            // Last day of previous quarter
+            endDate = new Date(year, previousQuarter * 3 + 3, 0);
+            break;
+            
+          case "lastYear":
+            // First day to last day of previous year (full calendar year)
+            startDate = new Date(today.getFullYear() - 1, 0, 1);
+            endDate = new Date(today.getFullYear() - 1, 11, 31);
+            break;
+            
+          case "custom":
+            // Use the values from date inputs
+            startDate = document.getElementById("startDate").valueAsDate;
+            endDate = document.getElementById("endDate").valueAsDate;
+            
+            if (!startDate || !endDate) {
+              this.showToast("Error", "Please select both start and end dates", "danger");
+              return;
+            }
+            
+            if (startDate > endDate) {
+              this.showToast("Error", "Start date cannot be after end date", "danger");
+              return;
+            }
+            break;
+        }
+        
+        // Format dates as YYYY-MM-DD for API
+        const formattedStartDate = this.formatDateYYYYMMDD(startDate);
+        const formattedEndDate = this.formatDateYYYYMMDD(endDate);
+        
+        // Dismiss the modal
+        modal.hide();
+        
+        // Show loading
+        this.showLoading();
+        
+        // Send the report with the selected date range
+        try {
+          const response = await fetch(
+            `/api/report-notifications/${reportId}/send-now`,
+            {
+              method: "POST",
+              headers: {
+                "Content-Type": "application/json",
+                Authorization: `Bearer ${AuthManager.getAuthToken()}`,
+              },
+              body: JSON.stringify({
+                dateRange: {
+                  startDate: formattedStartDate,
+                  endDate: formattedEndDate,
+                },
+              }),
+            }
+          );
+          
+          // Hide loading
+          this.hideLoading();
+          
+          if (!response.ok) {
+            const error = await response.json();
+            throw new Error(error.message || "Failed to send report");
+          }
+          
+          this.showToast(
+            "Report Sent",
+            "The report has been sent to all recipients!",
+            "success"
+          );
+        } catch (error) {
+          this.hideLoading();
+          this.showToast("Error", error.message, "danger");
+        }
+      });
+      
+      // Initialize the displayed date range
+      updateDisplayedDateRange();
+      
+      // Show the modal
+      modal.show();
+    } catch (error) {
+      console.error("Error sending report:", error);
+      this.showToast("Error", error.message, "danger");
+    }
+  }
+
+  // Helper method to format date as DD-MM-YYYY
+  formatDateDDMMYYYY(date) {
+    const day = date.getDate().toString().padStart(2, '0');
+    const month = (date.getMonth() + 1).toString().padStart(2, '0');
+    const year = date.getFullYear();
+    return `${day}-${month}-${year}`;
+  }
+  
+  // Helper method to format date as YYYY-MM-DD (for API)
+  formatDateYYYYMMDD(date) {
+    const day = date.getDate().toString().padStart(2, '0');
+    const month = (date.getMonth() + 1).toString().padStart(2, '0');
+    const year = date.getFullYear();
+    return `${year}-${month}-${day}`;
   }
 }
 

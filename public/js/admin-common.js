@@ -36,7 +36,7 @@ function showToast(message, type = "info") {
 // Check authentication on page load
 document.addEventListener("DOMContentLoaded", async () => {
   try {
-    const token = localStorage.getItem("token");
+    const token = AuthManager.getAuthToken();
     if (!token) {
       window.location.href = "/department-login";
       return;
@@ -63,12 +63,16 @@ document.addEventListener("DOMContentLoaded", async () => {
       if (config.headers === undefined) {
         config.headers = {};
       }
-      config.headers["Authorization"] = `Bearer ${token}`;
+      // Use AuthManager to get the current token each time
+      const currentToken = AuthManager.getAuthToken();
+      if (currentToken) {
+        config.headers["Authorization"] = `Bearer ${currentToken}`;
+      }
       return originalFetch(resource, config);
     };
   } catch (error) {
     console.error("Auth error:", error);
-    localStorage.removeItem("token");
+    AuthManager.clearAuth();
     window.location.href = "/department-login";
   }
 });

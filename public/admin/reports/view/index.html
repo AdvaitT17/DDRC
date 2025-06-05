@@ -436,6 +436,71 @@
         background-color: #ffeaea;
       }
 
+      /* Email Notification Styles */
+      .card-header.bg-light {
+        background-color: #f8f9fa !important;
+        border-bottom: 1px solid #e9ecef;
+        font-weight: 500;
+      }
+
+      .card-header.bg-light h5 {
+        display: flex;
+        align-items: center;
+        color: #495057;
+      }
+
+      .card-header.bg-light i {
+        color: #0d6efd;
+      }
+
+      #emailInputContainer {
+        background-color: #f8f9fa;
+        padding: 15px;
+        border-radius: 8px;
+        margin-top: 10px;
+        border: 1px solid #e9ecef;
+      }
+
+      #notificationStatus {
+        margin-top: 15px;
+        display: flex;
+        align-items: center;
+        padding: 12px 15px;
+        border-radius: 8px;
+      }
+
+      #notificationStatus.alert-success {
+        background-color: #d4edda;
+        color: #155724;
+        border-color: #c3e6cb;
+      }
+
+      #notificationStatus.alert-secondary {
+        background-color: #e2e3e5;
+        color: #383d41;
+        border-color: #d6d8db;
+      }
+
+      #notificationStatus i {
+        font-size: 1.1rem;
+        margin-right: 10px;
+      }
+
+      #saveNotificationBtn {
+        display: flex;
+        align-items: center;
+        height: 38px;
+      }
+
+      .form-check.form-switch {
+        min-height: 1.5rem;
+      }
+
+      .form-check-input:checked {
+        background-color: #0d6efd;
+        border-color: #0d6efd;
+      }
+
       /* Filter Tags Styles */
       .filter-tags {
         display: flex;
@@ -882,6 +947,93 @@
                             <i class="bi bi-printer me-2"></i>Print Report
                           </button>
                         </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  <!-- Email Notification Section -->
+                  <div class="card mt-4 notification-card">
+                    <div class="card-header bg-light">
+                      <h5 class="mb-0">
+                        <i class="bi bi-envelope me-2"></i>Email Notifications
+                      </h5>
+                    </div>
+                    <div class="card-body">
+                      <div
+                        class="d-flex justify-content-between align-items-start mb-3"
+                      >
+                        <div>
+                          <h6 class="mb-1">Monthly Report Delivery</h6>
+                          <p class="text-muted mb-0">
+                            Receive this report in your inbox on the 1st of each
+                            month
+                          </p>
+                        </div>
+                        <div class="form-check form-switch">
+                          <input
+                            class="form-check-input"
+                            type="checkbox"
+                            id="notificationToggle"
+                          />
+                          <label
+                            class="form-check-label"
+                            for="notificationToggle"
+                            >Enable</label
+                          >
+                        </div>
+                      </div>
+
+                      <div
+                        id="notificationStatus"
+                        class="mb-3"
+                        style="display: none"
+                      ></div>
+
+                      <div
+                        id="emailInputContainer"
+                        class="mb-3"
+                        style="display: none"
+                      >
+                        <label for="notificationEmail" class="form-label"
+                          >Add Email Recipients</label
+                        >
+                        <div class="input-group">
+                          <input
+                            type="email"
+                            class="form-control"
+                            id="notificationEmail"
+                            placeholder="Enter email address"
+                          />
+                          <button
+                            class="btn btn-primary"
+                            type="button"
+                            id="addRecipientBtn"
+                          >
+                            <i class="bi bi-plus-circle me-1"></i> Add
+                          </button>
+                        </div>
+                        <div class="form-text">
+                          Add email addresses to receive monthly reports.
+                        </div>
+                      </div>
+
+                      <div
+                        id="recipientsContainer"
+                        class="mb-3"
+                        style="display: none"
+                      >
+                        <label class="form-label">Recipients</label>
+                        <div id="recipientsList" class="mb-3">
+                          <!-- Recipients will be added here dynamically -->
+                        </div>
+                        <button
+                          class="btn btn-success"
+                          type="button"
+                          id="saveNotificationBtn"
+                        >
+                          <i class="bi bi-check-circle me-1"></i> Save
+                          Notification Settings
+                        </button>
                       </div>
                     </div>
                   </div>
