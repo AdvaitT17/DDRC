@@ -130,9 +130,23 @@ const verifyToken = (req, res, next) => {
   }
 };
 
+/**
+ * Middleware to check if the user is an admin
+ */
+const isAdmin = (req, res, next) => {
+  if (!req.user || req.user.role !== "admin") {
+    return res.status(403).json({
+      message: "Access denied. Admin privileges required.",
+      code: "ADMIN_REQUIRED",
+    });
+  }
+  next();
+};
+
 module.exports = {
   authenticateToken,
   requireRole,
   checkDepartmentUser,
   verifyToken,
+  isAdmin,
 };

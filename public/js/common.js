@@ -28,7 +28,11 @@ function showAlert(message, type = "info") {
 
 // Format date to local string
 function formatDate(dateString) {
-  return new Date(dateString).toLocaleDateString();
+  const date = new Date(dateString);
+  const day = date.getDate().toString().padStart(2, '0');
+  const month = (date.getMonth() + 1).toString().padStart(2, '0');
+  const year = date.getFullYear();
+  return `${day}-${month}-${year}`;
 }
 
 // Handle API errors

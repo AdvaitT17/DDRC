@@ -23,6 +23,12 @@ const { uploadsDir } = require("./config/upload");
 const pool = require("./config/database");
 const tokenManager = require("./utils/temporaryAccess");
 const fs = require("fs");
+const reportNotificationRoutes = require("./routes/reportNotificationRoutes");
+const eventRoutes = require("./routes/events");
+const {
+  initReportEmailScheduler,
+} = require("./schedulers/reportEmailScheduler");
+const userRoutes = require("./routes/userRoutes");
 
 const app = express();
 
@@ -233,6 +239,10 @@ app.use(
 app.use("/api/admin", userManagementRoutes);
 app.use("/api/events", require("./routes/events"));
 app.use("/api/reports", reportRoutes);
+app.use("/api/report-notifications", reportNotificationRoutes);
+app.use("/api/news", newsRoutes);
+app.use("/api/events", eventRoutes);
+app.use("/api/users", userRoutes);
 
 // HTML Routes - make sure these come after API routes
 app.get(
@@ -405,6 +415,9 @@ app.get("/dashboard/documents", (req, res) => {
     path.join(__dirname, "../public/dashboard/documents/index.html")
   );
 });
+
+// Initialize schedulers
+initReportEmailScheduler();
 
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
