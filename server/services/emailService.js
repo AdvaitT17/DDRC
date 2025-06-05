@@ -384,8 +384,11 @@ async function generateReportFile(reportName, config) {
     workbook.modified = new Date();
     workbook.properties.date1904 = false;
 
+    // Sanitize worksheet name to remove invalid characters
+    const sanitizedReportName = sanitizeWorksheetName(reportName);
+
     // Add a worksheet
-    const worksheet = workbook.addWorksheet(reportName, {
+    const worksheet = workbook.addWorksheet(sanitizedReportName, {
       pageSetup: {
         paperSize: 9, // A4
         orientation: "landscape",
@@ -568,7 +571,7 @@ async function generateReportFile(reportName, config) {
       worksheet.addRow([""]);
 
       // Row 5: Report title
-      const reportTitleRow = worksheet.addRow([reportName]);
+      const reportTitleRow = worksheet.addRow([sanitizedReportName]);
       reportTitleRow.height = 30;
 
       // Row 6: Empty spacing
@@ -583,7 +586,7 @@ async function generateReportFile(reportName, config) {
       const columnFieldName =
         reportData.metadata?.columnField?.display_name || "Column Variable";
 
-      worksheet.addRow(["Report Name:", reportName]);
+      worksheet.addRow(["Report Name:", sanitizedReportName]);
       worksheet.addRow(["Row Variable:", rowFieldName]);
       worksheet.addRow(["Column Variable:", columnFieldName]);
       worksheet.addRow(["Date Generated:", new Date().toLocaleString()]);
@@ -801,6 +804,30 @@ async function generateReportFile(reportName, config) {
     console.error("Error generating report file:", error);
     return null;
   }
+}
+
+/**
+ * Sanitize a worksheet name to comply with Excel's restrictions
+ * @param {string} name - The original worksheet name
+ * @returns {string} - A sanitized name valid for Excel
+ */
+function sanitizeWorksheetName(name) {
+  if (!name) return "Report";
+  
+  // Replace all invalid characters with underscores
+  let sanitized = name.replace(/[\*\?\:\\/\[\]]/g, '_');
+  
+  // Excel has a 31 character limit for worksheet names
+  if (sanitized.length > 31) {
+    sanitized = sanitized.substring(0, 31);
+  }
+  
+  // Ensure the name isn't empty after sanitization
+  if (!sanitized.trim()) {
+    sanitized = "Report";
+  }
+  
+  return sanitized;
 }
 
 // Helper method to get display text for operators
