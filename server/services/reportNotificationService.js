@@ -186,6 +186,8 @@ class ReportNotificationService {
       // Calculate next scheduled date (first day of next month)
       const now = new Date();
       const nextMonth = new Date(now.getFullYear(), now.getMonth() + 1, 1);
+      // Set time to 1:00 AM to match cron schedule
+      nextMonth.setHours(1, 0, 0, 0);
       const nextScheduledAt = nextMonth
         .toISOString()
         .slice(0, 19)
@@ -214,9 +216,9 @@ class ReportNotificationService {
         // Create new notification
         const [result] = await pool.query(
           `INSERT INTO report_notifications 
-           (report_id, user_id, enabled, next_scheduled_at) 
-           VALUES (?, ?, ?, ?)`,
-          [reportId, userId, enabled, nextScheduledAt]
+           (report_id, user_id, enabled, frequency, next_scheduled_at) 
+           VALUES (?, ?, ?, ?, ?)`,
+          [reportId, userId, enabled, 'monthly', nextScheduledAt]
         );
         notificationId = result.insertId;
       }
