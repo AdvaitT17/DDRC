@@ -1144,18 +1144,20 @@ async function updateNotificationStatus(notification) {
         nextScheduledDate.setDate(now.getDate() + 7);
         break;
       case "monthly":
-        // Set to the same day next month
-        nextScheduledDate.setMonth(now.getMonth() + 1);
+        // Set to the 1st of next month to avoid month-end date issues
+        nextScheduledDate = new Date(now.getFullYear(), now.getMonth() + 1, 1);
         break;
       case "quarterly":
-        nextScheduledDate.setMonth(now.getMonth() + 3);
+        // Set to the 1st of the quarter (3 months ahead)
+        nextScheduledDate = new Date(now.getFullYear(), now.getMonth() + 3, 1);
         break;
       case "yearly":
-        nextScheduledDate.setFullYear(now.getFullYear() + 1);
+        // Set to the 1st of next year
+        nextScheduledDate = new Date(now.getFullYear() + 1, 0, 1);
         break;
       default:
-        // Default to monthly
-        nextScheduledDate.setMonth(now.getMonth() + 1);
+        // Default to monthly - 1st of next month
+        nextScheduledDate = new Date(now.getFullYear(), now.getMonth() + 1, 1);
     }
 
     // Format date for MySQL
@@ -1196,13 +1198,14 @@ async function processScheduledNotifications() {
 
   try {
     // Get all enabled notifications that are due to be sent
+    // For monthly reports, this should run on the 1st of each month
     const [notifications] = await pool.query(
       `SELECT rn.*, sr.name, sr.description, sr.category, sr.config, u.full_name as user_name
        FROM report_notifications rn
        JOIN saved_reports sr ON rn.report_id = sr.id
        JOIN users u ON rn.user_id = u.id
        WHERE rn.enabled = 1 
-       AND (rn.next_scheduled_at IS NULL OR rn.next_scheduled_at <= NOW())
+       AND (rn.next_scheduled_at IS NULL OR DATE(rn.next_scheduled_at) <= CURDATE())
        ORDER BY rn.next_scheduled_at ASC`
     );
 

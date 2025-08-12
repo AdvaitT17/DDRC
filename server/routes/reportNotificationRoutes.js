@@ -191,13 +191,23 @@ router.post(
         });
       }
 
+      console.log("🧪 Manual trigger of scheduled notifications initiated by admin");
+      
       // Process notifications
       const result = await processScheduledNotifications();
+
+      console.log("🧪 Manual trigger completed:", {
+        success: result.success,
+        failed: result.failure,
+        skipped: result.skipped,
+        total: result.success + result.failure + result.skipped
+      });
 
       return res.json({
         success: true,
         message: "Notifications processed successfully",
         result,
+        timestamp: new Date().toISOString()
       });
     } catch (error) {
       console.error("Error triggering notifications:", error);
