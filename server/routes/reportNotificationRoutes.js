@@ -245,15 +245,15 @@ router.post("/:reportId/send-now", authenticateToken, async (req, res) => {
       return res.status(404).json({ message: "Report not found" });
     }
 
-    // Find active notification for this report and user
+    // Find notification for this report and user (don't require enabled=1 for manual send)
     const [notification] = await pool.query(
-      "SELECT * FROM report_notifications WHERE report_id = ? AND user_id = ? AND enabled = 1",
+      "SELECT * FROM report_notifications WHERE report_id = ? AND user_id = ?",
       [reportId, userId]
     );
 
     if (!notification.length) {
       return res.status(404).json({
-        message: "No active notification found for this report",
+        message: "No notification found for this report. Please save notification settings first.",
       });
     }
 
@@ -287,6 +287,13 @@ router.post("/:reportId/send-now", authenticateToken, async (req, res) => {
 
     const recipients = recipientsResult.map((row) => row.email);
 
+    // Check if we have recipients
+    if (recipients.length === 0) {
+      return res.status(400).json({
+        message: "No recipients found for this notification. Please add recipients in notification settings.",
+      });
+    }
+
     // Send the report email
     const emailSent = await sendReportEmail(
       notification[0],
@@ -317,8 +324,28 @@ router.post("/:reportId/send-now", authenticateToken, async (req, res) => {
       throw new Error("Failed to send report email");
     }
   } catch (error) {
-    console.error("Error sending report now:", error);
-    res.status(500).json({ message: error.message });
+    console.error("Error sending report now:", {
+      error: error.message,
+      reportId,
+      userId,
+      timestamp: new Date().toISOString()
+    });
+    
+    // Provide more specific error messages
+    let userMessage = "Failed to send report";
+    if (error.message.includes("Invalid report configuration")) {
+      userMessage = "Report configuration is invalid. Please check your report settings.";
+    } else if (error.message.includes("Field not found")) {
+      userMessage = "Report fields are missing. Please recreate the report.";
+    } else if (error.message.includes("Failed to generate report file")) {
+      userMessage = "Failed to generate report file. Please try again.";
+    } else if (error.message.includes("Failed to fetch report data")) {
+      userMessage = "Failed to fetch report data. Please check your report configuration.";
+    }
+    
+    res.status(500).json({ 
+      message: userMessage
+    });
   }
 });
 
