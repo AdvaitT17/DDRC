@@ -53,7 +53,7 @@ async function sendReportEmail(
       return false;
     }
 
-    // Apply monthly filter for manual send requests
+    // Apply date range filters for both manual and scheduled sends
     let configToUse = { ...reportConfig };
     if (isManualSend) {
       let startDate, endDate;
@@ -104,6 +104,45 @@ async function sendReportEmail(
       configToUse.filters.push({
         fieldId: "completed_at", // Using completed_at instead of submission_date
         operator: "between",
+        value: [startDate, endDate],
+        displayValue: `${displayStartDate} to ${displayEndDate}`,
+        // Add rich metadata for date filtering
+        isDateFilter: true,
+        table: "registration_progress",
+        column: "completed_at",
+        fieldName: "Completion Date",
+        fieldType: "date",
+      });
+    } else {
+      // For scheduled emails, apply previous month filter
+      const today = new Date();
+      const firstDayPrevMonth = new Date(today.getFullYear(), today.getMonth() - 1, 1);
+      const lastDayPrevMonth = new Date(today.getFullYear(), today.getMonth(), 0);
+      
+      // Format dates as YYYY-MM-DD for database
+      const startDate = formatDateForDatabase(firstDayPrevMonth);
+      const endDate = formatDateForDatabase(lastDayPrevMonth);
+      
+      // Format for display (DD-MM-YYYY)
+      const displayStartDate = formatDateForDisplay(startDate);
+      const displayEndDate = formatDateForDisplay(endDate);
+      
+      console.log(
+        "Applied previous month filter for scheduled send:",
+        startDate,
+        "to",
+        endDate
+      );
+      
+      // If we already have filters, append to them
+      if (!configToUse.filters) {
+        configToUse.filters = [];
+      }
+      
+      // Add previous month date range filter
+      configToUse.filters.push({
+        fieldId: "completed_at",
+        operator: "between", 
         value: [startDate, endDate],
         displayValue: `${displayStartDate} to ${displayEndDate}`,
         // Add rich metadata for date filtering
