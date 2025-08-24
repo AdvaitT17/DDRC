@@ -1200,7 +1200,7 @@ async function processScheduledNotifications() {
     // Get all enabled notifications that are due to be sent
     // For monthly reports, this should run on the 1st of each month
     const [notifications] = await pool.query(
-      `SELECT rn.*, sr.name, sr.description, sr.category, sr.config, u.full_name as user_name
+      `SELECT rn.*, sr.name, sr.category, sr.config, u.full_name as user_name
        FROM report_notifications rn
        JOIN saved_reports sr ON rn.report_id = sr.id
        JOIN users u ON rn.user_id = u.id
@@ -1254,7 +1254,6 @@ async function processScheduledNotifications() {
         const report = {
           id: notification.report_id,
           name: notification.name,
-          description: notification.description,
           category: notification.category,
         };
 
