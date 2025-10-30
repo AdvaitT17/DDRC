@@ -1719,7 +1719,7 @@ class ReportsManager {
     this.filterOperatorSelect.innerHTML = "";
 
     // Add appropriate operators based on field type
-    if (["text", "textarea", "email"].includes(fieldType)) {
+    if (["text", "textarea", "email", "alphanumeric"].includes(fieldType)) {
       this.addOperatorOption("equals", "Equals");
       this.addOperatorOption("not_equals", "Not Equals");
       this.addOperatorOption("contains", "Contains");
