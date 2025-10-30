@@ -34,60 +34,39 @@ router.get(
   }
 );
 
-// Get dashboard stats
+// Get dashboard stats - OPTIMIZED to use single query
 router.get("/stats", async (req, res) => {
   try {
-    const conn = await pool.getConnection();
-
-    try {
-      // Get total registrations
-      const [totalReg] = await conn.query(
-        "SELECT COUNT(*) as count FROM registration_progress"
-      );
-
-      // Get applications to review (completed applications with status pending or under_review)
-      const [applicationsToReview] = await conn.query(
-        `SELECT COUNT(*) as count FROM registration_progress 
+    // OPTIMIZATION: Get all stats in a single query using subqueries
+    const [stats] = await pool.query(`
+      SELECT 
+        (SELECT COUNT(*) FROM registration_progress) as totalRegistrations,
+        (SELECT COUNT(*) FROM registration_progress 
          WHERE status = 'completed' 
-         AND (service_status = 'pending' OR service_status = 'under_review')`
-      );
-
-      // Get incomplete registrations count
-      const [incompleteReg] = await conn.query(
-        `SELECT COUNT(*) as count FROM registration_progress 
-         WHERE status = 'in_progress'`
-      );
-
-      // Get approved today
-      const [approvedToday] = await conn.query(
-        `SELECT COUNT(*) as count FROM registration_progress 
+         AND (service_status = 'pending' OR service_status = 'under_review')) as applicationsToReview,
+        (SELECT COUNT(*) FROM registration_progress 
+         WHERE status = 'in_progress') as incompleteRegistrations,
+        (SELECT COUNT(*) FROM registration_progress 
          WHERE service_status = 'approved' 
-         AND DATE(updated_at) = CURDATE()`
-      );
+         AND DATE(updated_at) = CURDATE()) as approvedToday,
+        (SELECT COUNT(*) FROM registered_users 
+         WHERE last_login >= DATE_SUB(NOW(), INTERVAL 24 HOUR)) as activeUsers
+    `);
 
-      // Get active users (logged in within last 24 hours)
-      const [activeUsers] = await conn.query(
-        `SELECT COUNT(*) as count FROM registered_users 
-         WHERE last_login >= DATE_SUB(NOW(), INTERVAL 24 HOUR)`
-      );
-
-      res.json({
-        totalRegistrations: totalReg[0].count,
-        applicationsToReview: applicationsToReview[0].count,
-        incompleteRegistrations: incompleteReg[0].count,
-        approvedToday: approvedToday[0].count,
-        activeUsers: activeUsers[0].count,
-      });
-    } finally {
-      conn.release();
-    }
+    res.json({
+      totalRegistrations: stats[0].totalRegistrations,
+      applicationsToReview: stats[0].applicationsToReview,
+      incompleteRegistrations: stats[0].incompleteRegistrations,
+      approvedToday: stats[0].approvedToday,
+      activeUsers: stats[0].activeUsers,
+    });
   } catch (error) {
     console.error("Error fetching stats:", error);
     res.status(500).json({ message: "Error fetching stats" });
   }
 });
 
-// Get recent applications (only showing those awaiting review)
+// Get recent applications (only showing those awaiting review) - OPTIMIZED
 router.get("/recent-applications", async (req, res) => {
   try {
     const [applications] = await pool.query(
@@ -118,36 +97,52 @@ router.get("/recent-applications", async (req, res) => {
       LIMIT 10`
     );
 
-    // Get form data for each application
-    const formattedApplications = await Promise.all(
-      applications.map(async (app) => {
-        // Get basic form data
-        const [responses] = await pool.query(
-          `SELECT ff.name, rr.value
-           FROM registration_responses rr
-           JOIN form_fields ff ON rr.field_id = ff.id
-           WHERE rr.registration_id = ?`,
-          [app.id]
-        );
+    // OPTIMIZATION: Get ALL responses for these applications in ONE query
+    const applicationIds = applications.map(app => app.id);
+    let allResponses = [];
+    if (applicationIds.length > 0) {
+      const [responses] = await pool.query(
+        `SELECT 
+          rr.registration_id,
+          ff.name,
+          rr.value
+         FROM registration_responses rr
+         JOIN form_fields ff ON rr.field_id = ff.id
+         WHERE rr.registration_id IN (?)`,
+        [applicationIds]
+      );
+      allResponses = responses;
+    }
 
-        const formData = responses.reduce((acc, curr) => {
-          acc[curr.name] = curr.value;
-          return acc;
-        }, {});
+    // Group responses by registration_id
+    const responsesByApplication = allResponses.reduce((acc, resp) => {
+      if (!acc[resp.registration_id]) {
+        acc[resp.registration_id] = [];
+      }
+      acc[resp.registration_id].push(resp);
+      return acc;
+    }, {});
 
-        return {
-          applicationId: app.application_id,
-          applicantName: `${formData.firstname || ""} ${
-            formData.lastname || ""
-          }`.trim(),
-          email: app.email,
-          submittedAt: app.completed_at,
-          disabilityType: app.disability_type,
-          status: app.service_status || "pending",
-          location: app.location_data || "", // Include location data
-        };
-      })
-    );
+    // Format applications using the batched data
+    const formattedApplications = applications.map((app) => {
+      const responses = responsesByApplication[app.id] || [];
+      const formData = responses.reduce((acc, curr) => {
+        acc[curr.name] = curr.value;
+        return acc;
+      }, {});
+
+      return {
+        applicationId: app.application_id,
+        applicantName: `${formData.firstname || ""} ${
+          formData.lastname || ""
+        }`.trim(),
+        email: app.email,
+        submittedAt: app.completed_at,
+        disabilityType: app.disability_type,
+        status: app.service_status || "pending",
+        location: app.location_data || "",
+      };
+    });
 
     res.json(formattedApplications);
   } catch (error) {
@@ -223,11 +218,20 @@ router.get("/all-applications", async (req, res) => {
   }
 });
 
-// Get incomplete registrations
+// Get incomplete registrations - OPTIMIZED to avoid N+1 queries
 router.get("/incomplete-registrations", async (req, res) => {
   try {
     // Get inactivity threshold from query params (in hours)
     const inactivityThreshold = parseInt(req.query.inactivityThreshold || 0);
+
+    // Helper function to calculate inactive time in hours
+    function getInactiveTime(timestamp) {
+      const lastUpdated = new Date(timestamp);
+      const now = new Date();
+      const diffMs = now - lastUpdated;
+      const diffHours = Math.floor(diffMs / (1000 * 60 * 60));
+      return diffHours;
+    }
 
     // First get all registration records with in_progress status
     const [registrations] = await pool.query(
@@ -248,8 +252,85 @@ router.get("/incomplete-registrations", async (req, res) => {
       ORDER BY rp.updated_at DESC`
     );
 
+    // OPTIMIZATION: Get ALL responses for ALL registrations in ONE query
+    const registrationIds = registrations.map(r => r.id);
+    let allResponses = [];
+    if (registrationIds.length > 0) {
+      const [responses] = await pool.query(
+        `SELECT 
+          rr.registration_id,
+          ff.name,
+          rr.value,
+          ff.display_name
+         FROM registration_responses rr
+         JOIN form_fields ff ON rr.field_id = ff.id
+         WHERE rr.registration_id IN (?)`,
+        [registrationIds]
+      );
+      allResponses = responses;
+    }
+
+    // OPTIMIZATION: Get ALL section names in ONE query
+    const sectionIds = registrations
+      .filter(r => r.current_section_id)
+      .map(r => r.current_section_id);
+    let sectionMap = {};
+    if (sectionIds.length > 0) {
+      const [sections] = await pool.query(
+        `SELECT id, name FROM form_sections WHERE id IN (?)`,
+        [sectionIds]
+      );
+      sectionMap = sections.reduce((acc, s) => {
+        acc[s.id] = s.name;
+        return acc;
+      }, {});
+    }
+
+    // Group responses by registration_id in memory
+    const responsesByRegistration = allResponses.reduce((acc, resp) => {
+      if (!acc[resp.registration_id]) {
+        acc[resp.registration_id] = [];
+      }
+      acc[resp.registration_id].push(resp);
+      return acc;
+    }, {});
+
+    // Format registrations using the batched data
+    const formattedRegistrations = registrations.map((reg) => {
+      const responses = responsesByRegistration[reg.id] || [];
+      
+      const formData = responses.reduce((acc, curr) => {
+        acc[curr.name] = curr.value;
+        acc.displayNames = acc.displayNames || {};
+        acc.displayNames[curr.name] = curr.display_name;
+        return acc;
+      }, {});
+
+      const firstName = formData.firstname || "";
+      const lastName = formData.lastname || "";
+      const fullName = `${firstName} ${lastName}`.trim() || reg.username;
+
+      return {
+        id: reg.id,
+        userId: reg.user_id,
+        applicationId: reg.application_id || `TEMP-${reg.id}`,
+        createdAt: reg.created_at,
+        lastUpdated: reg.updated_at,
+        email: reg.email,
+        phone: reg.phone,
+        applicantName: fullName,
+        currentSection: reg.current_section_id ? (sectionMap[reg.current_section_id] || "Not started") : "Not started",
+        responses: responses.map((r) => ({
+          fieldName: r.name,
+          displayName: r.display_name,
+          value: r.value,
+        })),
+        disabilityType: formData.disabilitytype || "Not specified",
+        inactive: getInactiveTime(reg.updated_at),
+      };
+    });
+
     // Now get registered users who don't have any registration_progress record
-    // or whose registration is neither completed nor in progress
     const [usersWithoutProgress] = await pool.query(
       `SELECT 
         ru.id as user_id,
@@ -276,68 +357,8 @@ router.get("/incomplete-registrations", async (req, res) => {
       currentSection: "Not started",
       responses: [],
       disabilityType: "Not specified",
-      inactive: getInactiveTime(user.created_at), // Add inactive time in hours
+      inactive: getInactiveTime(user.created_at),
     }));
-
-    // Get whatever form data has been filled for each incomplete registration
-    const formattedRegistrations = await Promise.all(
-      registrations.map(async (reg) => {
-        // Get whatever responses are available
-        const [responses] = await pool.query(
-          `SELECT ff.name, rr.value, ff.display_name
-           FROM registration_responses rr
-           JOIN form_fields ff ON rr.field_id = ff.id
-           WHERE rr.registration_id = ?`,
-          [reg.id]
-        );
-
-        // Get the current section name
-        const [currentSection] = reg.current_section_id
-          ? await pool.query(`SELECT name FROM form_sections WHERE id = ?`, [
-              reg.current_section_id,
-            ])
-          : [[]];
-
-        const formData = responses.reduce((acc, curr) => {
-          acc[curr.name] = curr.value;
-          acc.displayNames = acc.displayNames || {};
-          acc.displayNames[curr.name] = curr.display_name;
-          return acc;
-        }, {});
-
-        const firstName = formData.firstname || "";
-        const lastName = formData.lastname || "";
-        const fullName = `${firstName} ${lastName}`.trim() || reg.username;
-
-        return {
-          id: reg.id,
-          userId: reg.user_id,
-          applicationId: reg.application_id || `TEMP-${reg.id}`,
-          createdAt: reg.created_at,
-          lastUpdated: reg.updated_at,
-          email: reg.email,
-          phone: reg.phone,
-          applicantName: fullName,
-          currentSection: currentSection[0]?.name || "Not started",
-          responses: responses.map((r) => ({
-            fieldName: r.name,
-            displayName: r.display_name,
-            value: r.value,
-          })),
-          disabilityType: formData.disabilitytype || "Not specified",
-          inactive: getInactiveTime(reg.updated_at), // Add inactive time in hours
-        };
-      })
-    );
-
-    // Helper function to calculate inactive time in hours
-    function getInactiveTime(timestamp) {
-      const lastUpdated = new Date(timestamp);
-      const now = new Date();
-      const diffMs = now - lastUpdated;
-      const diffHours = Math.floor(diffMs / (1000 * 60 * 60));
-      return diffHours;
-    }
 
     // Combine the existing registrations with the placeholder ones
     let allIncompleteRegistrations = [
@@ -345,13 +366,11 @@ router.get("/incomplete-registrations", async (req, res) => {
       ...newUserPlaceholders,
     ];
 
-    // Apply inactivity threshold filter in memory rather than in SQL
-    // This ensures we filter based on the exact hours of inactivity
+    // Apply inactivity threshold filter
     if (inactivityThreshold > 0) {
       allIncompleteRegistrations = allIncompleteRegistrations.filter(
         (reg) => reg.inactive >= inactivityThreshold
       );
-    } else {
     }
 
     // Sort by last updated/created date

@@ -397,8 +397,38 @@ app.use((err, req, res, next) => {
 });
 
 // Health check route
-app.get("/api/health", (req, res) => {
-  res.json({ status: "OK", message: "Server is running" });
+app.get("/api/health", async (req, res) => {
+  try {
+    const { testConnection, getPoolStats } = require('./config/database');
+    
+    // Test database connection
+    const dbHealthy = await testConnection();
+    const poolStats = getPoolStats();
+    
+    const health = {
+      status: dbHealthy ? "OK" : "DEGRADED",
+      timestamp: new Date().toISOString(),
+      server: {
+        uptime: process.uptime(),
+        memory: process.memoryUsage(),
+        nodeVersion: process.version
+      },
+      database: {
+        connected: dbHealthy,
+        pool: poolStats
+      }
+    };
+    
+    const statusCode = dbHealthy ? 200 : 503;
+    res.status(statusCode).json(health);
+  } catch (error) {
+    console.error('Health check error:', error);
+    res.status(503).json({ 
+      status: "ERROR", 
+      message: "Health check failed",
+      error: error.message 
+    });
+  }
 });
 
 // Serve dashboard pages
@@ -420,6 +450,35 @@ app.get("/dashboard/documents", (req, res) => {
 initReportEmailScheduler();
 
 const PORT = process.env.PORT || 3000;
-app.listen(PORT, () => {
-  console.log(`Server is running on port ${PORT}`);
-});
+
+// Start server with database connection check
+async function startServer() {
+  try {
+    // Test database connection before starting server
+    console.log('🔍 Testing database connection...');
+    const { testConnection } = require('./config/database');
+    const dbConnected = await testConnection();
+    
+    if (!dbConnected) {
+      console.error('⚠️  Server starting WITHOUT database connection');
+      console.error('   The application will continue but database operations will fail');
+      console.error('   Please check your database configuration and restart the server');
+    }
+    
+    // Start the HTTP server
+    app.listen(PORT, () => {
+      console.log(`Server is running on port ${PORT}`);
+      if (dbConnected) {
+        console.log('✅ All systems operational');
+      } else {
+        console.log('⚠️  Server running with database connection issues');
+      }
+    });
+  } catch (error) {
+    console.error('❌ Failed to start server:', error);
+    process.exit(1);
+  }
+}
+
+// Start the server
+startServer();

@@ -46,16 +46,36 @@ const authenticateToken = async (req, res, next) => {
       next();
     } catch (error) {
       // Database error handling
-      if (error.code === "ETIMEDOUT") {
-        console.error("Database timeout, attempting reconnection...");
+      if (error.code === "ETIMEDOUT" || error.code === "ECONNREFUSED") {
+        console.error("❌ Database connection timeout in authMiddleware:", {
+          code: error.code,
+          message: error.message,
+          path: req.path
+        });
+        return res.status(503).json({
+          message: "Database connection timeout. Please try again in a moment.",
+          code: "DB_TIMEOUT"
+        });
+      } else if (error.code === "ER_ACCESS_DENIED_ERROR") {
+        console.error("❌ Database access denied in authMiddleware");
         return res.status(500).json({
-          message: "Database connection error. Please refresh the page.",
+          message: "Database configuration error. Please contact support.",
+          code: "DB_CONFIG_ERROR"
+        });
+      } else if (error.code === "PROTOCOL_CONNECTION_LOST") {
+        console.error("❌ Database connection lost in authMiddleware");
+        return res.status(503).json({
+          message: "Database connection lost. Please try again.",
+          code: "DB_CONNECTION_LOST"
         });
       }
+      
       console.error("JWT verification error:", error);
       res.status(403).json({ message: "Token verification failed" });
     } finally {
-      conn.release();
+      if (conn) {
+        conn.release();
+      }
     }
   } catch (error) {
     if (error.name === "TokenExpiredError") {
