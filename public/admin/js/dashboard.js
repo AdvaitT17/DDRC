@@ -4765,5 +4765,585 @@ style.textContent = `
   .nested-values .form-field:not(:last-child) {
     margin-bottom: 0.75rem;
   }
+  
+  /* Mobile menu toggle button - hidden by default */
+  .mobile-menu-toggle {
+    display: none;
+    background: none;
+    border: none;
+    color: white;
+    padding: 8px;
+    cursor: pointer;
+    border-radius: 4px;
+    transition: background-color 0.2s;
+    -webkit-tap-highlight-color: transparent;
+  }
+  
+  .mobile-menu-toggle:hover {
+    background: rgba(255, 255, 255, 0.1);
+  }
+  
+  .mobile-menu-toggle:active {
+    background: rgba(255, 255, 255, 0.2);
+  }
+  
+  /* Admin header and navigation responsive styles */
+  @media (max-width: 992px) {
+    /* Show mobile menu toggle */
+    .mobile-menu-toggle {
+      display: block;
+      position: relative;
+      z-index: 1001;
+    }
+    
+    /* Make top bar responsive */
+    .admin-top-bar {
+      padding: 10px 15px;
+      position: relative;
+    }
+    
+    /* Hide left links by default on mobile */
+    .admin-top-bar .left-links {
+      position: fixed;
+      top: 0;
+      left: -100%;
+      width: 280px;
+      height: 100vh;
+      background: var(--primary-color);
+      flex-direction: column;
+      gap: 0;
+      padding: 60px 0 20px 0;
+      transition: left 0.3s ease;
+      z-index: 1000;
+      box-shadow: 2px 0 10px rgba(0, 0, 0, 0.1);
+      overflow-y: auto;
+    }
+    
+    /* Show menu when active */
+    .admin-top-bar .left-links.mobile-menu-open {
+      left: 0;
+    }
+    
+    /* Style menu items for mobile */
+    .admin-top-bar .left-links a {
+      padding: 15px 20px;
+      border-radius: 0;
+      border-left: 4px solid transparent;
+      transition: all 0.2s;
+    }
+    
+    .admin-top-bar .left-links a:hover,
+    .admin-top-bar .left-links a.active {
+      background: rgba(255, 255, 255, 0.15);
+      border-left-color: white;
+    }
+    
+    /* Right links adjustments */
+    .admin-top-bar .right-links {
+      gap: 10px;
+    }
+    
+    #userInfo {
+      display: none;
+    }
+    
+    #logoutBtn {
+      padding: 8px 12px;
+      font-size: 0.875rem;
+    }
+    
+    /* Main header responsive - keep horizontal layout */
+    .main-header .logo-section {
+      padding: 1rem;
+      gap: 0.75rem;
+      align-items: center;
+    }
+    
+    .main-header .emblem-logo,
+    .main-header .ddrc-logo {
+      width: 50px;
+      height: 50px;
+      object-fit: contain;
+      flex-shrink: 0;
+    }
+    
+    .main-header .header-text {
+      flex: 1;
+      text-align: center;
+    }
+    
+    .main-header .header-text h1 {
+      font-size: 1rem;
+      margin: 0;
+      line-height: 1.3;
+    }
+    
+    .main-header .header-text p {
+      font-size: 0.7rem;
+      margin: 0.25rem 0 0;
+      line-height: 1.2;
+    }
+    
+    /* Stats grid responsive */
+    .stats-grid {
+      grid-template-columns: repeat(2, 1fr);
+      gap: 1rem;
+    }
+    
+    /* Admin content padding */
+    .admin-content {
+      padding: 15px;
+    }
+    
+    /* Dashboard header */
+    .dashboard-header h1 {
+      font-size: 1.5rem;
+    }
+  }
+  
+  @media (max-width: 576px) {
+    /* Stack stats vertically on very small screens */
+    .stats-grid {
+      grid-template-columns: 1fr;
+    }
+    
+    /* Make stat cards more compact */
+    .stat-card {
+      padding: 1rem;
+    }
+    
+    .stat-icon {
+      width: 3rem;
+      height: 3rem;
+    }
+    
+    .stat-value {
+      font-size: 1.5rem;
+    }
+    
+    /* Header even more compact on small mobile */
+    .main-header .logo-section {
+      padding: 0.75rem 0.5rem;
+      gap: 0.5rem;
+    }
+    
+    .main-header .emblem-logo,
+    .main-header .ddrc-logo {
+      width: 40px;
+      height: 40px;
+      object-fit: contain;
+    }
+    
+    .main-header .header-text h1 {
+      font-size: 0.875rem;
+      line-height: 1.2;
+    }
+    
+    .main-header .header-text p {
+      font-size: 0.625rem;
+      line-height: 1.1;
+    }
+    
+    /* Hide second line of subtext on very small screens */
+    .main-header .header-text p:last-child {
+      display: none;
+    }
+    
+    /* Mobile menu full width */
+    .admin-top-bar .left-links {
+      width: 100%;
+      left: -100%;
+    }
+    
+    /* Logout button: show text, no icon (mobile) */
+    #logoutBtn {
+      font-size: 0.875rem;
+      padding: 6px 12px;
+      min-width: auto;
+      min-height: auto;
+    }
+    
+    #logoutBtn::before {
+      content: none;
+    }
+  }
+  
+  /* Overlay for mobile menu */
+  .mobile-menu-overlay {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.5);
+    z-index: 999;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+  }
+  
+  .mobile-menu-overlay.active {
+    display: block;
+    opacity: 1;
+  }
+  
+  /* Fullscreen modal styles */
+  #applicationModal.fullscreen {
+    padding: 0 !important;
+  }
+  
+  #applicationModal.fullscreen .modal-dialog {
+    width: 100vw !important;
+    height: 100vh !important;
+    max-width: 100vw !important;
+    margin: 0 !important;
+    padding: 0 !important;
+  }
+  
+  #applicationModal.fullscreen .modal-content {
+    height: 100vh !important;
+    border-radius: 0 !important;
+    border: none !important;
+  }
+  
+  #applicationModal.fullscreen .modal-body {
+    max-height: calc(100vh - 140px) !important;
+    overflow-y: auto;
+  }
+  
+  #applicationModal.fullscreen .modal-dialog-centered {
+    align-items: flex-start !important;
+    min-height: 100vh !important;
+  }
+  
+  /* Fullscreen button styles */
+  #fullscreenBtn {
+    background: none;
+    border: none;
+    padding: 8px 12px;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    color: #fff;
+    border-radius: 4px;
+    transition: all 0.2s ease;
+    -webkit-tap-highlight-color: transparent;
+  }
+  
+  #fullscreenBtn:hover {
+    background-color: rgba(255, 255, 255, 0.1);
+  }
+  
+  #fullscreenBtn:active {
+    background-color: rgba(255, 255, 255, 0.2);
+  }
+  
+  #fullscreenBtn svg {
+    stroke: #fff;
+  }
+  
+  /* Mobile-specific styles */
+  @media (max-width: 768px) {
+    /* Make modal full-width on mobile by default */
+    #applicationModal .modal-dialog {
+      max-width: 100%;
+      margin: 0.5rem;
+    }
+    
+    #applicationModal .modal-content {
+      border-radius: 0.5rem;
+    }
+    
+    /* Stack action buttons vertically on mobile */
+    #applicationModal .modal-footer {
+      flex-direction: column-reverse;
+      gap: 0.5rem;
+    }
+    
+    #applicationModal .modal-footer .action-buttons {
+      display: flex;
+      flex-direction: column;
+      width: 100%;
+      gap: 0.5rem;
+    }
+    
+    #applicationModal .modal-footer .action-buttons button,
+    #applicationModal .modal-footer > button {
+      width: 100%;
+      margin: 0 !important;
+    }
+    
+    /* Adjust header buttons for mobile */
+    #applicationModal .modal-header .header-actions {
+      display: flex;
+      align-items: center;
+      gap: 0.25rem;
+    }
+    
+    #applicationModal .modal-header #historyBtn {
+      padding: 6px 10px;
+      font-size: 0.875rem;
+    }
+    
+    #applicationModal .modal-header #historyBtn svg {
+      width: 14px;
+      height: 14px;
+    }
+    
+    /* Hide fullscreen button on mobile */
+    #fullscreenBtn {
+      display: none !important;
+    }
+    
+    /* Display all sections vertically - no horizontal scroll */
+    #applicationModal .application-sections.row {
+      display: block !important;
+      flex-direction: column;
+      overflow-x: visible !important;
+    }
+    
+    #applicationModal .form-section-column {
+      width: 100% !important;
+      max-width: 100% !important;
+      flex: none !important;
+      padding-left: 0 !important;
+      padding-right: 0 !important;
+    }
+    
+    /* Remove any row gutters */
+    #applicationModal .application-sections {
+      margin-left: 0 !important;
+      margin-right: 0 !important;
+    }
+    
+    /* Improve section spacing */
+    #applicationModal .form-section {
+      margin-bottom: 1.5rem;
+      width: 100%;
+    }
+    
+    #applicationModal .form-section:last-child {
+      margin-bottom: 0;
+    }
+    
+    /* Improve readability on mobile */
+    #applicationModal .form-field {
+      margin-bottom: 1rem;
+      padding: 0.75rem;
+      background-color: #f8f9fa;
+      border-radius: 0.375rem;
+    }
+    
+    #applicationModal .field-label {
+      font-size: 0.875rem;
+      margin-bottom: 0.5rem;
+      font-weight: 600;
+      color: #495057;
+    }
+    
+    #applicationModal .field-value {
+      font-size: 0.95rem;
+      color: #212529;
+      word-wrap: break-word;
+    }
+    
+    /* Section headings on mobile */
+    #applicationModal .form-section h5 {
+      font-size: 1.1rem;
+      margin-bottom: 1rem;
+      padding-bottom: 0.5rem;
+      border-bottom: 2px solid #e9ecef;
+    }
+    
+    /* Fullscreen adjustments for mobile */
+    #applicationModal.fullscreen .modal-dialog {
+      margin: 0 !important;
+    }
+    
+    #applicationModal.fullscreen .modal-content {
+      border-radius: 0 !important;
+    }
+    
+    #applicationModal.fullscreen .modal-body {
+      max-height: calc(100vh - 180px) !important;
+      padding: 1rem;
+    }
+    
+    /* Application header adjustments */
+    #applicationModal .application-header {
+      flex-direction: column;
+    }
+    
+    #applicationModal .application-header .d-flex {
+      flex-direction: column;
+      align-items: flex-start !important;
+      gap: 1rem;
+    }
+    
+    #applicationModal .application-header .text-end {
+      text-align: left !important;
+    }
+  }
+  
+  /* Extra small devices (phones in portrait mode) */
+  @media (max-width: 576px) {
+    #applicationModal .modal-dialog {
+      margin: 0;
+      max-width: 100%;
+    }
+    
+    #applicationModal .modal-content {
+      border-radius: 0;
+      height: 100vh;
+    }
+    
+    #applicationModal .modal-body {
+      max-height: calc(100vh - 200px);
+      overflow-y: auto;
+      -webkit-overflow-scrolling: touch;
+    }
+    
+    #applicationModal .modal-title {
+      font-size: 1.1rem;
+    }
+    
+    /* Hide text on History button, show only icon */
+    #applicationModal .modal-header #historyBtn {
+      padding: 8px;
+      min-width: 40px;
+      min-height: 40px;
+    }
+    
+    #applicationModal .modal-header #historyBtn svg {
+      width: 14px;
+      height: 14px;
+    }
+    
+    /* Make fullscreen the default behavior on very small screens */
+    #applicationModal.auto-fullscreen-mobile .modal-dialog {
+      width: 100vw !important;
+      height: 100vh !important;
+      max-width: 100vw !important;
+      margin: 0 !important;
+    }
+    
+    #applicationModal.auto-fullscreen-mobile .modal-content {
+      height: 100vh !important;
+      border-radius: 0 !important;
+    }
+  }
+  
+  /* Landscape mode on mobile */
+  @media (max-width: 768px) and (orientation: landscape) {
+    #applicationModal .modal-body {
+      max-height: calc(100vh - 140px);
+    }
+    
+    #applicationModal.fullscreen .modal-body {
+      max-height: calc(100vh - 120px) !important;
+    }
+  }
+  
+  /* Improve touch interactions */
+  @media (hover: none) and (pointer: coarse) {
+    #historyBtn,
+    #applicationModal .modal-footer button {
+      min-height: 44px;
+      min-width: 44px;
+    }
+    
+    #applicationModal .action-buttons button {
+      padding: 0.75rem 1rem;
+    }
+  }
 `;
 document.head.appendChild(style);
+
+// Toggle fullscreen function for the application modal
+function toggleFullscreen() {
+  const modal = document.getElementById('applicationModal');
+  if (!modal) return;
+  
+  const fullscreenBtn = document.getElementById('fullscreenBtn');
+  if (!fullscreenBtn) return; // Button might be hidden on mobile
+  
+  const fullscreenIcon = fullscreenBtn.querySelector('.fullscreen-icon');
+  const exitFullscreenIcon = fullscreenBtn.querySelector('.exit-fullscreen-icon');
+  if (!fullscreenIcon || !exitFullscreenIcon) return;
+  
+  if (modal.classList.contains('fullscreen')) {
+    // Exit fullscreen
+    modal.classList.remove('fullscreen');
+    fullscreenIcon.style.display = 'inline';
+    exitFullscreenIcon.style.display = 'none';
+    fullscreenBtn.setAttribute('title', 'Toggle Fullscreen');
+  } else {
+    // Enter fullscreen
+    modal.classList.add('fullscreen');
+    fullscreenIcon.style.display = 'none';
+    exitFullscreenIcon.style.display = 'inline';
+    fullscreenBtn.setAttribute('title', 'Exit Fullscreen');
+  }
+}
+
+// Reset fullscreen when modal is closed
+document.getElementById('applicationModal')?.addEventListener('hidden.bs.modal', function() {
+  this.classList.remove('fullscreen');
+  const fullscreenBtn = document.getElementById('fullscreenBtn');
+  if (fullscreenBtn) {
+    const fullscreenIcon = fullscreenBtn.querySelector('.fullscreen-icon');
+    const exitFullscreenIcon = fullscreenBtn.querySelector('.exit-fullscreen-icon');
+    fullscreenIcon.style.display = 'inline';
+    exitFullscreenIcon.style.display = 'none';
+    fullscreenBtn.setAttribute('title', 'Toggle Fullscreen');
+  }
+});
+
+// Mobile menu functionality
+document.addEventListener('DOMContentLoaded', function() {
+  const mobileMenuToggle = document.getElementById('mobileMenuToggle');
+  const leftLinks = document.getElementById('leftLinks');
+  
+  if (!mobileMenuToggle || !leftLinks) return;
+  
+  // Create overlay
+  const overlay = document.createElement('div');
+  overlay.className = 'mobile-menu-overlay';
+  document.body.appendChild(overlay);
+  
+  // Toggle menu function
+  function toggleMobileMenu() {
+    const isOpen = leftLinks.classList.contains('mobile-menu-open');
+    
+    if (isOpen) {
+      leftLinks.classList.remove('mobile-menu-open');
+      overlay.classList.remove('active');
+      document.body.style.overflow = '';
+    } else {
+      leftLinks.classList.add('mobile-menu-open');
+      overlay.classList.add('active');
+      document.body.style.overflow = 'hidden';
+    }
+  }
+  
+  // Event listeners
+  mobileMenuToggle.addEventListener('click', toggleMobileMenu);
+  overlay.addEventListener('click', toggleMobileMenu);
+  
+  // Close menu when clicking a link
+  leftLinks.querySelectorAll('a').forEach(link => {
+    link.addEventListener('click', function() {
+      if (window.innerWidth <= 992) {
+        toggleMobileMenu();
+      }
+    });
+  });
+  
+  // Close menu on window resize if opened
+  window.addEventListener('resize', function() {
+    if (window.innerWidth > 992 && leftLinks.classList.contains('mobile-menu-open')) {
+      toggleMobileMenu();
+    }
+  });
+});

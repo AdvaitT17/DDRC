@@ -37,7 +37,7 @@ class LogbookManager {
               <div class="header-text">
                 <h1>District Disability Rehabilitation Centre, Mumbai</h1>
                 <p>Department of Empowerment of Persons with Disabilities,</p>
-                <p>Ministry of Social Justice and Empowerment, Govt. of India</p>
+                <p>Ministry of Social Justice and Empowerment</p>
               </div>
               <img src="/images/ddrc-logo.png" alt="DDRC Logo" class="ddrc-logo" />
             </div>
@@ -199,15 +199,15 @@ class LogbookManager {
       .map(
         (log) => `
       <tr>
-        <td>${new Date(log.performed_at).toLocaleString()}</td>
-        <td>${log.user_name}</td>
-        <td>
+        <td data-label="Timestamp">${new Date(log.performed_at).toLocaleString()}</td>
+        <td data-label="Staff">${log.user_name}</td>
+        <td data-label="Action">
           <span class="action-badge ${log.action_type}">
             ${this.formatActionType(log.action_type)}
           </span>
         </td>
-        <td>${log.application_id || "-"}</td>
-        <td class="details-cell">${this.formatDetails(log)}</td>
+        <td data-label="Application ID">${log.application_id || "-"}</td>
+        <td data-label="Details" class="details-cell">${this.formatDetails(log)}</td>
       </tr>
     `
       )

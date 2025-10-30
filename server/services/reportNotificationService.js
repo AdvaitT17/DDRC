@@ -216,9 +216,9 @@ class ReportNotificationService {
         // Create new notification
         const [result] = await pool.query(
           `INSERT INTO report_notifications 
-           (report_id, user_id, enabled, frequency, next_scheduled_at) 
-           VALUES (?, ?, ?, ?, ?)`,
-          [reportId, userId, enabled, 'monthly', nextScheduledAt]
+           (report_id, user_id, enabled, next_scheduled_at) 
+           VALUES (?, ?, ?, ?)`,
+          [reportId, userId, enabled, nextScheduledAt]
         );
         notificationId = result.insertId;
       }
