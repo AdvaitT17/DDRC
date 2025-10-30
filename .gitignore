@@ -11,6 +11,7 @@ dist
 dist-ssr
 *.local
 database
+*.md
 server/scripts/
 server/uploads/
 uploads/

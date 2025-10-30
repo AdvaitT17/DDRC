@@ -137,6 +137,102 @@ class RegistrationFormRenderer {
 
     // Populate saved values after rendering the form
     this.populateSavedValues();
+    
+    // Add real-time validation listeners
+    this.addValidationListeners();
+  }
+  
+  addValidationListeners() {
+    const form = document.getElementById("sectionForm");
+    if (!form) return;
+    
+    const inputs = form.querySelectorAll('input[type="text"], input[type="email"], input[type="tel"], input[type="number"]');
+    
+    inputs.forEach((input) => {
+      // Clear validation on input (as user types)
+      input.addEventListener('input', function() {
+        this.setCustomValidity("");
+        this.classList.remove('is-invalid');
+        this.classList.remove('is-valid');
+      });
+      
+      // Add blur event for validation feedback
+      input.addEventListener('blur', function() {
+        // Always clear previous custom validity first
+        this.setCustomValidity("");
+        
+        // Skip validation if empty and not required
+        if (!this.value && !this.required) {
+          this.classList.remove('is-invalid');
+          this.classList.remove('is-valid');
+          return;
+        }
+        
+        // Only validate if there's a value
+        if (this.value) {
+          // Check pattern (only if pattern attribute exists)
+          if (this.hasAttribute('pattern')) {
+            const regex = new RegExp(`^${this.pattern}$`);
+            if (!regex.test(this.value)) {
+              const errorMsg = this.title || "Please match the required format";
+              this.setCustomValidity(errorMsg);
+              this.classList.add('is-invalid');
+              this.classList.remove('is-valid');
+              return;
+            }
+          }
+          
+          // Check min/max for numbers (only if attributes exist)
+          if (this.type === "number") {
+            const numValue = parseFloat(this.value);
+            if (this.hasAttribute('min') && numValue < parseFloat(this.min)) {
+              const errorMsg = this.title || `Value must be at least ${this.min}`;
+              this.setCustomValidity(errorMsg);
+              this.classList.add('is-invalid');
+              this.classList.remove('is-valid');
+              return;
+            }
+            if (this.hasAttribute('max') && numValue > parseFloat(this.max)) {
+              const errorMsg = this.title || `Value must be at most ${this.max}`;
+              this.setCustomValidity(errorMsg);
+              this.classList.add('is-invalid');
+              this.classList.remove('is-valid');
+              return;
+            }
+          }
+          
+          // Check length (only if attributes exist)
+          if (this.hasAttribute('minlength')) {
+            const minLen = parseInt(this.getAttribute('minlength'));
+            if (this.value.length < minLen) {
+              const errorMsg = this.title || `Minimum length is ${minLen} characters`;
+              this.setCustomValidity(errorMsg);
+              this.classList.add('is-invalid');
+              this.classList.remove('is-valid');
+              return;
+            }
+          }
+          if (this.hasAttribute('maxlength')) {
+            const maxLen = parseInt(this.getAttribute('maxlength'));
+            if (this.value.length > maxLen) {
+              const errorMsg = this.title || `Maximum length is ${maxLen} characters`;
+              this.setCustomValidity(errorMsg);
+              this.classList.add('is-invalid');
+              this.classList.remove('is-valid');
+              return;
+            }
+          }
+          
+          // If we got here, the value is valid
+          this.classList.remove('is-invalid');
+          this.classList.add('is-valid');
+        } else if (this.required) {
+          // Field is required but empty
+          this.classList.add('is-invalid');
+          this.classList.remove('is-valid');
+        }
+      });
+    });
   }
 
   async populateSavedValues() {
@@ -248,23 +344,95 @@ class RegistrationFormRenderer {
     let inputType = field.field_type;
     let errorMessage = "This field is required";
 
-    if (field.field_type === "tel") {
-      validationAttrs = `
-        pattern="[0-9]{10}"
-        minlength="10"
-        maxlength="10"
-        title="Please enter a valid 10-digit phone number"
-      `;
-      errorMessage = "Please enter a valid 10-digit phone number";
-    } else if (field.field_type === "alphanumeric") {
-      inputType = "text";
-      validationAttrs = `
-        pattern="[A-Za-z0-9]+"
-        title="Please enter only letters and numbers (no spaces or special characters)"
-      `;
-      errorMessage = "Please enter only letters and numbers (no spaces or special characters)";
+    // Parse custom validation rules if they exist
+    let validationRules = {};
+    if (field.validation_rules) {
+      try {
+        validationRules = typeof field.validation_rules === "string" 
+          ? JSON.parse(field.validation_rules) 
+          : field.validation_rules;
+        
+        // Strip ^ and $ anchors from pattern if present (HTML pattern adds them automatically)
+        if (validationRules.pattern) {
+          validationRules.pattern = validationRules.pattern
+            .replace(/^\^/, '')  // Remove leading ^
+            .replace(/\$$/, ''); // Remove trailing $
+        }
+      } catch (e) {
+        console.error("Error parsing validation rules:", e);
+      }
     }
 
+    // Default validation for phone fields (can be overridden by custom rules)
+    if (field.field_type === "tel") {
+      validationAttrs = `
+        pattern="${validationRules.pattern || "[0-9]{10}"}"
+        minlength="${validationRules.minLength || 10}"
+        maxlength="${validationRules.maxLength || 10}"
+        title="${validationRules.message || "Please enter a valid 10-digit phone number"}"
+      `;
+      errorMessage = validationRules.message || "Please enter a valid 10-digit phone number";
+    } 
+    // Default validation for alphanumeric fields (can be overridden by custom rules)
+    else if (field.field_type === "alphanumeric") {
+      inputType = "text";
+      validationAttrs = `
+        pattern="${validationRules.pattern || "[A-Za-z0-9]+"}"
+        title="${validationRules.message || "Please enter only letters and numbers (no spaces or special characters)"}"
+      `;
+      errorMessage = validationRules.message || "Please enter only letters and numbers (no spaces or special characters)";
+      
+      if (validationRules.minLength) {
+        validationAttrs += ` minlength="${validationRules.minLength}"`;
+      }
+      if (validationRules.maxLength) {
+        validationAttrs += ` maxlength="${validationRules.maxLength}"`;
+      }
+    }
+    // Apply custom validation rules for other text-based fields
+    else if (["text", "email"].includes(field.field_type) && Object.keys(validationRules).length > 0) {
+      const parts = [];
+      
+      if (validationRules.pattern) {
+        parts.push(`pattern="${validationRules.pattern}"`);
+      }
+      if (validationRules.minLength) {
+        parts.push(`minlength="${validationRules.minLength}"`);
+      }
+      if (validationRules.maxLength) {
+        parts.push(`maxlength="${validationRules.maxLength}"`);
+      }
+      if (validationRules.message) {
+        parts.push(`title="${validationRules.message}"`);
+        errorMessage = validationRules.message;
+      }
+      
+      validationAttrs = parts.join(" ");
+    }
+    // Number field validation
+    else if (field.field_type === "number" && Object.keys(validationRules).length > 0) {
+      const parts = [];
+      
+      if (validationRules.min !== undefined) {
+        parts.push(`min="${validationRules.min}"`);
+      }
+      if (validationRules.max !== undefined) {
+        parts.push(`max="${validationRules.max}"`);
+      }
+      if (validationRules.pattern) {
+        parts.push(`pattern="${validationRules.pattern}"`);
+      }
+      if (validationRules.message) {
+        parts.push(`title="${validationRules.message}"`);
+        errorMessage = validationRules.message;
+      }
+      
+      validationAttrs = parts.join(" ");
+    }
+
+    // Escape HTML entities in error message
+    const escapedErrorMessage = errorMessage.replace(/"/g, '&quot;').replace(/'/g, '&#39;');
+    
     return `
       <div class="mb-3">
         <label for="${field.name}" class="form-label">
@@ -282,7 +450,7 @@ class RegistrationFormRenderer {
           value="${this.savedResponses[field.id] || ""}"
         />
         <div class="invalid-feedback">
-          ${errorMessage}
+          ${escapedErrorMessage}
         </div>
       </div>
     `;

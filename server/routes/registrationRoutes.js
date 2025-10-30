@@ -6,6 +6,7 @@ const { authenticateToken } = require("../middleware/authMiddleware");
 const pool = require("../config/database");
 const path = require("path");
 const fs = require("fs");
+const validationService = require("../services/validationService");
 
 // Configure multer for file uploads
 const storage = multer.diskStorage({
@@ -75,6 +76,16 @@ router.post("/progress", authenticateToken, upload.any(), async (req, res) => {
     const formData = req.body;
     const currentSectionId = formData.current_section_id;
     delete formData.current_section_id; // Remove from formData to not save as response
+
+    // Validate form data against field validation rules
+    const validation = await validationService.validateFormData(formData, currentSectionId);
+    
+    if (!validation.isValid) {
+      return res.status(400).json({
+        message: "Validation failed",
+        errors: validation.errors
+      });
+    }
 
     // Get or create registration progress
     const [progress] = await pool.query(
@@ -155,20 +166,43 @@ router.post("/submit", authenticateToken, async (req, res) => {
       });
     }
 
+    // Get the user's in-progress registration to validate all responses
+    const [progress] = await pool.query(
+      `SELECT id FROM registration_progress 
+       WHERE user_id = ? AND status = 'in_progress'`,
+      [req.user.id]
+    );
+
+    if (progress.length === 0) {
+      return res.status(400).json({ message: "No registration in progress" });
+    }
+
+    // Get all responses for this registration
+    const [responses] = await pool.query(
+      `SELECT field_id, value FROM registration_responses 
+       WHERE registration_id = ?`,
+      [progress[0].id]
+    );
+
+    // Convert responses to object for validation
+    const formData = {};
+    responses.forEach(r => {
+      formData[r.field_id] = r.value;
+    });
+
+    // Validate all form data before final submission
+    const validation = await validationService.validateFormData(formData);
+    
+    if (!validation.isValid) {
+      return res.status(400).json({
+        message: "Form validation failed. Please review all sections.",
+        errors: validation.errors
+      });
+    }
+
     const conn = await pool.getConnection();
     try {
       await conn.beginTransaction();
-
-      // Get the user's in-progress registration
-      const [progress] = await conn.query(
-        `SELECT id FROM registration_progress 
-         WHERE user_id = ? AND status = 'in_progress'`,
-        [req.user.id]
-      );
-
-      if (progress.length === 0) {
-        throw new Error("No registration in progress");
-      }
 
       // Generate application ID (Year-Month-Sequential Number)
       const [lastApp] = await conn.query(
