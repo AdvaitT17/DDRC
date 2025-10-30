@@ -18,7 +18,7 @@ router.get("/sections", async (req, res) => {
     // Get fields for all sections
     const [fields] = await pool.query(
       `SELECT id, section_id, name, display_name, field_type, is_required, 
-              options, order_index, max_file_size, allowed_types
+              options, order_index, max_file_size, allowed_types, validation_rules
        FROM form_fields 
        ORDER BY order_index`
     );
@@ -124,8 +124,8 @@ router.post(
 
       const [result] = await pool.query(
         `INSERT INTO form_fields 
-         (section_id, name, display_name, field_type, is_required, options, order_index, max_file_size, allowed_types) 
-         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+         (section_id, name, display_name, field_type, is_required, options, order_index, max_file_size, allowed_types, validation_rules) 
+         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
         [
           req.params.sectionId,
           name,
@@ -136,6 +136,7 @@ router.post(
           orderIndex,
           field_type === "file" ? max_file_size : null,
           field_type === "file" ? allowed_types : null,
+          validation_rules ? JSON.stringify(validation_rules) : null,
         ]
       );
 
@@ -212,6 +213,7 @@ router.put(
         options,
         max_file_size,
         allowed_types,
+        validation_rules,
       } = req.body;
 
       // For radio fields, structure the options object
@@ -231,7 +233,8 @@ router.put(
            is_required = ?, 
            options = ?,
            max_file_size = ?,
-           allowed_types = ?
+           allowed_types = ?,
+           validation_rules = ?
        WHERE id = ?`,
         [
           name,
@@ -241,6 +244,7 @@ router.put(
           JSON.stringify(optionsToStore),
           field_type === "file" ? max_file_size : null,
           field_type === "file" ? allowed_types : null,
+          validation_rules ? JSON.stringify(validation_rules) : null,
           req.params.id,
         ]
       );

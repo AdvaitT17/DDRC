@@ -175,11 +175,15 @@ function initializeFormEventListeners() {
     const nestedOptionsContainer = document.querySelector(
       ".nested-options-container"
     );
+    const validationRulesContainer = document.querySelector(".validation-rules-container");
+    const numberRangeContainer = document.querySelector(".number-range-container");
 
     // Reset all containers
     optionsContainer.style.display = "none";
     fileSizeContainer.style.display = "none";
     nestedOptionsContainer.style.display = "none";
+    validationRulesContainer.style.display = "none";
+    numberRangeContainer.style.display = "none";
 
     if (["select", "radio", "checkbox"].includes(e.target.value)) {
       optionsContainer.style.display = "block";
@@ -225,11 +229,92 @@ function initializeFormEventListeners() {
       fileSizeContainer.style.display = "block";
     } else if (e.target.value === "nested-select") {
       nestedOptionsContainer.style.display = "block";
+    } else if (["text", "alphanumeric", "email", "tel"].includes(e.target.value)) {
+      // Show validation rules for text-based fields
+      validationRulesContainer.style.display = "block";
+    } else if (e.target.value === "number") {
+      // Show both validation rules and number range for number fields
+      validationRulesContainer.style.display = "block";
+      numberRangeContainer.style.display = "block";
     }
   });
 
   // Save Field button
   document.getElementById("saveFieldBtn").addEventListener("click", saveField);
+  
+  // Pattern tester functionality
+  setupPatternTester();
+}
+
+function setupPatternTester() {
+  const patternInput = document.getElementById("validationPattern");
+  const patternTesterContainer = document.getElementById("patternTesterContainer");
+  const patternTestInput = document.getElementById("patternTestInput");
+  const patternTestResult = document.getElementById("patternTestResult");
+  
+  if (!patternInput || !patternTesterContainer) return;
+  
+  // Show/hide pattern tester based on whether pattern is entered
+  patternInput.addEventListener('input', function() {
+    if (this.value.trim()) {
+      patternTesterContainer.style.display = 'block';
+      testPattern();
+    } else {
+      patternTesterContainer.style.display = 'none';
+      patternTestResult.innerHTML = '';
+    }
+  });
+  
+  // Test pattern as user types in test input
+  patternTestInput.addEventListener('input', testPattern);
+  
+  function testPattern() {
+    const pattern = patternInput.value.trim();
+    const testValue = patternTestInput.value;
+    
+    if (!pattern) {
+      patternTestResult.innerHTML = '';
+      return;
+    }
+    
+    // Strip ^ and $ if present (since HTML pattern adds them automatically)
+    const cleanPattern = pattern.replace(/^\^/, '').replace(/\$$/, '');
+    
+    try {
+      const regex = new RegExp(`^${cleanPattern}$`);
+      
+      if (!testValue) {
+        patternTestResult.innerHTML = `
+          <div class="alert alert-secondary mb-0">
+            <small>Enter a test value to see if it matches the pattern</small>
+          </div>
+        `;
+        return;
+      }
+      
+      const matches = regex.test(testValue);
+      
+      if (matches) {
+        patternTestResult.innerHTML = `
+          <div class="alert alert-success mb-0">
+            <strong>✅ Valid!</strong> "${testValue}" matches the pattern
+          </div>
+        `;
+      } else {
+        patternTestResult.innerHTML = `
+          <div class="alert alert-danger mb-0">
+            <strong>❌ Invalid!</strong> "${testValue}" does not match the pattern
+          </div>
+        `;
+      }
+    } catch (error) {
+      patternTestResult.innerHTML = `
+        <div class="alert alert-warning mb-0">
+          <strong>⚠️ Invalid Pattern!</strong> ${error.message}
+        </div>
+      `;
+    }
+  }
 }
 
 function renderFormSections(sections) {
@@ -431,6 +516,36 @@ async function saveField() {
     fieldData.options = nestedConfig;
   }
 
+  // Add validation rules for applicable field types
+  if (["text", "alphanumeric", "email", "tel", "number"].includes(fieldType)) {
+    const validationRules = {};
+    
+    // Get custom pattern and message
+    const pattern = form.querySelector("#validationPattern")?.value.trim();
+    const message = form.querySelector("#validationMessage")?.value.trim();
+    const minLength = form.querySelector("#minLength")?.value;
+    const maxLength = form.querySelector("#maxLength")?.value;
+    
+    if (pattern) validationRules.pattern = pattern;
+    if (message) validationRules.message = message;
+    if (minLength) validationRules.minLength = parseInt(minLength);
+    if (maxLength) validationRules.maxLength = parseInt(maxLength);
+    
+    // Add number-specific validation
+    if (fieldType === "number") {
+      const minValue = form.querySelector("#minValue")?.value;
+      const maxValue = form.querySelector("#maxValue")?.value;
+      
+      if (minValue) validationRules.min = parseFloat(minValue);
+      if (maxValue) validationRules.max = parseFloat(maxValue);
+    }
+    
+    // Only add validation_rules if there are any rules
+    if (Object.keys(validationRules).length > 0) {
+      fieldData.validation_rules = validationRules;
+    }
+  }
+
   try {
     const url = fieldId
       ? `/api/form/fields/${fieldId}`
@@ -560,6 +675,47 @@ function resetFieldForm() {
   form.querySelector("#required").checked = false;
   form.querySelector("#options").value = "";
   form.querySelector(".field-options-container").style.display = "none";
+  form.querySelector(".file-size-container").style.display = "none";
+  form.querySelector(".nested-options-container").style.display = "none";
+  
+  // Reset validation rules fields
+  if (form.querySelector("#validationPattern")) {
+    form.querySelector("#validationPattern").value = "";
+  }
+  if (form.querySelector("#validationMessage")) {
+    form.querySelector("#validationMessage").value = "";
+  }
+  if (form.querySelector("#minLength")) {
+    form.querySelector("#minLength").value = "";
+  }
+  if (form.querySelector("#maxLength")) {
+    form.querySelector("#maxLength").value = "";
+  }
+  if (form.querySelector("#minValue")) {
+    form.querySelector("#minValue").value = "";
+  }
+  if (form.querySelector("#maxValue")) {
+    form.querySelector("#maxValue").value = "";
+  }
+  
+  // Reset pattern tester
+  const patternTesterContainer = form.querySelector("#patternTesterContainer");
+  const patternTestInput = form.querySelector("#patternTestInput");
+  const patternTestResult = form.querySelector("#patternTestResult");
+  if (patternTesterContainer) {
+    patternTesterContainer.style.display = "none";
+  }
+  if (patternTestInput) {
+    patternTestInput.value = "";
+  }
+  if (patternTestResult) {
+    patternTestResult.innerHTML = "";
+  }
+  
+  // Show validation rules container for default "text" field type
+  form.querySelector(".validation-rules-container").style.display = "block";
+  form.querySelector(".number-range-container").style.display = "none";
+  
   delete form.dataset.fieldId;
 }
 
@@ -741,6 +897,43 @@ function populateFieldForm(field) {
     } catch (e) {
       console.error("Error setting up nested config:", e);
       addDefaultLevel(levelsContainer);
+    }
+  }
+  
+  // Handle validation rules for applicable field types
+  const validationRulesContainer = form.querySelector(".validation-rules-container");
+  const numberRangeContainer = form.querySelector(".number-range-container");
+  
+  // Reset containers
+  validationRulesContainer.style.display = "none";
+  numberRangeContainer.style.display = "none";
+  
+  if (["text", "alphanumeric", "email", "tel", "number"].includes(field.field_type)) {
+    validationRulesContainer.style.display = "block";
+    
+    // Parse validation rules if they exist
+    let validationRules = {};
+    if (field.validation_rules) {
+      try {
+        validationRules = typeof field.validation_rules === "string" 
+          ? JSON.parse(field.validation_rules) 
+          : field.validation_rules;
+      } catch (e) {
+        console.error("Error parsing validation rules:", e);
+      }
+    }
+    
+    // Populate validation fields
+    form.querySelector("#validationPattern").value = validationRules.pattern || "";
+    form.querySelector("#validationMessage").value = validationRules.message || "";
+    form.querySelector("#minLength").value = validationRules.minLength || "";
+    form.querySelector("#maxLength").value = validationRules.maxLength || "";
+    
+    // Show number range for number fields
+    if (field.field_type === "number") {
+      numberRangeContainer.style.display = "block";
+      form.querySelector("#minValue").value = validationRules.min !== undefined ? validationRules.min : "";
+      form.querySelector("#maxValue").value = validationRules.max !== undefined ? validationRules.max : "";
     }
   }
 }

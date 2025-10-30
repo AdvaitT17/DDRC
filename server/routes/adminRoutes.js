@@ -800,6 +800,21 @@ router.put(
       const { id, field_id } = req.params;
       const { value, reason, user_consent, original_file_name } = req.body;
       const userId = req.user.id;
+      
+      // Validate admin input (warning only, doesn't block)
+      let validationWarnings = null;
+      if (value && value !== "__FILE_REMOVED__") {
+        const validationService = require('../services/validationService');
+        const validation = await validationService.validateFormData({
+          [field_id]: value
+        });
+        
+        // Log validation warnings but don't block admin
+        if (!validation.isValid) {
+          console.warn(`Admin edit validation warning for field ${field_id}:`, validation.errors);
+          validationWarnings = validation.errors;
+        }
+      }
 
       // Get the registration ID from the application ID
       const [registration] = await pool.query(
@@ -893,6 +908,7 @@ router.put(
 
       res.json({
         message: "Response updated successfully",
+        validationWarnings: validationWarnings, // Include warnings if any
         updatedBy: userInfo[0].full_name,
         updatedAt: new Date().toISOString(),
         field: fieldInfo[0].name,
@@ -934,6 +950,24 @@ router.put(
       }
 
       const registrationId = registration[0].id;
+      
+      // Validate all changes (warning only, doesn't block)
+      const validationService = require('../services/validationService');
+      const allValidationWarnings = [];
+      
+      for (const response of responses) {
+        if (response.value && response.value !== "__FILE_REMOVED__") {
+          const validation = await validationService.validateFormData({
+            [response.field_id]: response.value
+          });
+          
+          if (!validation.isValid) {
+            allValidationWarnings.push(...validation.errors);
+            console.warn(`Admin batch edit validation warning for field ${response.field_id}:`, validation.errors);
+          }
+        }
+      }
+      
       const conn = await pool.getConnection();
 
       try {
@@ -1040,6 +1074,7 @@ router.put(
           updatedBy: userInfo[0].full_name,
           updatedAt: new Date().toISOString(),
           editResults,
+          validationWarnings: allValidationWarnings.length > 0 ? allValidationWarnings : null
         });
       } catch (error) {
         await conn.rollback();

@@ -2593,6 +2593,15 @@ class DashboardManager {
         return response.json();
       })
       .then((data) => {
+        // Check for validation warnings
+        if (data.validationWarnings && data.validationWarnings.length > 0) {
+          const warningMessages = data.validationWarnings.map(w => 
+            `⚠️ ${w.fieldName}: ${w.message}`
+          ).join('\n');
+          
+          alert(`Changes saved successfully!\n\nValidation Warnings (informational only):\n${warningMessages}\n\nNote: Admin edits are allowed to override validation rules.`);
+        }
+        
         // Reset edited fields
         this.editedFields = {};
         this.updateSaveButtonState();

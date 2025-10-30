@@ -109,23 +109,81 @@ class RegistrationFormHandler {
       sessionStorage.setItem("applicationId", data.applicationId);
       window.location.href = `/registration/success?id=${data.applicationId}`;
     } catch (error) {
-      alert("Failed to submit form. Please try again.");
+      // Check if it's a validation error
+      if (error.message && error.message.includes("validation")) {
+        alert("Some fields have validation errors. Please review all sections and correct the errors before submitting.");
+      } else {
+        alert(error.message || "Failed to submit form. Please try again.");
+      }
     }
   }
 
   async validateAndSaveCurrentSection() {
     const form = document.getElementById("sectionForm");
 
-    // Custom validation for phone fields
-    const phoneInputs = form.querySelectorAll('input[type="tel"]');
+    // Custom validation for all input fields with patterns
+    const allInputs = form.querySelectorAll('input[type="text"], input[type="email"], input[type="tel"], input[type="number"]');
     let isValid = true;
 
-    phoneInputs.forEach((input) => {
-      if (input.value && !input.value.match(/^\d{10}$/)) {
-        input.setCustomValidity("Please enter a valid 10-digit phone number");
-        isValid = false;
-      } else {
-        input.setCustomValidity("");
+    allInputs.forEach((input) => {
+      // Clear previous custom validity
+      input.setCustomValidity("");
+      
+      // Skip if field is empty and not required
+      if (!input.value && !input.required) {
+        return;
+      }
+      
+      // Only validate if field has value
+      if (input.value) {
+        // Check pattern validity (only if pattern attribute exists)
+        if (input.hasAttribute('pattern')) {
+          const regex = new RegExp(`^${input.pattern}$`);
+          if (!regex.test(input.value)) {
+            // Use the title attribute as the error message, or a default
+            const errorMsg = input.title || "Please match the required format";
+            input.setCustomValidity(errorMsg);
+            isValid = false;
+            return; // Stop checking this input
+          }
+        }
+        
+        // Check min/max for number fields (only if attributes exist)
+        if (input.type === "number") {
+          const numValue = parseFloat(input.value);
+          if (input.hasAttribute('min') && numValue < parseFloat(input.min)) {
+            const errorMsg = input.title || `Value must be at least ${input.min}`;
+            input.setCustomValidity(errorMsg);
+            isValid = false;
+            return;
+          }
+          if (input.hasAttribute('max') && numValue > parseFloat(input.max)) {
+            const errorMsg = input.title || `Value must be at most ${input.max}`;
+            input.setCustomValidity(errorMsg);
+            isValid = false;
+            return;
+          }
+        }
+        
+        // Check minlength/maxlength (only if attributes exist)
+        if (input.hasAttribute('minlength')) {
+          const minLen = parseInt(input.getAttribute('minlength'));
+          if (input.value.length < minLen) {
+            const errorMsg = input.title || `Minimum length is ${minLen} characters`;
+            input.setCustomValidity(errorMsg);
+            isValid = false;
+            return;
+          }
+        }
+        if (input.hasAttribute('maxlength')) {
+          const maxLen = parseInt(input.getAttribute('maxlength'));
+          if (input.value.length > maxLen) {
+            const errorMsg = input.title || `Maximum length is ${maxLen} characters`;
+            input.setCustomValidity(errorMsg);
+            isValid = false;
+            return;
+          }
+        }
       }
     });
 
@@ -150,7 +208,19 @@ class RegistrationFormHandler {
       });
 
       if (!response.ok) {
-        throw new Error("Failed to save progress");
+        const errorData = await response.json();
+        
+        // Handle validation errors from server
+        if (errorData.errors && Array.isArray(errorData.errors)) {
+          const errorMessages = errorData.errors.map(err => 
+            `• ${err.fieldName}: ${err.message}`
+          ).join('\n');
+          
+          alert(`Validation failed:\n\n${errorMessages}\n\nPlease correct the errors and try again.`);
+        } else {
+          throw new Error(errorData.message || "Failed to save progress");
+        }
+        return false;
       }
 
       return true;
