@@ -14,12 +14,14 @@ const transporter = nodemailer.createTransport({
   },
 });
 
-// Verify the transporter
+// Verify the transporter (callback-based, non-blocking)
 transporter.verify((error) => {
   if (error) {
-    console.error("Email service error:", error);
+    console.error("⚠️  Email service error:", error.message);
+    console.error("   Email notifications will not work until this is fixed");
+    console.error("   Check EMAIL_USER and EMAIL_PASSWORD in .env");
   } else {
-    console.log("Email service is ready to send messages");
+    console.log("✅ Email service is ready to send messages");
   }
 });
 
