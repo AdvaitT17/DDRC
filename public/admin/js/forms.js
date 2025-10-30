@@ -37,7 +37,7 @@ class FormManager {
               <div class="header-text">
                 <h1>District Disability Rehabilitation Centre, Mumbai</h1>
                 <p>Department of Empowerment of Persons with Disabilities,</p>
-                <p>Ministry of Social Justice and Empowerment, Govt. of India</p>
+                <p>Ministry of Social Justice and Empowerment</p>
               </div>
               <img src="/images/ddrc-logo.png" alt="DDRC Logo" class="ddrc-logo" />
             </div>

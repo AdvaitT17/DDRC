@@ -1107,7 +1107,14 @@
     <!-- Main content will be hidden until auth check -->
     <div id="mainContent" style="display: none">
       <div class="admin-top-bar">
-        <div class="left-links">
+        <button class="mobile-menu-toggle" id="mobileMenuToggle" aria-label="Toggle menu">
+          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <line x1="3" y1="12" x2="21" y2="12"></line>
+            <line x1="3" y1="6" x2="21" y2="6"></line>
+            <line x1="3" y1="18" x2="21" y2="18"></line>
+          </svg>
+        </button>
+        <div class="left-links" id="leftLinks">
           <a href="/admin/dashboard">Dashboard</a>
           <a href="/admin/reports" class="active">Reports</a>
           <a href="/admin/forms">Form Management</a>
@@ -1139,19 +1146,19 @@
           <div class="header-text">
             <h1>District Disability Rehabilitation Centre, Mumbai</h1>
             <p>Department of Empowerment of Persons with Disabilities,</p>
-            <p>Ministry of Social Justice and Empowerment, Govt. of India</p>
+            <p>Ministry of Social Justice and Empowerment</p>
           </div>
           <img src="/images/ddrc-logo.png" alt="DDRC Logo" class="ddrc-logo" />
         </div>
       </header>
 
-      <div class="admin-content">
-        <div class="dashboard-header">
-          <h1>Reports</h1>
-          <p class="text-muted">
-            Generate reports and analyze registration data
-          </p>
-        </div>
+        <div class="admin-content">
+          <div class="dashboard-header">
+              <div>
+                <h1>Reports</h1>
+                <p class="text-muted">Generate reports and analyze registration data</p>
+            </div>
+          </div>
 
         <!-- Cross Tabulation Report Generator -->
         <div class="report-card" id="crossTabReport">
@@ -1574,6 +1581,7 @@
     <!-- Add FileSaver.js for better cross-browser file saving -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/FileSaver.js/2.0.5/FileSaver.min.js"></script>
     <script src="/js/auth.js"></script>
+    <script src="/admin/js/mobile-menu.js"></script>
     <script src="/admin/js/reports.js"></script>
     <script src="/admin/js/enhancedFilters.js"></script>
   </body>

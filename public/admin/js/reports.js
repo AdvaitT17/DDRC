@@ -4911,7 +4911,7 @@ class ReportsManager {
             <div class="header-text">
               <h1>District Disability Rehabilitation Centre, Mumbai</h1>
               <p>Department of Empowerment of Persons with Disabilities,</p>
-              <p>Ministry of Social Justice and Empowerment, Govt. of India</p>
+              <p>Ministry of Social Justice and Empowerment</p>
             </div>
             <img src="/images/ddrc-logo.png" alt="DDRC Logo" class="header-logo-right" />
           </div>
@@ -5476,13 +5476,17 @@ class ReportsManager {
           }
           
           #refreshSavedReportsBtn {
-            margin-top: 0.5rem;
-            width: 100%;
+            width: 42px; /* compact square icon button */
+            height: 42px;
+            padding: 0;
+            display: inline-flex;
+            align-items: center;
             justify-content: center;
           }
+          #refreshSavedReportsBtn .bi { margin-right: 0 !important; }
           
           .search-container {
-            margin-right: 0 !important;
+            margin-right: 1rem !important;
           }
           }
         `;

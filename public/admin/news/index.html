@@ -130,7 +130,14 @@
     <!-- Main content will be hidden until auth check -->
     <div id="mainContent" style="display: none">
       <div class="admin-top-bar">
-        <div class="left-links">
+        <button class="mobile-menu-toggle" id="mobileMenuToggle" aria-label="Toggle menu">
+          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <line x1="3" y1="12" x2="21" y2="12"></line>
+            <line x1="3" y1="6" x2="21" y2="6"></line>
+            <line x1="3" y1="18" x2="21" y2="18"></line>
+          </svg>
+        </button>
+        <div class="left-links" id="leftLinks">
           <a href="/admin/dashboard/">Dashboard</a>
           <a href="/admin/reports/">Reports</a>
           <a href="/admin/forms/">Form Management</a>
@@ -162,7 +169,7 @@
           <div class="header-text">
             <h1>District Disability Rehabilitation Centre, Mumbai</h1>
             <p>Department of Empowerment of Persons with Disabilities,</p>
-            <p>Ministry of Social Justice and Empowerment, Govt. of India</p>
+            <p>Ministry of Social Justice and Empowerment</p>
           </div>
           <img src="/images/ddrc-logo.png" alt="DDRC Logo" class="ddrc-logo" />
         </div>
@@ -170,14 +177,14 @@
 
       <div class="admin-content">
         <div class="dashboard-header">
-          <div class="d-flex justify-content-between align-items-center">
-            <div>
+          <div class="d-flex flex-column flex-md-row justify-content-md-between align-items-md-center">
+            <div class="text-start">
               <h1>News Management</h1>
-              <p class="text-muted">
+              <p class="text-muted mb-0">
                 Manage and update news articles and announcements
               </p>
             </div>
-            <button class="btn btn-primary" id="addNewsBtn">Add News</button>
+            <button class="btn btn-primary mt-3 mt-md-0" id="addNewsBtn">Add News</button>
           </div>
         </div>
 
@@ -435,18 +442,18 @@
           if (data.success && data.news && data.news.length > 0) {
             tbody.innerHTML = "";
 
-            data.news.forEach((news) => {
+              data.news.forEach((news) => {
               const row = document.createElement("tr");
               row.innerHTML = `
-                <td>${new Date(news.published_date).toLocaleDateString()}</td>
-                <td>${news.title}</td>
-                <td class="news-description">${news.description}</td>
-                <td>${
+                <td data-label="Date">${new Date(news.published_date).toLocaleDateString()}</td>
+                <td data-label="Title">${news.title}</td>
+                <td class="news-description" data-label="Description">${news.description}</td>
+                <td data-label="File">${
                   news.file_path
                     ? `<a href="${news.file_path}" target="_blank" class="btn btn-sm btn-primary btn-view-file">View File</a>`
                     : "No file"
                 }</td>
-                <td>
+                <td data-label="Actions">
                   <div class="action-buttons">
                     <button class="btn btn-sm btn-primary edit-news-btn" data-news-id="${
                       news.id
@@ -746,5 +753,6 @@
       }
     </script>
     <script src="/admin/js/init.js"></script>
+    <script src="/admin/js/mobile-menu.js"></script>
   </body>
 </html>

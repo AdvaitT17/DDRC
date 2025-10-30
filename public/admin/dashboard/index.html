@@ -562,7 +562,14 @@
     <!-- Main content will be hidden until auth check -->
     <div id="mainContent" style="display: none">
       <div class="admin-top-bar">
-        <div class="left-links">
+        <button class="mobile-menu-toggle" id="mobileMenuToggle" aria-label="Toggle menu">
+          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <line x1="3" y1="12" x2="21" y2="12"></line>
+            <line x1="3" y1="6" x2="21" y2="6"></line>
+            <line x1="3" y1="18" x2="21" y2="18"></line>
+          </svg>
+        </button>
+        <div class="left-links" id="leftLinks">
           <a href="/admin/dashboard" class="active">Dashboard</a>
           <a href="/admin/reports">Reports</a>
           <a href="/admin/forms">Form Management</a>
@@ -593,20 +600,20 @@
           <div class="header-text">
             <h1>District Disability Rehabilitation Centre, Mumbai</h1>
             <p>Department of Empowerment of Persons with Disabilities,</p>
-            <p>Ministry of Social Justice and Empowerment, Govt. of India</p>
+            <p>Ministry of Social Justice and Empowerment</p>
           </div>
           <img src="/images/ddrc-logo.png" alt="DDRC Logo" class="ddrc-logo" />
         </div>
       </header>
-
-      <div class="admin-content">
-        <div class="dashboard-header">
-          <h1>Admin Dashboard</h1>
-          <p class="text-muted">
-            Overview of system statistics and recent activities
-          </p>
-        </div>
-
+        <div class="admin-content">
+          <div class="dashboard-header">
+            <div class="d-flex justify-content-between align-items-center">
+              <div>
+                <h1>Admin Dashboard</h1>
+                <p class="text-muted">Overview of system statistics and recent activities</p>
+              </div>
+            </div>
+          </div>
         <!-- Stats Grid -->
         <div class="stats-grid">
           <div class="stat-card">
@@ -722,7 +729,7 @@
             >
           </div>
           <div class="table-responsive">
-            <table class="table">
+            <table class="table mobile-list">
               <thead>
                 <tr>
                   <th>Application ID</th>
@@ -747,7 +754,7 @@
             <h2 data-label="Partial Registrations">Partial Registrations</h2>
           </div>
           <div class="table-responsive">
-            <table class="table">
+            <table class="table mobile-list">
               <thead>
                 <tr>
                   <th>ID</th>
@@ -799,6 +806,43 @@
                   <polyline points="12 6 12 12 16 14"></polyline>
                 </svg>
                 History
+              </button>
+              <button
+                type="button"
+                class="me-2"
+                id="fullscreenBtn"
+                onclick="toggleFullscreen()"
+                title="Toggle Fullscreen"
+              >
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  width="16"
+                  height="16"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="2"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  class="fullscreen-icon"
+                >
+                  <path d="M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3m0 18h3a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3"></path>
+                </svg>
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  width="16"
+                  height="16"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="2"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  class="exit-fullscreen-icon"
+                  style="display: none"
+                >
+                  <path d="M8 3v3a2 2 0 0 1-2 2H3m18 0h-3a2 2 0 0 1-2-2V3m0 18v-3a2 2 0 0 1 2-2h3M3 16h3a2 2 0 0 1 2 2v3"></path>
+                </svg>
               </button>
               <button
                 type="button"

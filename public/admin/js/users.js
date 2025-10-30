@@ -36,7 +36,7 @@ class UserManager {
               <div class="header-text">
                 <h1>District Disability Rehabilitation Centre, Mumbai</h1>
                 <p>Department of Empowerment of Persons with Disabilities,</p>
-                <p>Ministry of Social Justice and Empowerment, Govt. of India</p>
+                <p>Ministry of Social Justice and Empowerment</p>
               </div>
               <img src="/images/ddrc-logo.png" alt="DDRC Logo" class="ddrc-logo" />
             </div>
@@ -143,32 +143,32 @@ class UserManager {
       .map(
         (user) => `
         <tr>
-          <td>${user.full_name}</td>
-          <td>${user.username}</td>
-          <td>${user.email}</td>
-          <td class="text-center">
+          <td data-label="Name">${user.full_name}</td>
+          <td data-label="Username">${user.username}</td>
+          <td data-label="Email">${user.email}</td>
+          <td data-label="Role">
             <span class="action-badge ${user.role}">
               ${user.role === "admin" ? "Admin" : "Staff"}
             </span>
           </td>
-          <td class="text-center">
+          <td data-label="Status">
             <span class="action-badge ${user.is_active ? "approve" : "reject"}">
               ${user.is_active ? "Active" : "Inactive"}
             </span>
           </td>
-          <td>${
+          <td data-label="Last Login">${
             user.last_login
               ? new Date(user.last_login).toLocaleString()
               : "Never"
           }</td>
-          <td>
-            <button class="btn btn-sm btn-${
-              user.is_active ? "danger" : "success"
-            }" onclick="userManager.toggleUserStatus(${
-          user.id
-        }, ${!user.is_active})">
-              ${user.is_active ? "Deactivate" : "Activate"}
-            </button>
+          <td data-label="Actions">
+            <div class="action-buttons">
+              <button class="btn btn-sm btn-${
+                user.is_active ? "danger" : "success"
+              }" onclick="userManager.toggleUserStatus(${user.id}, ${!user.is_active})">
+                ${user.is_active ? "Deactivate" : "Activate"}
+              </button>
+            </div>
           </td>
         </tr>
       `

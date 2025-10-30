@@ -20,7 +20,14 @@
     <!-- Main content will be hidden until auth check -->
     <div id="mainContent" style="display: none">
       <div class="admin-top-bar">
-        <div class="left-links">
+        <button class="mobile-menu-toggle" id="mobileMenuToggle" aria-label="Toggle menu">
+          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <line x1="3" y1="12" x2="21" y2="12"></line>
+            <line x1="3" y1="6" x2="21" y2="6"></line>
+            <line x1="3" y1="18" x2="21" y2="18"></line>
+          </svg>
+        </button>
+        <div class="left-links" id="leftLinks">
           <a href="/admin/dashboard">Dashboard</a>
           <a href="/admin/reports">Reports</a>
           <a href="/admin/forms" class="active">Form Management</a>
@@ -51,17 +58,18 @@
           <div class="header-text">
             <h1>District Disability Rehabilitation Centre, Mumbai</h1>
             <p>Department of Empowerment of Persons with Disabilities,</p>
-            <p>Ministry of Social Justice and Empowerment, Govt. of India</p>
+            <p>Ministry of Social Justice and Empowerment</p>
           </div>
           <img src="/images/ddrc-logo.png" alt="DDRC Logo" class="ddrc-logo" />
         </div>
       </header>
-
-      <div class="admin-content">
-        <div class="dashboard-header">
-          <h1>Form Management</h1>
-          <p class="text-muted">Manage form sections and fields</p>
-        </div>
+        <div class="admin-content">
+          <div class="dashboard-header">
+              <div>
+                <h1>Form Management</h1>
+                <p class="text-muted">Manage form sections and fields</p>
+              </div>
+          </div>
 
         <div class="content-card">
           <div
@@ -387,6 +395,7 @@
     <script src="/js/auth.js"></script>
     <script src="/admin/js/api.js"></script>
     <script src="/admin/js/init.js"></script>
+    <script src="/admin/js/mobile-menu.js"></script>
     <script src="/admin/js/forms.js"></script>
     <script>
       document.addEventListener("DOMContentLoaded", async () => {
