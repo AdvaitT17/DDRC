@@ -214,6 +214,7 @@ class RegistrationFormRenderer {
 
     switch (field.field_type) {
       case "text":
+      case "alphanumeric":
       case "email":
       case "tel":
       case "number":
@@ -244,6 +245,8 @@ class RegistrationFormRenderer {
 
   renderInputField(field) {
     let validationAttrs = "";
+    let inputType = field.field_type;
+    let errorMessage = "This field is required";
 
     if (field.field_type === "tel") {
       validationAttrs = `
@@ -252,6 +255,14 @@ class RegistrationFormRenderer {
         maxlength="10"
         title="Please enter a valid 10-digit phone number"
       `;
+      errorMessage = "Please enter a valid 10-digit phone number";
+    } else if (field.field_type === "alphanumeric") {
+      inputType = "text";
+      validationAttrs = `
+        pattern="[A-Za-z0-9]+"
+        title="Please enter only letters and numbers (no spaces or special characters)"
+      `;
+      errorMessage = "Please enter only letters and numbers (no spaces or special characters)";
     }
 
     return `
@@ -261,7 +272,7 @@ class RegistrationFormRenderer {
           ${field.is_required ? '<span class="text-danger">*</span>' : ""}
         </label>
         <input
-          type="${field.field_type}"
+          type="${inputType}"
           class="form-control"
           id="${field.name}"
           data-field-id="${field.id}"
@@ -271,11 +282,7 @@ class RegistrationFormRenderer {
           value="${this.savedResponses[field.id] || ""}"
         />
         <div class="invalid-feedback">
-          ${
-            field.field_type === "tel"
-              ? "Please enter a valid 10-digit phone number"
-              : "This field is required"
-          }
+          ${errorMessage}
         </div>
       </div>
     `;

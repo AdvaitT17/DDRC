@@ -429,6 +429,7 @@ class EnhancedFilterSystem {
         break;
 
       case "text":
+      case "alphanumeric":
       case "email":
       case "textarea":
         valueHtml = this.createTextBasedControls();
@@ -1080,6 +1081,7 @@ class EnhancedFilterSystem {
           break;
 
         case "text":
+        case "alphanumeric":
         case "email":
         case "textarea":
         default:
@@ -1480,6 +1482,7 @@ class EnhancedFilterSystem {
         break;
 
       case "text":
+      case "alphanumeric":
       case "email":
       case "textarea":
         operators = [

@@ -1582,6 +1582,7 @@ class DashboardManager {
 
     switch (field.field_type) {
       case "text":
+      case "alphanumeric":
       case "email":
       case "phone":
         return `
