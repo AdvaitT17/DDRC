@@ -7,14 +7,34 @@ const dbConfig = {
   user: process.env.DB_USER,
   password: process.env.DB_PASSWORD,
   database: process.env.DB_NAME,
+  port: process.env.DB_PORT ? parseInt(process.env.DB_PORT) : 3306,
+  
+  // Connection pooling - optimized for high-traffic app
   waitForConnections: true,
-  connectionLimit: 10,
-  queueLimit: 0,
+  connectionLimit: process.env.DB_CONNECTION_LIMIT 
+    ? parseInt(process.env.DB_CONNECTION_LIMIT) 
+    : (process.env.NODE_ENV === 'production' ? 50 : 10), // Increased default for production
+  queueLimit: 25, // Allow queuing for burst traffic (was 10)
+  maxIdle: process.env.DB_CONNECTION_LIMIT 
+    ? parseInt(process.env.DB_CONNECTION_LIMIT) 
+    : (process.env.NODE_ENV === 'production' ? 50 : 10),
+  
+  // Connection lifecycle
+  connectTimeout: 10000, // 10 seconds to establish connection
+  acquireTimeout: 15000, // 15 seconds to acquire connection from pool (increased for high traffic)
+  idleTimeout: 60000, // 1 minute before idle connections are closed
+  
+  // Connection health
   enableKeepAlive: true,
   keepAliveInitialDelay: 0,
-  connectTimeout: 10000, // Reduced from 30s to 10s for faster failure detection
-  maxIdle: 10,
-  idleTimeout: 60000, // Reduced from 5 minutes to 1 minute
+  
+  // Security (for government compliance)
+  ssl: process.env.DB_SSL === 'true' ? {
+    rejectUnauthorized: process.env.DB_SSL_REJECT_UNAUTHORIZED !== 'false'
+  } : false,
+  
+  // Query timeouts (critical for preventing hanging queries)
+  timeout: 30000, // 30 seconds query timeout
 };
 
 // Validate required environment variables
@@ -29,10 +49,21 @@ if (missingEnvVars.length > 0) {
 // Create connection pool
 const pool = mysql.createPool(dbConfig);
 
-// Track connection state
+// Track connection state and metrics for monitoring
 let lastHealthCheckSuccess = null;
 let consecutiveFailures = 0;
 const MAX_CONSECUTIVE_FAILURES = 5;
+
+// Track pool metrics for government app monitoring
+let poolMetrics = {
+  totalQueries: 0,
+  failedQueries: 0,
+  timeoutErrors: 0,
+  poolExhaustionEvents: 0,
+  lastExhaustionTime: null,
+  peakActiveConnections: 0,
+  peakQueueLength: 0
+};
 
 /**
  * Test database connection
@@ -91,18 +122,64 @@ async function testConnection() {
  */
 function getPoolStats() {
   try {
-    return {
+    const stats = {
       totalConnections: pool.pool._allConnections.length,
       freeConnections: pool.pool._freeConnections.length,
+      activeConnections: pool.pool._allConnections.length - pool.pool._freeConnections.length,
       queueLength: pool.pool._connectionQueue.length,
+      connectionLimit: dbConfig.connectionLimit,
       lastHealthCheck: lastHealthCheckSuccess,
-      consecutiveFailures: consecutiveFailures
+      consecutiveFailures: consecutiveFailures,
+      poolUtilization: ((pool.pool._allConnections.length - pool.pool._freeConnections.length) / dbConfig.connectionLimit * 100).toFixed(1) + '%'
     };
+
+    // Log warning if pool is nearly exhausted
+    if (stats.activeConnections >= dbConfig.connectionLimit * 0.8 && stats.queueLength > 0) {
+      console.warn(`⚠️  Connection pool nearly exhausted: ${stats.activeConnections}/${stats.connectionLimit} active, ${stats.queueLength} queued`);
+    }
+
+    return stats;
   } catch (error) {
     return {
       error: 'Unable to get pool stats',
       consecutiveFailures: consecutiveFailures
     };
+  }
+}
+
+/**
+ * Wrapper function to track query metrics and handle errors
+ * Use this for critical queries that need monitoring in government app
+ */
+async function executeQuery(sql, params = [], options = {}) {
+  poolMetrics.totalQueries++;
+  const startTime = Date.now();
+  
+  try {
+    const result = await pool.query(sql, params);
+    const duration = Date.now() - startTime;
+    
+    // Log slow queries (for government compliance monitoring)
+    if (duration > 5000 && process.env.NODE_ENV === 'production') {
+      console.warn(`⚠️  Slow query detected (${duration}ms): ${sql.substring(0, 100)}...`);
+    }
+    
+    return result;
+  } catch (error) {
+    poolMetrics.failedQueries++;
+    
+    if (error.code === 'ETIMEDOUT') {
+      poolMetrics.timeoutErrors++;
+    }
+    
+    const duration = Date.now() - startTime;
+    console.error(`❌ Query failed after ${duration}ms:`, {
+      code: error.code,
+      message: error.message,
+      sql: sql.substring(0, 100)
+    });
+    
+    throw error;
   }
 }
 
@@ -142,3 +219,5 @@ process.on('SIGINT', async () => {
 module.exports = pool;
 module.exports.testConnection = testConnection;
 module.exports.getPoolStats = getPoolStats;
+module.exports.executeQuery = executeQuery;
+module.exports.getMetrics = () => poolMetrics;
