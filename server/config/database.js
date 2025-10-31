@@ -21,8 +21,11 @@ const dbConfig = {
   
   // Connection lifecycle
   connectTimeout: 10000, // 10 seconds to establish connection
-  acquireTimeout: 15000, // 15 seconds to acquire connection from pool (increased for high traffic)
   idleTimeout: 60000, // 1 minute before idle connections are closed
+  
+  // Note: acquireTimeout and timeout are not valid mysql2 pool options
+  // Connection acquisition is handled by waitForConnections + queueLimit
+  // Query timeouts should be handled at the application level if needed
   
   // Connection health
   enableKeepAlive: true,
@@ -32,9 +35,6 @@ const dbConfig = {
   ssl: process.env.DB_SSL === 'true' ? {
     rejectUnauthorized: process.env.DB_SSL_REJECT_UNAUTHORIZED !== 'false'
   } : false,
-  
-  // Query timeouts (critical for preventing hanging queries)
-  timeout: 30000, // 30 seconds query timeout
 };
 
 // Validate required environment variables
