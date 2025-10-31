@@ -15,13 +15,13 @@ const authenticateToken = async (req, res, next) => {
 
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
 
-    // Get a connection from the pool
-    const conn = await pool.getConnection();
+    // OPTIMIZATION: Use pool.query() directly instead of getConnection()
+    // This handles connection pooling more efficiently and auto-releases connections
     try {
       // Check user type and fetch appropriate data
       let user = null;
       if (decoded.type === "department") {
-        const [users] = await conn.query(
+        const [users] = await pool.query(
           `SELECT id, username, role, full_name, email FROM users WHERE id = ?`,
           [decoded.id]
         );
@@ -29,7 +29,7 @@ const authenticateToken = async (req, res, next) => {
           user = { ...users[0], type: "department" };
         }
       } else if (decoded.type === "applicant") {
-        const [users] = await conn.query(
+        const [users] = await pool.query(
           `SELECT id, email, username AS full_name FROM registered_users WHERE id = ?`,
           [decoded.id]
         );
@@ -47,11 +47,26 @@ const authenticateToken = async (req, res, next) => {
     } catch (error) {
       // Database error handling
       if (error.code === "ETIMEDOUT" || error.code === "ECONNREFUSED") {
+        // Get pool stats for debugging
+        const { getPoolStats } = require("../config/database");
+        const poolStats = getPoolStats();
+        
         console.error("❌ Database connection timeout in authMiddleware:", {
           code: error.code,
           message: error.message,
-          path: req.path
+          path: req.path,
+          poolStats: poolStats
         });
+        
+        // If pool is exhausted, suggest retry
+        if (poolStats.activeConnections >= (poolStats.connectionLimit * 0.9)) {
+          return res.status(503).json({
+            message: "Server is handling high traffic. Please try again in a moment.",
+            code: "DB_TIMEOUT",
+            retryAfter: 2
+          });
+        }
+        
         return res.status(503).json({
           message: "Database connection timeout. Please try again in a moment.",
           code: "DB_TIMEOUT"
@@ -72,10 +87,6 @@ const authenticateToken = async (req, res, next) => {
       
       console.error("JWT verification error:", error);
       res.status(403).json({ message: "Token verification failed" });
-    } finally {
-      if (conn) {
-        conn.release();
-      }
     }
   } catch (error) {
     if (error.name === "TokenExpiredError") {
