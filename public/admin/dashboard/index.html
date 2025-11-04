@@ -852,25 +852,26 @@
             </div>
           </div>
           <div class="modal-body">
-            <div class="application-header mb-4">
-              <div class="d-flex justify-content-between align-items-center">
-                <div>
-                  <h6 class="text-muted mb-1">Application ID</h6>
-                  <h4 id="modalApplicationId"></h4>
-                </div>
-                <div class="text-end">
-                  <h6 class="text-muted mb-1">Submitted On</h6>
-                  <h5 id="modalSubmissionDate"></h5>
+            <div class="application-header">
+              <div class="application-header-top">
+                <div class="application-header-main">
+                  <div class="app-id-section">
+                    <span class="label-text">Application ID</span>
+                    <span class="value-text" id="modalApplicationId"></span>
+                  </div>
+                  <div class="app-date-section">
+                    <span class="label-text">Submitted</span>
+                    <span class="value-text" id="modalSubmissionDate"></span>
+                  </div>
+                  <div class="app-status-section">
+                    <span class="status-badge" id="modalStatus"></span>
+                  </div>
                 </div>
               </div>
-              <div class="application-status mt-3">
-                <span class="status-badge" id="modalStatus"></span>
-                <div class="status-info" id="statusInfo">
-                  <small class="text-muted">
-                    Last updated by <span id="lastUpdatedBy">-</span> on
-                    <span id="lastUpdatedAt">-</span>
-                  </small>
-                </div>
+              <div class="application-header-bottom" id="statusInfo">
+                <small class="status-meta-text">
+                  Last updated by <span id="lastUpdatedBy">-</span> on <span id="lastUpdatedAt">-</span>
+                </small>
               </div>
             </div>
             <div class="application-sections row" id="modalFormData">

@@ -352,47 +352,36 @@ class DashboardManager {
                 </div>
               </div>
               <div class="modal-body">
-                <div class="application-header mb-4">
-                  <div class="d-flex justify-content-between align-items-center">
-                    <div>
-                      <h6 class="text-muted mb-1">Application ID</h6>
-                      <h4 id="incompleteModalApplicationId"></h4>
-                    </div>
-                    <div class="text-end">
-                      <h6 class="text-muted mb-1">Started On</h6>
-                      <h5 id="incompleteModalStartDate"></h5>
-                    </div>
-                  </div>
-                  <div class="d-flex justify-content-between align-items-center mt-3">
-                    <div>
-                      <h6 class="text-muted mb-1">Applicant</h6>
-                      <h5 id="incompleteModalApplicantName"></h5>
-                      <div class="d-flex align-items-center mt-1">
-                        <small class="text-muted me-3">
-                          <span class="me-1">
-                            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                              <path d="M22 17.5V20a2 2 0 0 1-2 2h-16a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v2.5"></path>
-                              <path d="M16 8.5l-4.5 4.5-2-2"></path>
-                            </svg>
-                          </span>
-                          <span id="incompleteModalEmail"></span>
-                        </small>
-                        <small class="text-muted" id="incompleteModalPhoneContainer" style="display: none;">
-                          <span class="me-1">
-                            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                              <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"></path>
-                            </svg>
-                          </span>
-                          <span id="incompleteModalPhone"></span>
-                        </small>
+                <div class="application-header">
+                  <div class="application-header-top">
+                    <div class="application-header-main">
+                      <div class="app-id-section">
+                        <span class="label-text">Application ID</span>
+                        <span class="value-text" id="incompleteModalApplicationId"></span>
                       </div>
-                    </div>
-                    <div class="text-end">
-                      <h6 class="text-muted mb-1">Last Updated</h6>
-                      <h5 id="incompleteModalLastUpdated"></h5>
-                      <div class="mt-1">
-                          <span class="me-1">Current Section:</span>
-                          <span id="incompleteModalCurrentSection"></span>
+                      <div class="app-date-section">
+                        <span class="label-text">Started</span>
+                        <span class="value-text" id="incompleteModalStartDate"></span>
+                      </div>
+                      <div class="app-name-section">
+                        <span class="label-text">Applicant</span>
+                        <span class="value-text" id="incompleteModalApplicantName"></span>
+                      </div>
+                      <div class="app-updated-section">
+                        <span class="label-text">Last Updated</span>
+                        <span class="value-text" id="incompleteModalLastUpdated"></span>
+                      </div>
+                      <div class="app-email-section">
+                        <span class="label-text">Email</span>
+                        <span class="value-text" id="incompleteModalEmail"></span>
+                      </div>
+                      <div class="app-phone-section" id="incompleteModalPhoneContainer" style="display: none;">
+                        <span class="label-text">Phone</span>
+                        <span class="value-text" id="incompleteModalPhone"></span>
+                      </div>
+                      <div class="app-section-section">
+                        <span class="label-text">Current Section</span>
+                        <span class="value-text" id="incompleteModalCurrentSection"></span>
                       </div>
                     </div>
                   </div>
@@ -455,7 +444,7 @@ class DashboardManager {
 
       if (registration.phone) {
         document.getElementById("incompleteModalPhoneContainer").style.display =
-          "inline";
+          "flex";
         document.getElementById("incompleteModalPhone").textContent =
           registration.phone;
       } else {
@@ -5170,19 +5159,37 @@ style.textContent = `
       padding: 1rem;
     }
     
-    /* Application header adjustments */
-    #applicationModal .application-header {
-      flex-direction: column;
+    /* Application header adjustments - maintain elegant design on mobile */
+    #applicationModal .application-header-top {
+      padding: 0.75rem 1rem;
     }
     
-    #applicationModal .application-header .d-flex {
+    #applicationModal .application-header-main {
+      gap: 1.25rem;
       flex-direction: column;
-      align-items: flex-start !important;
-      gap: 1rem;
+      align-items: flex-start;
     }
     
-    #applicationModal .application-header .text-end {
-      text-align: left !important;
+    #applicationModal .app-status-section {
+      margin-left: 0;
+      margin-top: 0.25rem;
+      align-self: flex-start;
+    }
+    
+    #applicationModal .application-header .value-text {
+      font-size: 0.9375rem;
+    }
+    
+    #applicationModal .application-header .label-text {
+      font-size: 0.625rem;
+    }
+    
+    #applicationModal .application-header-bottom {
+      padding: 0.4375rem 1rem;
+    }
+    
+    #applicationModal .application-header .status-meta-text {
+      font-size: 0.6875rem;
     }
   }
   
@@ -5199,13 +5206,44 @@ style.textContent = `
     }
     
     #applicationModal .modal-body {
-      max-height: calc(100vh - 200px);
+      max-height: calc(100vh - 180px); /* More space for content */
       overflow-y: auto;
       -webkit-overflow-scrolling: touch;
+      padding: 0.75rem;
     }
     
     #applicationModal .modal-title {
-      font-size: 1.1rem;
+      font-size: 1rem;
+    }
+    
+    /* Ultra-compact header on small phones */
+    #applicationModal .application-header {
+      margin-bottom: 0.75rem;
+      border-radius: 6px;
+    }
+    
+    #applicationModal .application-header-top {
+      padding: 0.625rem 0.875rem;
+    }
+    
+    #applicationModal .application-header-main {
+      gap: 1rem;
+    }
+    
+    #applicationModal .application-header .value-text {
+      font-size: 0.875rem;
+    }
+    
+    #applicationModal .application-header .label-text {
+      font-size: 0.5625rem;
+    }
+    
+    #applicationModal .application-header-bottom {
+      padding: 0.375rem 0.875rem;
+    }
+    
+    #applicationModal .application-header .status-meta-text {
+      font-size: 0.625rem;
     }
     
     /* Hide text on History button, show only icon */
