@@ -180,36 +180,53 @@ router.get("/all-applications", async (req, res) => {
       ORDER BY rp.completed_at DESC`
     );
 
-    // Get form data for each application
-    const formattedApplications = await Promise.all(
-      applications.map(async (app) => {
-        // Get basic form data
-        const [responses] = await pool.query(
-          `SELECT ff.name, rr.value
-           FROM registration_responses rr
-           JOIN form_fields ff ON rr.field_id = ff.id
-           WHERE rr.registration_id = ?`,
-          [app.id]
-        );
+    // OPTIMIZATION: Get ALL responses for these applications in ONE query
+    const applicationIds = applications.map(app => app.id);
+    let allResponses = [];
+    
+    if (applicationIds.length > 0) {
+      const [responses] = await pool.query(
+        `SELECT 
+          rr.registration_id,
+          ff.name,
+          rr.value
+         FROM registration_responses rr
+         JOIN form_fields ff ON rr.field_id = ff.id
+         WHERE rr.registration_id IN (?)`,
+        [applicationIds]
+      );
+      allResponses = responses;
+    }
 
-        const formData = responses.reduce((acc, curr) => {
-          acc[curr.name] = curr.value;
-          return acc;
-        }, {});
+    // Group responses by registration_id
+    const responsesByApplication = allResponses.reduce((acc, resp) => {
+      if (!acc[resp.registration_id]) {
+        acc[resp.registration_id] = [];
+      }
+      acc[resp.registration_id].push(resp);
+      return acc;
+    }, {});
 
-        return {
-          applicationId: app.application_id,
-          applicantName: `${formData.firstname || ""} ${
-            formData.lastname || ""
-          }`.trim(),
-          email: app.email,
-          submittedAt: app.completed_at,
-          disabilityType: app.disability_type,
-          status: app.service_status || "pending",
-          location: app.location_data || "", // Include location data
-        };
-      })
-    );
+    // Format applications using the batched data
+    const formattedApplications = applications.map((app) => {
+      const responses = responsesByApplication[app.id] || [];
+      const formData = responses.reduce((acc, curr) => {
+        acc[curr.name] = curr.value;
+        return acc;
+      }, {});
+
+      return {
+        applicationId: app.application_id,
+        applicantName: `${formData.firstname || ""} ${
+          formData.lastname || ""
+        }`.trim(),
+        email: app.email,
+        submittedAt: app.completed_at,
+        disabilityType: app.disability_type,
+        status: app.service_status || "pending",
+        location: app.location_data || "", // Include location data
+      };
+    });
 
     res.json(formattedApplications);
   } catch (error) {
