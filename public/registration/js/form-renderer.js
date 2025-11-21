@@ -137,37 +137,37 @@ class RegistrationFormRenderer {
 
     // Populate saved values after rendering the form
     this.populateSavedValues();
-    
+
     // Add real-time validation listeners
     this.addValidationListeners();
   }
-  
+
   addValidationListeners() {
     const form = document.getElementById("sectionForm");
     if (!form) return;
-    
+
     const inputs = form.querySelectorAll('input[type="text"], input[type="email"], input[type="tel"], input[type="number"]');
-    
+
     inputs.forEach((input) => {
       // Clear validation on input (as user types)
-      input.addEventListener('input', function() {
+      input.addEventListener('input', function () {
         this.setCustomValidity("");
         this.classList.remove('is-invalid');
         this.classList.remove('is-valid');
       });
-      
+
       // Add blur event for validation feedback
-      input.addEventListener('blur', function() {
+      input.addEventListener('blur', function () {
         // Always clear previous custom validity first
         this.setCustomValidity("");
-        
+
         // Skip validation if empty and not required
         if (!this.value && !this.required) {
           this.classList.remove('is-invalid');
           this.classList.remove('is-valid');
           return;
         }
-        
+
         // Only validate if there's a value
         if (this.value) {
           // Check pattern (only if pattern attribute exists)
@@ -181,7 +181,7 @@ class RegistrationFormRenderer {
               return;
             }
           }
-          
+
           // Check min/max for numbers (only if attributes exist)
           if (this.type === "number") {
             const numValue = parseFloat(this.value);
@@ -200,7 +200,7 @@ class RegistrationFormRenderer {
               return;
             }
           }
-          
+
           // Check length (only if attributes exist)
           if (this.hasAttribute('minlength')) {
             const minLen = parseInt(this.getAttribute('minlength'));
@@ -222,7 +222,7 @@ class RegistrationFormRenderer {
               return;
             }
           }
-          
+
           // If we got here, the value is valid
           this.classList.remove('is-invalid');
           this.classList.add('is-valid');
@@ -348,10 +348,10 @@ class RegistrationFormRenderer {
     let validationRules = {};
     if (field.validation_rules) {
       try {
-        validationRules = typeof field.validation_rules === "string" 
-          ? JSON.parse(field.validation_rules) 
+        validationRules = typeof field.validation_rules === "string"
+          ? JSON.parse(field.validation_rules)
           : field.validation_rules;
-        
+
         // Strip ^ and $ anchors from pattern if present (HTML pattern adds them automatically)
         if (validationRules.pattern) {
           validationRules.pattern = validationRules.pattern
@@ -372,7 +372,7 @@ class RegistrationFormRenderer {
         title="${validationRules.message || "Please enter a valid 10-digit phone number"}"
       `;
       errorMessage = validationRules.message || "Please enter a valid 10-digit phone number";
-    } 
+    }
     // Default validation for alphanumeric fields (can be overridden by custom rules)
     else if (field.field_type === "alphanumeric") {
       inputType = "text";
@@ -381,7 +381,7 @@ class RegistrationFormRenderer {
         title="${validationRules.message || "Please enter only letters and numbers (no spaces or special characters)"}"
       `;
       errorMessage = validationRules.message || "Please enter only letters and numbers (no spaces or special characters)";
-      
+
       if (validationRules.minLength) {
         validationAttrs += ` minlength="${validationRules.minLength}"`;
       }
@@ -392,7 +392,7 @@ class RegistrationFormRenderer {
     // Apply custom validation rules for other text-based fields
     else if (["text", "email"].includes(field.field_type) && Object.keys(validationRules).length > 0) {
       const parts = [];
-      
+
       if (validationRules.pattern) {
         parts.push(`pattern="${validationRules.pattern}"`);
       }
@@ -406,13 +406,35 @@ class RegistrationFormRenderer {
         parts.push(`title="${validationRules.message}"`);
         errorMessage = validationRules.message;
       }
-      
+
+      validationAttrs = parts.join(" ");
+    }
+    // Date field validation
+    else if (field.field_type === "date") {
+      const parts = [];
+
+      // Set default min/max to prevent infinite scrolling if not provided
+      // Default range: 1900 to 2100
+      const defaultMin = "1900-01-01";
+      const defaultMax = "2100-12-31";
+
+      const minDate = validationRules.minDate || defaultMin;
+      const maxDate = validationRules.maxDate || defaultMax;
+
+      parts.push(`min="${minDate}"`);
+      parts.push(`max="${maxDate}"`);
+
+      if (validationRules.message) {
+        parts.push(`title="${validationRules.message}"`);
+        errorMessage = validationRules.message;
+      }
+
       validationAttrs = parts.join(" ");
     }
     // Number field validation
     else if (field.field_type === "number" && Object.keys(validationRules).length > 0) {
       const parts = [];
-      
+
       if (validationRules.min !== undefined) {
         parts.push(`min="${validationRules.min}"`);
       }
@@ -426,13 +448,13 @@ class RegistrationFormRenderer {
         parts.push(`title="${validationRules.message}"`);
         errorMessage = validationRules.message;
       }
-      
+
       validationAttrs = parts.join(" ");
     }
 
     // Escape HTML entities in error message
     const escapedErrorMessage = errorMessage.replace(/"/g, '&quot;').replace(/'/g, '&#39;');
-    
+
     return `
       <div class="mb-3">
         <label for="${field.name}" class="form-label">
@@ -480,14 +502,13 @@ class RegistrationFormRenderer {
         >
           <option value="">Select an option</option>
           ${options
-            .map(
-              (option) => `
-            <option value="${option}" ${
-                this.savedResponses[field.id] === option ? "selected" : ""
-              }>${option}</option>
+        .map(
+          (option) => `
+            <option value="${option}" ${this.savedResponses[field.id] === option ? "selected" : ""
+            }>${option}</option>
           `
-            )
-            .join("")}
+        )
+        .join("")}
         </select>
         <div class="invalid-feedback">
           Please select an option
@@ -518,8 +539,8 @@ class RegistrationFormRenderer {
         </label>
         <div>
           ${options
-            .map(
-              (option) => `
+        .map(
+          (option) => `
             <div class="form-check">
               <input
                 type="radio"
@@ -538,8 +559,8 @@ class RegistrationFormRenderer {
               </label>
             </div>
           `
-            )
-            .join("")}
+        )
+        .join("")}
         </div>
         <div class="invalid-feedback">Please select an option</div>
       </div>
@@ -714,8 +735,8 @@ class RegistrationFormRenderer {
         </label>
         <div>
           ${options
-            .map(
-              (option) => `
+        .map(
+          (option) => `
             <div class="form-check">
               <input
                 type="checkbox"
@@ -733,8 +754,8 @@ class RegistrationFormRenderer {
               </label>
             </div>
           `
-            )
-            .join("")}
+        )
+        .join("")}
         </div>
         <div class="invalid-feedback">Please select at least one option</div>
       </div>
@@ -769,9 +790,8 @@ class RegistrationFormRenderer {
           ${field.is_required ? '<span class="text-danger">*</span>' : ""}
         </label>
         <div class="file-upload-container">
-          <div class="file-input-wrapper ${
-            this.savedResponses[field.id] ? "hidden" : ""
-          }">
+          <div class="file-input-wrapper ${this.savedResponses[field.id] ? "hidden" : ""
+      }">
             <input
               type="file"
               class="form-control"
@@ -780,11 +800,10 @@ class RegistrationFormRenderer {
               data-field-id="${field.id}"
               accept="${allowedTypes}"
               data-max-size="${maxSize}"
-              ${
-                field.is_required && !this.savedResponses[field.id]
-                  ? "required"
-                  : ""
-              }
+              ${field.is_required && !this.savedResponses[field.id]
+        ? "required"
+        : ""
+      }
               onchange="handleFileUpload(this)"
             >
             <div class="form-text">
@@ -794,16 +813,13 @@ class RegistrationFormRenderer {
             </div>
             <div class="invalid-feedback">Please select a valid file</div>
           </div>
-          <div class="file-preview ${
-            this.savedResponses[field.id] ? "" : "hidden"
-          }" id="preview_${field.id}">
+          <div class="file-preview ${this.savedResponses[field.id] ? "" : "hidden"
+      }" id="preview_${field.id}">
             <div class="file-info">
-              <span class="file-name">${
-                this.savedResponses[field.id] || ""
-              }</span>
-              <button type="button" class="btn btn-link text-danger" onclick="handleFileDelete('${
-                field.id
-              }')">
+              <span class="file-name">${this.savedResponses[field.id] || ""
+      }</span>
+              <button type="button" class="btn btn-link text-danger" onclick="handleFileDelete('${field.id
+      }')">
                 <img src="/images/cross.svg" alt="Remove file" width="16" height="16">
               </button>
             </div>
@@ -863,21 +879,19 @@ class RegistrationFormRenderer {
               ${index > 0 && !savedValues[index - 1] ? "disabled" : ""}
             >
               <option value="">Select ${level.name}</option>
-              ${
-                index === 0
-                  ? level.options
-                      .split("\n")
-                      .map((opt) => opt.trim())
-                      .filter((opt) => opt)
-                      .map(
-                        (opt) =>
-                          `<option value="${opt}" ${
-                            savedValues[0] === opt ? "selected" : ""
-                          }>${opt}</option>`
-                      )
-                      .join("")
-                  : ""
-              }
+              ${index === 0
+            ? level.options
+              .split("\n")
+              .map((opt) => opt.trim())
+              .filter((opt) => opt)
+              .map(
+                (opt) =>
+                  `<option value="${opt}" ${savedValues[0] === opt ? "selected" : ""
+                  }>${opt}</option>`
+              )
+              .join("")
+            : ""
+          }
             </select>
           </div>
         `;
@@ -901,8 +915,7 @@ class RegistrationFormRenderer {
             const fieldId = this.dataset.fieldId;
 
             const subsequentSelects = container.querySelectorAll(
-              `select[data-field-id="${fieldId}"][data-level="${
-                currentLevel + 1
+              `select[data-field-id="${fieldId}"][data-level="${currentLevel + 1
               }"]`
             );
 
@@ -1169,13 +1182,12 @@ class RegistrationFormRenderer {
     container.innerHTML = this.sections
       .map(
         (section, index) => `
-        <div class="progress-step ${
-          index === this.currentSectionIndex
+        <div class="progress-step ${index === this.currentSectionIndex
             ? "active"
             : index < this.currentSectionIndex
-            ? "completed"
-            : ""
-        }">
+              ? "completed"
+              : ""
+          }">
           ${index + 1}
         </div>
       `
