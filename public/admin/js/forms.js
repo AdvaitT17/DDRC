@@ -21,9 +21,8 @@ class FormManager {
               <a href="/admin/users">Users</a>
             </div>
             <div class="right-links">
-              <span id="userInfo">${
-                userInfo?.full_name || userInfo?.email || ""
-              }</span>
+              <span id="userInfo">${userInfo?.full_name || userInfo?.email || ""
+          }</span>
               <button id="logoutBtn" class="btn btn-link" onclick="AuthManager.logout()">Logout</button>
             </div>
           </div>
@@ -177,6 +176,7 @@ function initializeFormEventListeners() {
     );
     const validationRulesContainer = document.querySelector(".validation-rules-container");
     const numberRangeContainer = document.querySelector(".number-range-container");
+    const dateRangeContainer = document.querySelector(".date-range-container");
 
     // Reset all containers
     optionsContainer.style.display = "none";
@@ -184,6 +184,7 @@ function initializeFormEventListeners() {
     nestedOptionsContainer.style.display = "none";
     validationRulesContainer.style.display = "none";
     numberRangeContainer.style.display = "none";
+    dateRangeContainer.style.display = "none";
 
     if (["select", "radio", "checkbox"].includes(e.target.value)) {
       optionsContainer.style.display = "block";
@@ -236,12 +237,16 @@ function initializeFormEventListeners() {
       // Show both validation rules and number range for number fields
       validationRulesContainer.style.display = "block";
       numberRangeContainer.style.display = "block";
+    } else if (e.target.value === "date") {
+      // Show only date range for date fields, hide generic validation rules
+      validationRulesContainer.style.display = "none";
+      dateRangeContainer.style.display = "block";
     }
   });
 
   // Save Field button
   document.getElementById("saveFieldBtn").addEventListener("click", saveField);
-  
+
   // Pattern tester functionality
   setupPatternTester();
 }
@@ -251,11 +256,11 @@ function setupPatternTester() {
   const patternTesterContainer = document.getElementById("patternTesterContainer");
   const patternTestInput = document.getElementById("patternTestInput");
   const patternTestResult = document.getElementById("patternTestResult");
-  
+
   if (!patternInput || !patternTesterContainer) return;
-  
+
   // Show/hide pattern tester based on whether pattern is entered
-  patternInput.addEventListener('input', function() {
+  patternInput.addEventListener('input', function () {
     if (this.value.trim()) {
       patternTesterContainer.style.display = 'block';
       testPattern();
@@ -264,25 +269,25 @@ function setupPatternTester() {
       patternTestResult.innerHTML = '';
     }
   });
-  
+
   // Test pattern as user types in test input
   patternTestInput.addEventListener('input', testPattern);
-  
+
   function testPattern() {
     const pattern = patternInput.value.trim();
     const testValue = patternTestInput.value;
-    
+
     if (!pattern) {
       patternTestResult.innerHTML = '';
       return;
     }
-    
+
     // Strip ^ and $ if present (since HTML pattern adds them automatically)
     const cleanPattern = pattern.replace(/^\^/, '').replace(/\$$/, '');
-    
+
     try {
       const regex = new RegExp(`^${cleanPattern}$`);
-      
+
       if (!testValue) {
         patternTestResult.innerHTML = `
           <div class="alert alert-secondary mb-0">
@@ -291,9 +296,9 @@ function setupPatternTester() {
         `;
         return;
       }
-      
+
       const matches = regex.test(testValue);
-      
+
       if (matches) {
         patternTestResult.innerHTML = `
           <div class="alert alert-success mb-0">
@@ -349,38 +354,33 @@ function renderFields(fields) {
     <div class="field-item" data-field-id="${field.id}">
       <div class="field-info">
         <span class="field-name">${field.display_name}</span>
-        <span class="field-type">${
-          field.field_type === "nested-select"
-            ? "Nested Dropdown"
-            : field.field_type
+        <span class="field-type">${field.field_type === "nested-select"
+          ? "Nested Dropdown"
+          : field.field_type
         }</span>
-        ${
-          field.is_required
-            ? '<span class="required-badge">Required</span>'
-            : ""
+        ${field.is_required
+          ? '<span class="required-badge">Required</span>'
+          : ""
         }
-        ${
-          field.field_type === "file"
-            ? `<span class="badge rounded-pill bg-light text-dark border">
-                Max: ${field.max_file_size || 5}MB | Types: ${
-                field.allowed_types || ".pdf,.jpg,.jpeg,.png"
-              }
+        ${field.field_type === "file"
+          ? `<span class="badge rounded-pill bg-light text-dark border">
+                Max: ${field.max_file_size || 5}MB | Types: ${field.allowed_types || ".pdf,.jpg,.jpeg,.png"
+          }
                </span>`
-            : ""
+          : ""
         }
-        ${
-          field.field_type === "nested-select"
-            ? `<span class="badge rounded-pill bg-light text-dark border">
+        ${field.field_type === "nested-select"
+          ? `<span class="badge rounded-pill bg-light text-dark border">
                 ${(() => {
-                  try {
-                    const config = JSON.parse(field.options);
-                    return `${config.length} Levels`;
-                  } catch (e) {
-                    return "0 Levels";
-                  }
-                })()}
+            try {
+              const config = JSON.parse(field.options);
+              return `${config.length} Levels`;
+            } catch (e) {
+              return "0 Levels";
+            }
+          })()}
                </span>`
-            : ""
+          : ""
         }
       </div>
       <div class="field-actions">
@@ -517,29 +517,38 @@ async function saveField() {
   }
 
   // Add validation rules for applicable field types
-  if (["text", "alphanumeric", "email", "tel", "number"].includes(fieldType)) {
+  if (["text", "alphanumeric", "email", "tel", "number", "date"].includes(fieldType)) {
     const validationRules = {};
-    
+
     // Get custom pattern and message
     const pattern = form.querySelector("#validationPattern")?.value.trim();
     const message = form.querySelector("#validationMessage")?.value.trim();
     const minLength = form.querySelector("#minLength")?.value;
     const maxLength = form.querySelector("#maxLength")?.value;
-    
+
     if (pattern) validationRules.pattern = pattern;
     if (message) validationRules.message = message;
     if (minLength) validationRules.minLength = parseInt(minLength);
     if (maxLength) validationRules.maxLength = parseInt(maxLength);
-    
+
     // Add number-specific validation
     if (fieldType === "number") {
       const minValue = form.querySelector("#minValue")?.value;
       const maxValue = form.querySelector("#maxValue")?.value;
-      
+
       if (minValue) validationRules.min = parseFloat(minValue);
       if (maxValue) validationRules.max = parseFloat(maxValue);
     }
-    
+
+    // Add date-specific validation
+    if (fieldType === "date") {
+      const minDate = form.querySelector("#minDate")?.value;
+      const maxDate = form.querySelector("#maxDate")?.value;
+
+      if (minDate) validationRules.minDate = minDate;
+      if (maxDate) validationRules.maxDate = maxDate;
+    }
+
     // Only add validation_rules if there are any rules
     if (Object.keys(validationRules).length > 0) {
       fieldData.validation_rules = validationRules;
@@ -677,7 +686,7 @@ function resetFieldForm() {
   form.querySelector(".field-options-container").style.display = "none";
   form.querySelector(".file-size-container").style.display = "none";
   form.querySelector(".nested-options-container").style.display = "none";
-  
+
   // Reset validation rules fields
   if (form.querySelector("#validationPattern")) {
     form.querySelector("#validationPattern").value = "";
@@ -697,7 +706,13 @@ function resetFieldForm() {
   if (form.querySelector("#maxValue")) {
     form.querySelector("#maxValue").value = "";
   }
-  
+  if (form.querySelector("#minDate")) {
+    form.querySelector("#minDate").value = "";
+  }
+  if (form.querySelector("#maxDate")) {
+    form.querySelector("#maxDate").value = "";
+  }
+
   // Reset pattern tester
   const patternTesterContainer = form.querySelector("#patternTesterContainer");
   const patternTestInput = form.querySelector("#patternTestInput");
@@ -711,11 +726,12 @@ function resetFieldForm() {
   if (patternTestResult) {
     patternTestResult.innerHTML = "";
   }
-  
+
   // Show validation rules container for default "text" field type
   form.querySelector(".validation-rules-container").style.display = "block";
   form.querySelector(".number-range-container").style.display = "none";
-  
+  form.querySelector(".date-range-container").style.display = "none";
+
   delete form.dataset.fieldId;
 }
 
@@ -755,14 +771,14 @@ function populateFieldForm(field) {
         options = Array.isArray(parsedOptions.options)
           ? parsedOptions.options
           : typeof parsedOptions === "object" && parsedOptions.options
-          ? parsedOptions.options
-          : [];
+            ? parsedOptions.options
+            : [];
       } else {
         options = Array.isArray(parsedOptions)
           ? parsedOptions
           : typeof parsedOptions === "string"
-          ? parsedOptions.split(",").map((opt) => opt.trim())
-          : [];
+            ? parsedOptions.split(",").map((opt) => opt.trim())
+            : [];
       }
     } catch (e) {
       console.error("Error parsing options:", e);
@@ -831,8 +847,8 @@ function populateFieldForm(field) {
             index === 0
               ? "तालुका / म.न.पा. / Tahsil / Municipality"
               : index === 1
-              ? "ग्रा.पं / प्रभाग / Grampanchayat / Ward"
-              : "Sector";
+                ? "ग्रा.पं / प्रभाग / Grampanchayat / Ward"
+                : "Sector";
 
           const optionsPlaceholder =
             index === 0
@@ -843,9 +859,8 @@ function populateFieldForm(field) {
             <div class="card shadow-sm">
               <div class="card-body">
                 <div class="d-flex justify-content-between align-items-center mb-3">
-                  <h6 class="card-title mb-0 text-primary">Level ${
-                    index + 1
-                  }</h6>
+                  <h6 class="card-title mb-0 text-primary">Level ${index + 1
+            }</h6>
                   <button type="button" class="btn-plain remove-level">
                     <svg width="14" height="14" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
                       <path d="M9.41421 8L15.7782 1.63604C16.0718 1.34245 16.0718 0.867544 15.7782 0.573954C15.4846 0.280364 15.0097 0.280364 14.7161 0.573954L8.35214 6.93791L1.98818 0.573954C1.69459 0.280364 1.21968 0.280364 0.926091 0.573954C0.632501 0.867544 0.632501 1.34245 0.926091 1.63604L7.29006 8L0.926091 14.364C0.632501 14.6575 0.632501 15.1325 0.926091 15.426C1.21968 15.7196 1.69459 15.7196 1.98818 15.426L8.35214 9.06209L14.7161 15.426C15.0097 15.7196 15.4846 15.7196 15.7782 15.426C16.0718 15.1325 16.0718 14.6575 15.7782 14.364L9.41421 8Z" fill="currentColor"/>
@@ -855,24 +870,21 @@ function populateFieldForm(field) {
                 
                 <div class="mb-3">
                   <label class="form-label">Level Name</label>
-                  <input type="text" class="form-control" placeholder="${placeholder}" name="level_names[]" value="${
-            level.name || ""
-          }">
+                  <input type="text" class="form-control" placeholder="${placeholder}" name="level_names[]" value="${level.name || ""
+            }">
                 </div>
                 
                 <div class="mb-2">
                   <label class="form-label">Options</label>
-                  <textarea class="form-control" rows="3" placeholder="${optionsPlaceholder}" name="level_options[]">${
-            level.options || ""
-          }</textarea>
+                  <textarea class="form-control" rows="3" placeholder="${optionsPlaceholder}" name="level_options[]">${level.options || ""
+            }</textarea>
                 </div>
                 
                 <div class="form-text text-muted small">
-                  ${
-                    index === 0
-                      ? "Enter each option on a new line"
-                      : 'Use format "ParentOption:Option1, Option2"'
-                  }
+                  ${index === 0
+              ? "Enter each option on a new line"
+              : 'Use format "ParentOption:Option1, Option2"'
+            }
                 </div>
               </div>
             </div>
@@ -899,41 +911,53 @@ function populateFieldForm(field) {
       addDefaultLevel(levelsContainer);
     }
   }
-  
+
   // Handle validation rules for applicable field types
   const validationRulesContainer = form.querySelector(".validation-rules-container");
   const numberRangeContainer = form.querySelector(".number-range-container");
-  
+  const dateRangeContainer = form.querySelector(".date-range-container");
+
   // Reset containers
   validationRulesContainer.style.display = "none";
   numberRangeContainer.style.display = "none";
-  
-  if (["text", "alphanumeric", "email", "tel", "number"].includes(field.field_type)) {
-    validationRulesContainer.style.display = "block";
-    
+  dateRangeContainer.style.display = "none";
+
+  if (["text", "alphanumeric", "email", "tel", "number", "date"].includes(field.field_type)) {
+    // Show generic validation rules for non-date fields
+    if (field.field_type !== "date") {
+      validationRulesContainer.style.display = "block";
+    }
+
     // Parse validation rules if they exist
     let validationRules = {};
     if (field.validation_rules) {
       try {
-        validationRules = typeof field.validation_rules === "string" 
-          ? JSON.parse(field.validation_rules) 
+        validationRules = typeof field.validation_rules === "string"
+          ? JSON.parse(field.validation_rules)
           : field.validation_rules;
       } catch (e) {
         console.error("Error parsing validation rules:", e);
       }
     }
-    
+
     // Populate validation fields
     form.querySelector("#validationPattern").value = validationRules.pattern || "";
     form.querySelector("#validationMessage").value = validationRules.message || "";
     form.querySelector("#minLength").value = validationRules.minLength || "";
     form.querySelector("#maxLength").value = validationRules.maxLength || "";
-    
+
     // Show number range for number fields
     if (field.field_type === "number") {
       numberRangeContainer.style.display = "block";
       form.querySelector("#minValue").value = validationRules.min !== undefined ? validationRules.min : "";
       form.querySelector("#maxValue").value = validationRules.max !== undefined ? validationRules.max : "";
+    }
+
+    // Show date range for date fields
+    if (field.field_type === "date") {
+      dateRangeContainer.style.display = "block";
+      form.querySelector("#minDate").value = validationRules.minDate || "";
+      form.querySelector("#maxDate").value = validationRules.maxDate || "";
     }
   }
 }
@@ -1005,9 +1029,8 @@ function renderFieldOptions(selectedFields = []) {
     .flatMap((section) =>
       section.fields.map(
         (field) => `
-          <option value="${field.id}" ${
-          selectedFields.includes(field.id) ? "selected" : ""
-        }>
+          <option value="${field.id}" ${selectedFields.includes(field.id) ? "selected" : ""
+          }>
             ${section.name} - ${field.display_name}
           </option>
         `
@@ -1021,9 +1044,8 @@ function renderFieldOptions(selectedFields = []) {
     .flatMap((section) =>
       section.fields.map(
         (field) => `
-          <option value="${field.id}" ${
-          selectedFields.includes(field.id) ? "selected" : ""
-        }>
+          <option value="${field.id}" ${selectedFields.includes(field.id) ? "selected" : ""
+          }>
             ${section.name} - ${field.display_name}
           </option>
         `
@@ -1324,17 +1346,16 @@ function updateNestedPreview() {
         <label class="form-label">${name}</label>
         <select class="form-select preview-select" data-level="${index + 1}">
           <option value="">Select ${name}</option>
-          ${
-            index === 0 && options
-              ? options
-                  .split("\n")
-                  .map(
-                    (opt) =>
-                      `<option value="${opt.trim()}">${opt.trim()}</option>`
-                  )
-                  .join("")
-              : ""
-          }
+          ${index === 0 && options
+        ? options
+          .split("\n")
+          .map(
+            (opt) =>
+              `<option value="${opt.trim()}">${opt.trim()}</option>`
+          )
+          .join("")
+        : ""
+      }
         </select>
       </div>
     `;
@@ -1419,17 +1440,16 @@ Example:
     <div class="card mb-3">
       <div class="card-body position-relative">
         <h6 class="card-title text-primary mb-3">Level ${levelCount}</h6>
-        ${
-          levelCount > 1
-            ? `
+        ${levelCount > 1
+      ? `
           <button type="button" class="position-absolute top-0 end-0 mt-3 me-3 btn-plain remove-level">
             <svg width="14" height="14" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
               <path d="M9.41421 8L15.7782 1.63604C16.0718 1.34245 16.0718 0.867544 15.7782 0.573954C15.4846 0.280364 15.0097 0.280364 14.7161 0.573954L8.35214 6.93791L1.98818 0.573954C1.69459 0.280364 1.21968 0.280364 0.926091 0.573954C0.632501 0.867544 0.632501 1.34245 0.926091 1.63604L7.29006 8L0.926091 14.364C0.632501 14.6575 0.632501 15.1325 0.926091 15.426C1.21968 15.7196 1.69459 15.7196 1.98818 15.426L8.35214 9.06209L14.7161 15.426C15.0097 15.7196 15.4846 15.7196 15.7782 15.426C16.0718 15.1325 16.0718 14.6575 15.7782 14.364L9.41421 8Z" fill="currentColor"/>
             </svg>
           </button>
         `
-            : ""
-        }
+      : ""
+    }
         
         <div class="mb-3">
           <label class="form-label">Level Name</label>
@@ -1442,11 +1462,10 @@ Example:
         </div>
         
         <div class="form-text text-muted small">
-          ${
-            levelCount === 1
-              ? "Enter each option on a new line"
-              : 'Use format "ParentOption:Option1, Option2"'
-          }
+          ${levelCount === 1
+      ? "Enter each option on a new line"
+      : 'Use format "ParentOption:Option1, Option2"'
+    }
         </div>
       </div>
     </div>

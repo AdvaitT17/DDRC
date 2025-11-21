@@ -104,6 +104,7 @@ router.post(
         options,
         max_file_size,
         allowed_types,
+        validation_rules,
       } = req.body;
 
       // Get max order_index
