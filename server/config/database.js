@@ -8,29 +8,29 @@ const dbConfig = {
   password: process.env.DB_PASSWORD,
   database: process.env.DB_NAME,
   port: process.env.DB_PORT ? parseInt(process.env.DB_PORT) : 3306,
-  
+
   // Connection pooling - optimized for high-traffic app
   waitForConnections: true,
-  connectionLimit: process.env.DB_CONNECTION_LIMIT 
-    ? parseInt(process.env.DB_CONNECTION_LIMIT) 
-    : (process.env.NODE_ENV === 'production' ? 50 : 10), // Increased default for production
-  queueLimit: 25, // Allow queuing for burst traffic (was 10)
-  maxIdle: process.env.DB_CONNECTION_LIMIT 
-    ? parseInt(process.env.DB_CONNECTION_LIMIT) 
+  connectionLimit: process.env.DB_CONNECTION_LIMIT
+    ? parseInt(process.env.DB_CONNECTION_LIMIT)
+    : (process.env.NODE_ENV === 'production' ? 100 : 20), // Increased for production stability
+  queueLimit: 50, // Increased queue limit for burst traffic
+  maxIdle: process.env.DB_CONNECTION_LIMIT
+    ? parseInt(process.env.DB_CONNECTION_LIMIT)
     : (process.env.NODE_ENV === 'production' ? 50 : 10),
-  
+
   // Connection lifecycle
-  connectTimeout: 10000, // 10 seconds to establish connection
-  idleTimeout: 60000, // 1 minute before idle connections are closed
-  
+  connectTimeout: 20000, // 20 seconds to establish connection (increased from 10s)
+  idleTimeout: 30000, // 30 seconds before idle connections are closed (reduced to prevent stale connections)
+
   // Note: acquireTimeout and timeout are not valid mysql2 pool options
   // Connection acquisition is handled by waitForConnections + queueLimit
   // Query timeouts should be handled at the application level if needed
-  
+
   // Connection health
-  enableKeepAlive: true,
+  enableKeepAlive: false, // Disabled to prevent issues with load balancers dropping silent connections
   keepAliveInitialDelay: 0,
-  
+
   // Security (for government compliance)
   ssl: process.env.DB_SSL === 'true' ? {
     rejectUnauthorized: process.env.DB_SSL_REJECT_UNAUTHORIZED !== 'false'
@@ -81,7 +81,7 @@ async function testConnection() {
   } catch (error) {
     consecutiveFailures++;
     const duration = Date.now() - startTime;
-    
+
     console.error(`❌ Database connection failed (${duration}ms):`, {
       code: error.code,
       errno: error.errno,
@@ -154,31 +154,31 @@ function getPoolStats() {
 async function executeQuery(sql, params = [], options = {}) {
   poolMetrics.totalQueries++;
   const startTime = Date.now();
-  
+
   try {
     const result = await pool.query(sql, params);
     const duration = Date.now() - startTime;
-    
+
     // Log slow queries (for government compliance monitoring)
     if (duration > 5000 && process.env.NODE_ENV === 'production') {
       console.warn(`⚠️  Slow query detected (${duration}ms): ${sql.substring(0, 100)}...`);
     }
-    
+
     return result;
   } catch (error) {
     poolMetrics.failedQueries++;
-    
+
     if (error.code === 'ETIMEDOUT') {
       poolMetrics.timeoutErrors++;
     }
-    
+
     const duration = Date.now() - startTime;
     console.error(`❌ Query failed after ${duration}ms:`, {
       code: error.code,
       message: error.message,
       sql: sql.substring(0, 100)
     });
-    
+
     throw error;
   }
 }

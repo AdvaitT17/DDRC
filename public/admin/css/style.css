@@ -58,6 +58,7 @@
 .admin-top-bar #logoutBtn::before {
   content: none !important;
 }
+
 .admin-top-bar #logoutBtn {
   display: inline-flex;
   align-items: center;
@@ -311,6 +312,7 @@
 .modal-dialog {
   z-index: 1056;
 }
+
 /* Main Header Styles */
 .main-header {
   padding: 15px 20px;
@@ -849,11 +851,14 @@
 /* Optimize modal body for maximum content space */
 #applicationModal .modal-body {
   padding: 1rem;
-  padding-bottom: 0 !important; /* Remove gap before modal-footer */
+  padding-bottom: 0 !important;
+  /* Remove gap before modal-footer */
   display: flex;
   flex-direction: column;
-  min-height: 0; /* Allow flex shrinking */
-  gap: 0 !important; /* Remove flexbox gaps */
+  min-height: 0;
+  /* Allow flex shrinking */
+  gap: 0 !important;
+  /* Remove flexbox gaps */
 }
 
 /* Remove gap between modal-body and modal-footer */
@@ -867,11 +872,13 @@
 /* Apply same gap removal to incomplete registration modal */
 #incompleteRegistrationModal .modal-body {
   padding: 1rem;
-  padding-bottom: 0 !important; /* Remove gap before modal-footer */
+  padding-bottom: 0 !important;
+  /* Remove gap before modal-footer */
   display: flex;
   flex-direction: column;
   min-height: 0;
-  gap: 0 !important; /* Remove flexbox gaps */
+  gap: 0 !important;
+  /* Remove flexbox gaps */
 }
 
 /* Application sections get all available space */
@@ -880,7 +887,8 @@
   overflow-y: auto;
   display: flex;
   gap: 1.5rem;
-  min-height: 0; /* Critical for flex scrolling */
+  min-height: 0;
+  /* Critical for flex scrolling */
   /* Override Bootstrap row margins to align with header */
   margin-left: 0 !important;
   margin-right: 0 !important;
@@ -898,8 +906,10 @@
 
 /* Hide scrollbar but keep scrolling functionality */
 .application-sections {
-  -ms-overflow-style: none !important; /* IE and Edge */
-  scrollbar-width: none !important; /* Firefox */
+  -ms-overflow-style: none !important;
+  /* IE and Edge */
+  scrollbar-width: none !important;
+  /* Firefox */
 }
 
 /* Hide scrollbar for WebKit browsers (Chrome, Safari, etc.) */
@@ -912,7 +922,8 @@
 /* Two column layout for sections */
 .form-section-column {
   flex: 1;
-  min-width: 0; /* Prevents flex item from overflowing */
+  min-width: 0;
+  /* Prevents flex item from overflowing */
   /* Remove any Bootstrap column padding to ensure alignment */
   padding-left: 0 !important;
   padding-right: 0 !important;
@@ -1355,6 +1366,7 @@ body.modal-open {
   text-transform: uppercase;
   font-size: 0.75rem;
   position: relative;
+  white-space: nowrap;
 }
 
 .status-badge::before {
@@ -1411,6 +1423,7 @@ body.modal-open {
   background: #4f46e5;
   box-shadow: 0 0 0 2px #c7d2fe80;
 }
+
 /* Center modal vertically */
 .modal-dialog {
   display: flex;
@@ -1446,9 +1459,12 @@ body.modal-open {
   }
 
   /* Adjust column widths for mobile */
-  .logbook-table th:nth-child(1), /* Timestamp */
-  .logbook-table th:nth-child(2), /* Staff */
-  .logbook-table th:nth-child(3), /* Action */
+  .logbook-table th:nth-child(1),
+  /* Timestamp */
+  .logbook-table th:nth-child(2),
+  /* Staff */
+  .logbook-table th:nth-child(3),
+  /* Action */
   .logbook-table th:nth-child(4) {
     /* Application ID */
     width: 20%;
@@ -1915,10 +1931,12 @@ body.modal-open {
     border-color: var(--primary-color);
     box-shadow: 0 0 0 0 rgba(var(--primary-color-rgb), 0.4);
   }
+
   70% {
     border-color: var(--primary-color);
     box-shadow: 0 0 0 6px rgba(var(--primary-color-rgb), 0);
   }
+
   100% {
     border-color: #d1d5db;
     box-shadow: 0 0 0 0 rgba(var(--primary-color-rgb), 0);
@@ -1934,9 +1952,11 @@ body.modal-open {
   0% {
     box-shadow: 0 0 0 0 rgba(var(--primary-color-rgb), 0.7);
   }
+
   70% {
     box-shadow: 0 0 0 10px rgba(var(--primary-color-rgb), 0);
   }
+
   100% {
     box-shadow: 0 0 0 0 rgba(var(--primary-color-rgb), 0);
   }
@@ -2477,6 +2497,7 @@ body.modal-open {
     transform: translateX(100%);
     opacity: 0;
   }
+
   to {
     transform: translateX(0);
     opacity: 1;
@@ -2757,60 +2778,77 @@ body.modal-open {
 
 /* Inactivity filter dropdown styles */
 .admin-controls .form-select {
-  text-overflow: ellipsis; /* Add ellipsis for overflow text */
+  text-overflow: ellipsis;
+  /* Add ellipsis for overflow text */
 }
 
 @media (max-width: 1200px) {
   .admin-controls .form-select {
     max-width: 100%;
-    font-size: 0.85rem; /* Slightly smaller font for better readability on medium screens */
+    font-size: 0.85rem;
+    /* Slightly smaller font for better readability on medium screens */
   }
 }
 
 @media (max-width: 768px) {
   .admin-controls .form-select {
     width: 100%;
-    font-size: 0.8rem; /* Even smaller font for mobile */
+    font-size: 0.8rem;
+    /* Even smaller font for mobile */
   }
 }
 
 /* Admin Dashboard Specific Fixes */
 .admin-content .content-card {
-  overflow: hidden; /* Ensure the container properly clips its content */
-  border-radius: 12px; /* Maintain the card's border radius */
+  overflow: hidden;
+  /* Ensure the container properly clips its content */
+  border-radius: 12px;
+  /* Maintain the card's border radius */
 }
 
 /* Card header styling */
 .admin-content .content-card .card-header {
-  padding: 1.5rem; /* Standard padding */
+  padding: 1.5rem;
+  /* Standard padding */
 }
 
 /* Table container - Fix for the gap issue */
 .admin-content .content-card .table-responsive {
-  border-radius: 0; /* Remove border radius from tables in admin dashboard */
-  overflow: auto; /* Allow scrolling when needed */
-  padding: 0 !important; /* Critical: removes default padding that causes the gap */
-  margin: 0; /* Remove any margin */
-  border-width: 0; /* Ensure no borders */
+  border-radius: 0;
+  /* Remove border radius from tables in admin dashboard */
+  overflow: auto;
+  /* Allow scrolling when needed */
+  padding: 0 !important;
+  /* Critical: removes default padding that causes the gap */
+  margin: 0;
+  /* Remove any margin */
+  border-width: 0;
+  /* Ensure no borders */
 }
 
 /* Base table styling */
 .admin-content .content-card .table {
-  width: 100%; /* Ensure table takes full width */
-  border-collapse: collapse; /* Collapse borders */
-  border-spacing: 0; /* Remove border spacing */
-  margin: 0; /* Remove any margin */
+  width: 100%;
+  /* Ensure table takes full width */
+  border-collapse: collapse;
+  /* Collapse borders */
+  border-spacing: 0;
+  /* Remove border spacing */
+  margin: 0;
+  /* Remove any margin */
 }
 
 /* Table row and cell styling */
 .admin-content .content-card .table tbody tr {
-  border-left: none; /* Remove any left border on rows */
+  border-left: none;
+  /* Remove any left border on rows */
 }
 
 /* IMPORTANT: This ensures consistent cell padding */
 .admin-content .content-card .table thead th,
 .admin-content .content-card .table tbody td {
-  padding: 1rem; /* Base padding for all cells */
+  padding: 1rem;
+  /* Base padding for all cells */
 }
 
 /* Adjust horizontal padding for all cells */
@@ -2823,9 +2861,12 @@ body.modal-open {
 /* First column styling - most critical fix for the left gap */
 .admin-content .content-card .table th:first-child,
 .admin-content .content-card .table td:first-child {
-  padding-left: 1.5rem; /* Standard padding */
-  margin-left: 0; /* No left margin */
-  border-left: 0; /* No left border */
+  padding-left: 1.5rem;
+  /* Standard padding */
+  margin-left: 0;
+  /* No left margin */
+  border-left: 0;
+  /* No left border */
 }
 
 /* Make sure both bottom corners of the card match */
@@ -2843,12 +2884,11 @@ html body .clickable-row {
 }
 
 html body .clickable-row:hover {
-  background-color: rgba(
-    173,
-    216,
-    230,
-    0.15
-  ) !important; /* Light blue with increased opacity */
+  background-color: rgba(173,
+      216,
+      230,
+      0.15) !important;
+  /* Light blue with increased opacity */
   position: relative !important;
   z-index: 2;
 }
@@ -2862,7 +2902,8 @@ html body .clickable-row:hover::after {
   bottom: 0;
   pointer-events: none;
   box-shadow: 0 2px 4px rgba(173, 216, 230, 0.15);
-  background: rgba(173, 216, 230, 0.1); /* Light blue with increased opacity */
+  background: rgba(173, 216, 230, 0.1);
+  /* Light blue with increased opacity */
   z-index: 1;
 }
 
@@ -2915,19 +2956,20 @@ html body .clickable-row:active {
 
 /* Admin header and navigation responsive styles */
 @media (max-width: 992px) {
+
   /* Show mobile menu toggle */
   .mobile-menu-toggle {
     display: block;
     position: relative;
     z-index: 1001;
   }
-  
+
   /* Make top bar responsive */
   .admin-top-bar {
     padding: 10px 15px;
     position: relative;
   }
-  
+
   /* Hide left links by default on mobile */
   .admin-top-bar .left-links {
     position: fixed;
@@ -2944,12 +2986,12 @@ html body .clickable-row:active {
     box-shadow: 2px 0 10px rgba(0, 0, 0, 0.1);
     overflow-y: auto;
   }
-  
+
   /* Show menu when active */
   .admin-top-bar .left-links.mobile-menu-open {
     left: 0;
   }
-  
+
   /* Style menu items for mobile */
   .admin-top-bar .left-links a {
     padding: 15px 20px;
@@ -2957,34 +2999,34 @@ html body .clickable-row:active {
     border-left: 4px solid transparent;
     transition: all 0.2s;
   }
-  
+
   .admin-top-bar .left-links a:hover,
   .admin-top-bar .left-links a.active {
     background: rgba(255, 255, 255, 0.15);
     border-left-color: white;
   }
-  
+
   /* Right links adjustments */
   .admin-top-bar .right-links {
     gap: 10px;
   }
-  
+
   #userInfo {
     display: none;
   }
-  
+
   #logoutBtn {
     padding: 8px 12px;
     font-size: 0.875rem;
   }
-  
+
   /* Main header responsive - keep horizontal layout */
   .main-header .logo-section {
     padding: 1rem;
     gap: 0.75rem;
     align-items: center;
   }
-  
+
   .main-header .emblem-logo,
   .main-header .ddrc-logo {
     width: 50px;
@@ -2992,104 +3034,105 @@ html body .clickable-row:active {
     object-fit: contain;
     flex-shrink: 0;
   }
-  
+
   .main-header .header-text {
     flex: 1;
     text-align: center;
   }
-  
+
   .main-header .header-text h1 {
     font-size: 1rem;
     margin: 0;
     line-height: 1.3;
   }
-  
+
   .main-header .header-text p {
     font-size: 0.7rem;
     margin: 0.25rem 0 0;
     line-height: 1.2;
   }
-  
+
   /* Stats grid responsive */
   .stats-grid {
     grid-template-columns: repeat(2, 1fr);
     gap: 1rem;
   }
-  
+
   /* Admin content padding */
   .admin-content {
     padding: 15px;
   }
-  
+
   /* Dashboard header */
   .dashboard-header h1 {
     font-size: 1.5rem;
   }
-  
+
   /* Table responsive */
   .table-responsive {
     margin-bottom: 1rem;
   }
-  
+
   .content-card {
     margin-bottom: 1.5rem;
   }
 }
 
 @media (max-width: 576px) {
+
   /* Stack stats vertically on very small screens */
   .stats-grid {
     grid-template-columns: 1fr;
   }
-  
+
   /* Make stat cards more compact */
   .stat-card {
     padding: 1rem;
   }
-  
+
   .stat-icon {
     width: 3rem;
     height: 3rem;
   }
-  
+
   .stat-value {
     font-size: 1.5rem;
   }
-  
+
   /* Header even more compact on small mobile */
   .main-header .logo-section {
     padding: 0.75rem 0.5rem;
     gap: 0.5rem;
   }
-  
+
   .main-header .emblem-logo,
   .main-header .ddrc-logo {
     width: 40px;
     height: 40px;
     object-fit: contain;
   }
-  
+
   .main-header .header-text h1 {
     font-size: 0.875rem;
     line-height: 1.2;
   }
-  
+
   .main-header .header-text p {
     font-size: 0.625rem;
     line-height: 1.1;
   }
-  
+
   /* Hide second line of subtext on very small screens */
   .main-header .header-text p:last-child {
     display: none;
   }
-  
+
   /* Mobile menu full width */
   .admin-top-bar .left-links {
     width: 100%;
     left: -100%;
   }
-  
+
   /* Logout button: show text (no icon) on mobile */
   #logoutBtn {
     font-size: 0.875rem;
@@ -3097,21 +3140,21 @@ html body .clickable-row:active {
     min-width: auto;
     min-height: auto;
   }
-  
+
   #logoutBtn::before {
     content: none;
   }
-  
+
   /* Dashboard header */
   .dashboard-header h1 {
     font-size: 1.25rem;
   }
-  
+
   /* Card headers */
   .card-header h2 {
     font-size: 1.1rem;
   }
-  
+
   /* Buttons */
   .btn {
     padding: 0.5rem 1rem;
@@ -3123,58 +3166,59 @@ html body .clickable-row:active {
 
 /* Reports Page Mobile Optimizations */
 @media (max-width: 992px) {
+
   /* Filter panel mobile */
   .filter-panel-header {
     flex-direction: column;
     align-items: flex-start !important;
     gap: 1rem;
   }
-  
+
   .filter-action-buttons {
     display: flex;
     flex-wrap: wrap;
     gap: 0.5rem;
     width: 100%;
   }
-  
+
   .filter-action-buttons .btn {
     flex: 1 1 auto;
     font-size: 0.75rem;
     padding: 0.375rem 0.5rem;
   }
-  
+
   /* Report results actions */
   #reportResults .d-flex {
     flex-direction: column;
     align-items: stretch !important;
     gap: 1rem;
   }
-  
+
   #reportResults .btn-group {
     width: 100%;
     margin-right: 0 !important;
   }
-  
+
   #reportResults .btn-group .btn {
     flex: 1;
   }
-  
+
   .aggregation-type-selector {
     width: 100%;
   }
-  
+
   /* Filter rows */
   .filter-panel .row {
     margin: 0;
   }
-  
+
   .filter-panel .col-md-4,
   .filter-panel .col-md-3,
   .filter-panel .col-md-2 {
     padding-left: 0;
     padding-right: 0;
   }
-  
+
   /* Cross-tab table scroll */
   .cross-tab-container {
     overflow-x: auto;
@@ -3183,25 +3227,26 @@ html body .clickable-row:active {
 }
 
 @media (max-width: 576px) {
+
   /* Stack filter buttons vertically */
   .filter-action-buttons {
     flex-direction: column;
   }
-  
+
   .filter-action-buttons .btn {
     width: 100%;
   }
-  
+
   /* Report actions stacked */
   #reportResults .btn-group {
     flex-direction: column;
   }
-  
+
   #reportResults .btn {
     width: 100%;
     margin-bottom: 0.5rem;
   }
-  
+
   /* Generate report button */
   .d-grid.col-md-6 {
     max-width: 100% !important;
@@ -3210,62 +3255,63 @@ html body .clickable-row:active {
 
 /* Form Management Page Mobile Optimizations */
 @media (max-width: 992px) {
+
   /* Section items */
   .section-item {
     padding: 1rem;
   }
-  
+
   .section-header {
     flex-direction: column;
     align-items: flex-start !important;
     gap: 1rem;
   }
-  
+
   .section-actions {
     display: flex;
     gap: 0.5rem;
     width: 100%;
   }
-  
+
   .section-actions .btn {
     flex: 1;
   }
-  
+
   /* Field items */
   .field-item {
     flex-direction: column;
     align-items: flex-start !important;
     gap: 1rem;
   }
-  
+
   .field-info {
     width: 100%;
   }
-  
+
   .field-actions {
     display: flex;
     gap: 0.5rem;
     width: 100%;
   }
-  
+
   .field-actions .btn {
     flex: 1;
   }
-  
+
   /* Field modal */
   .modal-dialog {
     margin: 0.5rem;
   }
-  
+
   .modal-body {
     padding: 1rem;
   }
-  
+
   .modal-footer {
     flex-direction: column-reverse;
     gap: 0.5rem;
   }
-  
+
   .modal-footer .btn {
     width: 100%;
     margin: 0 !important;
@@ -3273,13 +3319,14 @@ html body .clickable-row:active {
 }
 
 @media (max-width: 576px) {
+
   /* Card headers */
   .card-header.d-flex {
     flex-direction: column;
     align-items: flex-start !important;
     gap: 1rem;
   }
-  
+
   .card-header .btn {
     width: 100%;
   }
@@ -3287,22 +3334,23 @@ html body .clickable-row:active {
 
 /* News Page Mobile Optimizations */
 @media (max-width: 992px) {
+
   /* News grid */
   .news-grid {
     grid-template-columns: 1fr;
     gap: 1rem;
   }
-  
+
   /* News card actions */
   .news-card .card-footer {
     flex-direction: column;
     gap: 0.5rem;
   }
-  
+
   .news-card .card-footer .btn {
     width: 100%;
   }
-  
+
   /* News form */
   .news-form .form-group {
     margin-bottom: 1rem;
@@ -3310,11 +3358,12 @@ html body .clickable-row:active {
 }
 
 @media (max-width: 576px) {
+
   /* News card */
   .news-card {
     margin-bottom: 1rem;
   }
-  
+
   .news-card img {
     max-height: 200px;
     object-fit: cover;
@@ -3323,34 +3372,43 @@ html body .clickable-row:active {
 
 /* News table tweaks */
 @media (max-width: 768px) {
+
   /* Allow wrapping, avoid overflow */
   .news-description {
     max-width: none !important;
     white-space: normal !important;
     word-break: break-word;
   }
+
   .btn-view-file {
     width: 100% !important;
   }
+
   .content-card .action-buttons {
     flex-wrap: wrap;
   }
 }
 
 @media (max-width: 576px) {
+
   /* Hide less important columns on phones */
   #newsTable thead th:nth-child(3),
-  #newsTable tbody td:nth-child(3) { /* Description */
+  #newsTable tbody td:nth-child(3) {
+    /* Description */
     display: none;
   }
+
   #newsTable thead th:nth-child(4),
-  #newsTable tbody td:nth-child(4) { /* File */
+  #newsTable tbody td:nth-child(4) {
+    /* File */
     display: none;
   }
+
   .content-card .action-buttons {
     flex-direction: column;
     gap: 6px;
   }
+
   .content-card .action-buttons .btn {
     width: 100%;
   }
@@ -3358,60 +3416,67 @@ html body .clickable-row:active {
 
 /* Events Page Mobile Optimizations */
 @media (max-width: 992px) {
+
   /* Events grid */
   .events-grid {
     grid-template-columns: 1fr;
     gap: 1rem;
   }
-  
+
   /* Event card */
   .event-card {
     flex-direction: column;
   }
-  
+
   .event-image {
     width: 100%;
     height: 200px;
   }
-  
+
   .event-details {
     width: 100%;
   }
-  
+
   /* Event actions */
   .event-actions {
     flex-direction: column;
     gap: 0.5rem;
   }
-  
+
   .event-actions .btn {
     width: 100%;
   }
 }
 
 @media (max-width: 576px) {
+
   /* Event modal */
   .event-modal .modal-body {
     padding: 1rem;
   }
+
   /* Hide description column on phones to save space */
   #eventsTable thead th:nth-child(3),
-  #eventsTable tbody td:nth-child(3) { /* Description */
+  #eventsTable tbody td:nth-child(3) {
+    /* Description */
     display: none;
   }
+
   /* Smaller image cell */
   #eventsTable .event-image {
     width: 90px;
     height: 60px;
   }
+
   .content-card .action-buttons {
     flex-direction: column;
     gap: 6px;
   }
+
   .content-card .action-buttons .btn {
     width: 100%;
   }
-  
+
   /* Event image upload */
   .image-preview-container {
     grid-template-columns: 1fr;
@@ -3420,33 +3485,35 @@ html body .clickable-row:active {
 
 /* Logs Page Mobile Optimizations */
 @media (max-width: 992px) {
+
   /* Log filters */
   .log-filters {
     flex-direction: column;
     gap: 1rem;
   }
-  
+
   .log-filters .form-group {
     width: 100%;
   }
-  
+
   /* Log table */
   .table-responsive {
     font-size: 0.875rem;
   }
-  
+
   .table td {
     padding: 0.5rem 0.25rem;
   }
 }
 
 @media (max-width: 576px) {
+
   /* Hide less important columns on mobile */
   .table th:nth-child(4),
   .table td:nth-child(4) {
     display: none;
   }
-  
+
   /* Log entry compact view */
   .log-entry {
     font-size: 0.75rem;
@@ -3455,22 +3522,23 @@ html body .clickable-row:active {
 
 /* Users Page Mobile Optimizations */
 @media (max-width: 992px) {
+
   /* User table */
   .users-table {
     font-size: 0.875rem;
   }
-  
+
   /* User actions */
   .user-actions {
     flex-direction: column;
     gap: 0.25rem;
   }
-  
+
   .user-actions .btn {
     font-size: 0.75rem;
     padding: 0.25rem 0.5rem;
   }
-  
+
   /* Align status badge nicely */
   #usersTableBody td .action-badge {
     display: inline-flex;
@@ -3480,12 +3548,12 @@ html body .clickable-row:active {
     line-height: 1;
     vertical-align: middle;
   }
-  
+
   /* User modal */
   .user-modal .form-row {
     flex-direction: column;
   }
-  
+
   .user-modal .form-group {
     width: 100%;
     margin-bottom: 1rem;
@@ -3495,16 +3563,17 @@ html body .clickable-row:active {
 @media (max-width: 576px) {
   /* Hide email and last login columns on very small screens - handled by mobile-list transformation */
   /* Note: Using .users-table class now, not .users-page */
-  
+
   /* Add user button */
   .dashboard-header .d-flex {
     flex-direction: column;
     gap: 1rem;
   }
-  
+
   .dashboard-header .btn {
     width: 100%;
   }
+
   /* User table action buttons */
   .content-card .user-actions,
   .content-card td:last-child .action-buttons {
@@ -3512,6 +3581,7 @@ html body .clickable-row:active {
     flex-direction: column;
     gap: 6px;
   }
+
   .content-card td:last-child .btn {
     width: 100%;
   }
@@ -3519,24 +3589,25 @@ html body .clickable-row:active {
 
 /* Extra small screens (iPhone SE, small phones) */
 @media (max-width: 400px) {
+
   /* Make header even more compact */
   .main-header .logo-section {
     padding: 0.5rem 0.25rem;
     gap: 0.35rem;
   }
-  
+
   .main-header .emblem-logo,
   .main-header .ddrc-logo {
     width: 35px;
     height: 35px;
     object-fit: contain;
   }
-  
+
   .main-header .header-text h1 {
     font-size: 0.75rem;
     line-height: 1.1;
   }
-  
+
   .main-header .header-text p {
     font-size: 0.55rem;
   }
@@ -3548,21 +3619,23 @@ html body .clickable-row:active {
     border: none;
     box-shadow: none;
   }
-  
+
   .table {
     font-size: 0.875rem;
   }
-  
+
   /* Transform specific tables to card list on mobile to avoid horizontal scroll */
   #eventsTable,
   #newsTable,
   .users-table,
   .logbook-table,
   .mobile-list {
-    border-collapse: collapse; /* no gaps between rows */
+    border-collapse: collapse;
+    /* no gaps between rows */
     border-spacing: 0;
     width: 100%;
   }
+
   #eventsTable thead,
   #newsTable thead,
   .users-table thead,
@@ -3570,47 +3643,64 @@ html body .clickable-row:active {
   .mobile-list thead {
     display: none;
   }
+
   #eventsTable tr,
   #newsTable tr,
   .users-table tr,
   .logbook-table tr,
   .mobile-list tr {
     display: block;
-    padding: 0; /* no outer padding - we'll pad cells instead */
-    border-bottom: 1px solid #e5e7eb; /* simple divider between entries */
-    background: transparent; /* no inner card */
+    padding: 0;
+    /* no outer padding - we'll pad cells instead */
+    border-bottom: 1px solid #e5e7eb;
+    /* simple divider between entries */
+    background: transparent;
+    /* no inner card */
     box-shadow: none;
     border-radius: 0;
-    margin: 0; /* no vertical spacing between rows */
+    margin: 0;
+    /* no vertical spacing between rows */
   }
+
   #eventsTable td,
   #newsTable td,
   .users-table td,
   .logbook-table td,
   .mobile-list td {
-    display: block; /* simple vertical flow */
-    padding: 10px 12px; /* inner padding for comfortable reading */
+    display: block;
+    /* simple vertical flow */
+    padding: 10px 12px;
+    /* inner padding for comfortable reading */
     white-space: normal;
     border: none;
-    background: transparent !important; /* no inner boxes */
+    background: transparent !important;
+    /* no inner boxes */
   }
+
   #eventsTable td:first-child,
   #newsTable td:first-child,
   .users-table td:first-child,
   .logbook-table td:first-child,
-  .mobile-list td:first-child { padding-top: 14px; }
+  .mobile-list td:first-child {
+    padding-top: 14px;
+  }
+
   #eventsTable td:last-child,
   #newsTable td:last-child,
   .users-table td:last-child,
   .logbook-table td:last-child,
-  .mobile-list td:last-child { padding-bottom: 14px; }
+  .mobile-list td:last-child {
+    padding-bottom: 14px;
+  }
+
   #eventsTable td::before,
   #newsTable td::before,
   .users-table td::before,
   .logbook-table td::before,
   .mobile-list td::before {
     content: attr(data-label);
-    display: block; /* label on its own line */
+    display: block;
+    /* label on its own line */
     font-weight: 600;
     color: #95a3b1;
     font-size: 0.72rem;
@@ -3618,6 +3708,7 @@ html body .clickable-row:active {
     text-transform: uppercase;
     letter-spacing: 0.02em;
   }
+
   /* remove divider on last entry */
   #eventsTable tr:last-child,
   #newsTable tr:last-child,
@@ -3634,19 +3725,23 @@ html body .clickable-row:active {
   .logbook-table td[data-label="Details"],
   .logbook-table td[data-label="Action"],
   .mobile-list td[data-label="Actions"] {
-    text-align: right; /* buttons on the right */
+    text-align: right;
+    /* buttons on the right */
     padding-top: 6px;
   }
+
   /* Right-align the status pill on users list */
   .users-table td[data-label="Status"] {
     text-align: right;
   }
+
   .users-table td[data-label="Status"] .action-badge {
     display: inline-flex;
     align-items: center;
     justify-content: center;
     vertical-align: middle;
   }
+
   #eventsTable td[data-label="Actions"] .action-buttons,
   #newsTable td[data-label="Actions"] .action-buttons,
   .users-table td[data-label="Actions"] .action-buttons {
@@ -3654,6 +3749,7 @@ html body .clickable-row:active {
     gap: 8px;
     align-items: center;
   }
+
   #eventsTable td[data-label="Actions"] .action-buttons .btn,
   #newsTable td[data-label="Actions"] .action-buttons .btn,
   .users-table td[data-label="Actions"] .action-buttons .btn {
@@ -3668,32 +3764,32 @@ html body .clickable-row:active {
     max-width: 100%;
     margin: 0;
   }
-  
+
   .modal-content {
     border-radius: 0;
     min-height: 100vh;
   }
-  
+
   .modal-body {
     max-height: calc(100vh - 140px);
     overflow-y: auto;
   }
-  
+
   .modal-header {
     padding: 1rem;
   }
-  
+
   .modal-title {
     font-size: 1.1rem;
   }
-  
+
   .modal-footer {
     padding: 1rem;
     flex-direction: column-reverse;
     gap: 0.5rem;
   }
-  
-  .modal-footer > * {
+
+  .modal-footer>* {
     width: 100%;
     margin: 0 !important;
   }
@@ -3701,6 +3797,7 @@ html body .clickable-row:active {
 
 /* Touch-friendly interactions */
 @media (hover: none) and (pointer: coarse) {
+
   .btn,
   .form-control,
   .form-select,
@@ -3708,13 +3805,70 @@ html body .clickable-row:active {
     min-height: 44px;
     min-width: 44px;
   }
-  
+
   .btn-sm {
     min-height: 36px;
   }
-  
+
   /* Larger tap targets for table actions */
   .table .btn-sm {
     padding: 0.5rem 0.75rem;
   }
+}
+
+/* Skeleton/Shimmer Loading Animation (Swipe-Right Effect) */
+.skeleton-loader {
+  width: 100%;
+  padding: 20px 0;
+}
+
+.skeleton-header {
+  height: 40px;
+  background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+  background-size: 200% 100%;
+  animation: shimmer 1.5s infinite;
+  border-radius: 8px;
+  margin-bottom: 20px;
+}
+
+.skeleton-row {
+  height: 60px;
+  background: linear-gradient(90deg, #f5f5f5 25%, #e8e8e8 50%, #f5f5f5 75%);
+  background-size: 200% 100%;
+  animation: shimmer 1.5s infinite;
+  border-radius: 8px;
+  margin-bottom: 15px;
+}
+
+.skeleton-row:last-child {
+  margin-bottom: 0;
+}
+
+@keyframes shimmer {
+  0% {
+    background-position: -200% 0;
+  }
+
+  100% {
+    background-position: 200% 0;
+  }
+}
+
+/* Skeleton variations for different contexts */
+.skeleton-stat-card {
+  height: 120px;
+  background: linear-gradient(90deg, #f5f5f5 25%, #e8e8e8 50%, #f5f5f5 75%);
+  background-size: 200% 100%;
+  animation: shimmer 1.5s infinite;
+  border-radius: 12px;
+  margin-bottom: 15px;
+}
+
+.skeleton-table-row {
+  height: 50px;
+  background: linear-gradient(90deg, #fafafa 25%, #f0f0f0 50%, #fafafa 75%);
+  background-size: 200% 100%;
+  animation: shimmer 1.5s infinite;
+  border-radius: 6px;
+  margin-bottom: 10px;
 }

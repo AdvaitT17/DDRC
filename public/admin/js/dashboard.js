@@ -84,10 +84,13 @@ class DashboardManager {
         tableBody.innerHTML = `
           <tr>
             <td colspan="7" class="text-center py-4">
-              <div class="spinner-border spinner-border-sm me-2" role="status">
-                <span class="visually-hidden">Loading...</span>
+              <div class="skeleton-loader">
+                <div class="skeleton-table-row"></div>
+                <div class="skeleton-table-row"></div>
+                <div class="skeleton-table-row"></div>
+                <div class="skeleton-table-row"></div>
+                <div class="skeleton-table-row"></div>
               </div>
-              Loading registrations...
             </td>
           </tr>
         `;
@@ -147,9 +150,8 @@ class DashboardManager {
       tableBody.innerHTML = registrations
         .map(
           (reg) => `
-          <tr class="clickable-row" onclick="dashboardManager.viewIncompleteRegistration('${
-            reg.id !== null ? reg.id : reg.userId
-          }')">
+          <tr class="clickable-row" onclick="dashboardManager.viewIncompleteRegistration('${reg.id !== null ? reg.id : reg.userId
+            }')">
             <td data-label="ID">${reg.applicationId}</td>
             <td data-label="Name">${reg.applicantName || "Not specified"}</td>
             <td data-label="Email">${reg.email}</td>
@@ -628,9 +630,8 @@ class DashboardManager {
       editSummaryList.style.boxSizing = "border-box";
 
       // Update the count badge
-      document.getElementById("editedFieldsCount").textContent = `${
-        editedFieldIds.length
-      } field${editedFieldIds.length > 1 ? "s" : ""}`;
+      document.getElementById("editedFieldsCount").textContent = `${editedFieldIds.length
+        } field${editedFieldIds.length > 1 ? "s" : ""}`;
 
       // Add each edited field to the summary
       editedFieldIds.forEach((fieldId) => {
@@ -1064,8 +1065,8 @@ class DashboardManager {
           const userId = registrationIdStr.startsWith("TEMP-")
             ? registrationIdStr.replace("TEMP-", "")
             : this.currentRegistration
-            ? this.currentRegistration.userId
-            : registrationId;
+              ? this.currentRegistration.userId
+              : registrationId;
 
           // First create a registration record
           const createResponse = await fetch(
@@ -1162,15 +1163,13 @@ class DashboardManager {
     const toastId = `toast_${Date.now()}`;
     const toast = document.createElement("div");
     toast.id = toastId;
-    toast.className = `toast ${
-      type === "success" ? "bg-success" : "bg-danger"
-    } text-white`;
+    toast.className = `toast ${type === "success" ? "bg-success" : "bg-danger"
+      } text-white`;
     toast.setAttribute("role", "alert");
     toast.setAttribute("aria-live", "assertive");
     toast.setAttribute("aria-atomic", "true");
     toast.innerHTML = `
-      <div class="toast-header ${
-        type === "success" ? "bg-success" : "bg-danger"
+      <div class="toast-header ${type === "success" ? "bg-success" : "bg-danger"
       } text-white">
         <strong class="me-auto">${title}</strong>
         <button type="button" class="btn-close btn-close-white" data-bs-dismiss="toast" aria-label="Close"></button>
@@ -1198,6 +1197,23 @@ class DashboardManager {
 
   async loadRecentApplications() {
     try {
+      const tbody = document.getElementById("recentApplications");
+      if (tbody) {
+        tbody.innerHTML = `
+          <tr>
+            <td colspan="5" class="text-center">
+              <div class="skeleton-loader">
+                <div class="skeleton-table-row"></div>
+                <div class="skeleton-table-row"></div>
+                <div class="skeleton-table-row"></div>
+                <div class="skeleton-table-row"></div>
+                <div class="skeleton-table-row"></div>
+              </div>
+            </td>
+          </tr>
+        `;
+      }
+
       const response = await fetch("/api/admin/recent-applications", {
         headers: {
           Authorization: `Bearer ${AuthManager.getAuthToken()}`,
@@ -1207,7 +1223,6 @@ class DashboardManager {
       if (!response.ok) throw new Error("Failed to fetch applications");
 
       const applications = await response.json();
-      const tbody = document.getElementById("recentApplications");
 
       if (applications.length === 0) {
         tbody.innerHTML = `
@@ -1233,16 +1248,14 @@ class DashboardManager {
       tbody.innerHTML = applications
         .map(
           (app) => `
-          <tr class="clickable-row" onclick="dashboardManager.viewApplication('${
-            app.applicationId
-          }')">
-            <td data-label="Application ID">${app.applicationId}</td>
-            <td data-label="Applicant Name">${app.applicantName}</td>
-            <td data-label="Submission Date">${new Date(
+          <tr class="clickable-row" onclick="dashboardManager.viewApplication('${app.applicationId
+            }')">
+            <td data-label="Application ID" class="text-nowrap">${app.applicationId}</td>
+            <td data-label="Applicant Name" class="text-nowrap">${app.applicantName}</td>
+            <td data-label="Submission Date" class="text-nowrap">${new Date(
               app.submittedAt
             ).toLocaleDateString()}</td>
-            <td data-label="Type of Disability">${
-              app.disabilityType || "Not specified"
+            <td data-label="Type of Disability">${app.disabilityType || "Not specified"
             }</td>
             <td data-label="Location">${this.parseLocationDisplay(
               app.location,
@@ -1309,9 +1322,8 @@ class DashboardManager {
       // Reset any inline styles that might have been applied
       statusBadge.removeAttribute("style");
       // Set class only
-      statusBadge.className = `status-badge ${
-        data.service_status || "pending"
-      }`;
+      statusBadge.className = `status-badge ${data.service_status || "pending"
+        }`;
       // Set text content only
       statusBadge.textContent = this.formatStatus(
         data.service_status || "pending"
@@ -1398,65 +1410,63 @@ class DashboardManager {
     return `
       <div class="form-section-column">
         ${leftSections
-          .map(
-            (section) => `
+        .map(
+          (section) => `
             <div class="form-section">
               <h5>${section.name}</h5>
               ${section.fields
-                .map((field) => {
-                  if (
-                    field.field_type === "nested-select" &&
-                    !this.isEditMode
-                  ) {
-                    return this.renderNestedSelectFields(field);
-                  }
-                  return `
-                    <div class="form-field ${
-                      this.isEditMode ? "edit-mode" : ""
-                    }">
+              .map((field) => {
+                if (
+                  field.field_type === "nested-select" &&
+                  !this.isEditMode
+                ) {
+                  return this.renderNestedSelectFields(field);
+                }
+                return `
+                    <div class="form-field ${this.isEditMode ? "edit-mode" : ""
+                  }">
                       <div class="field-label">${field.display_name}</div>
                       <div class="field-value">${this.renderFieldValue(
-                        field
-                      )}</div>
+                    field
+                  )}</div>
                     </div>
                   `;
-                })
-                .join("")}
+              })
+              .join("")}
             </div>
           `
-          )
-          .join("")}
+        )
+        .join("")}
       </div>
       <div class="form-section-column">
         ${rightSections
-          .map(
-            (section) => `
+        .map(
+          (section) => `
             <div class="form-section">
               <h5>${section.name}</h5>
               ${section.fields
-                .map((field) => {
-                  if (
-                    field.field_type === "nested-select" &&
-                    !this.isEditMode
-                  ) {
-                    return this.renderNestedSelectFields(field);
-                  }
-                  return `
-                    <div class="form-field ${
-                      this.isEditMode ? "edit-mode" : ""
-                    }">
+              .map((field) => {
+                if (
+                  field.field_type === "nested-select" &&
+                  !this.isEditMode
+                ) {
+                  return this.renderNestedSelectFields(field);
+                }
+                return `
+                    <div class="form-field ${this.isEditMode ? "edit-mode" : ""
+                  }">
                       <div class="field-label">${field.display_name}</div>
                       <div class="field-value">${this.renderFieldValue(
-                        field
-                      )}</div>
+                    field
+                  )}</div>
                     </div>
                   `;
-                })
-                .join("")}
+              })
+              .join("")}
             </div>
           `
-          )
-          .join("")}
+        )
+        .join("")}
       </div>
     `;
   }
@@ -1634,32 +1644,29 @@ class DashboardManager {
                   ${index > 0 && !savedValues[index - 1] ? "disabled" : ""}
                 >
                   <option value="">Select ${level.name}</option>
-                  ${
-                    index === 0 && level.options
-                      ? typeof level.options === "string"
-                        ? level.options
-                            .split("\n")
-                            .map((opt) => opt.trim())
-                            .filter((opt) => opt)
-                            .map(
-                              (opt) =>
-                                `<option value="${opt}" ${
-                                  savedValues[0] === opt ? "selected" : ""
-                                }>${opt}</option>`
-                            )
-                            .join("")
-                        : Array.isArray(level.options)
-                        ? level.options
-                            .map(
-                              (opt) =>
-                                `<option value="${opt}" ${
-                                  savedValues[0] === opt ? "selected" : ""
-                                }>${opt}</option>`
-                            )
-                            .join("")
-                        : ""
-                      : ""
-                  }
+                  ${index === 0 && level.options
+                ? typeof level.options === "string"
+                  ? level.options
+                    .split("\n")
+                    .map((opt) => opt.trim())
+                    .filter((opt) => opt)
+                    .map(
+                      (opt) =>
+                        `<option value="${opt}" ${savedValues[0] === opt ? "selected" : ""
+                        }>${opt}</option>`
+                    )
+                    .join("")
+                  : Array.isArray(level.options)
+                    ? level.options
+                      .map(
+                        (opt) =>
+                          `<option value="${opt}" ${savedValues[0] === opt ? "selected" : ""
+                          }>${opt}</option>`
+                      )
+                      .join("")
+                    : ""
+                : ""
+              }
                 </select>
               </div>
             `;
@@ -1693,9 +1700,8 @@ class DashboardManager {
                 // Clear and disable all subsequent dropdowns
                 subsequentSelects.forEach((select) => {
                   const selectLevel = parseInt(select.dataset.level);
-                  select.innerHTML = `<option value="">Select ${
-                    nestedConfig[selectLevel - 1].name
-                  }</option>`;
+                  select.innerHTML = `<option value="">Select ${nestedConfig[selectLevel - 1].name
+                    }</option>`;
                   select.disabled = true;
                 });
 
@@ -1756,8 +1762,8 @@ class DashboardManager {
                     const selectedParentOptions =
                       typeof nextLevel.options === "string"
                         ? parentOptions
-                            .find((opt) => opt.startsWith(`${selectedValue}:`))
-                            ?.split(":")?.[1]
+                          .find((opt) => opt.startsWith(`${selectedValue}:`))
+                          ?.split(":")?.[1]
                         : null;
 
                     if (selectedParentOptions) {
@@ -1873,14 +1879,13 @@ class DashboardManager {
                 onchange="dashboardManager.handleFieldEdit(this)">
                 <option value="">Select an option</option>
                 ${optionsList
-                  .map(
-                    (opt) => `
-                  <option value="${opt}" ${
-                      opt === fieldValue ? "selected" : ""
-                    }>${opt}</option>
+              .map(
+                (opt) => `
+                  <option value="${opt}" ${opt === fieldValue ? "selected" : ""
+                  }>${opt}</option>
                 `
-                  )
-                  .join("")}
+              )
+              .join("")}
               </select>
             </div>
           `;
@@ -1905,20 +1910,19 @@ class DashboardManager {
           return `
             <div class="edit-field-container">
               ${optionsList
-                .map(
-                  (opt, idx) => `
+              .map(
+                (opt, idx) => `
                 <div class="form-check">
                   <input class="form-check-input edit-field-checkbox" type="checkbox" 
-                    id="${fieldName}_${idx}" value="${opt}" ${
-                    values.includes(opt) ? "checked" : ""
+                    id="${fieldName}_${idx}" value="${opt}" ${values.includes(opt) ? "checked" : ""
                   } 
                     data-field-id="${fieldId}" data-field-name="${fieldName}" 
                     onchange="dashboardManager.handleCheckboxEdit('${fieldName}')">
                   <label class="form-check-label" for="${fieldName}_${idx}">${opt}</label>
                 </div>
               `
-                )
-                .join("")}
+              )
+              .join("")}
             </div>
           `;
         } catch (e) {
@@ -1935,9 +1939,8 @@ class DashboardManager {
         return `
           <div class="edit-field-container">
             <div class="current-file mb-2">
-              ${
-                fieldValue
-                  ? `
+              ${fieldValue
+            ? `
                 <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                   <path d="M13 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9z"></path>
                   <polyline points="13 2 13 9 20 9"></polyline>
@@ -1946,14 +1949,13 @@ class DashboardManager {
                 <button type="button" onclick="previewDocument('${fieldValue}')" class="btn btn-link p-0 ms-2">View</button>
                 <button type="button" onclick="dashboardManager.removeFile(${fieldId}, '${fieldName}')" class="btn btn-link text-danger p-0 ms-2">Remove</button>
                 `
-                  : "<span class='text-muted'>No file currently uploaded</span>"
-              }
+            : "<span class='text-muted'>No file currently uploaded</span>"
+          }
             </div>
             <div class="file-upload-container" data-field-id="${fieldId}" data-field-name="${fieldName}">
               <input type="file" class="form-control edit-field-file" id="${fieldName}_file" 
-                data-field-id="${fieldId}" data-original-value="${
-          fieldValue || ""
-        }" 
+                data-field-id="${fieldId}" data-original-value="${fieldValue || ""
+          }" 
                 onchange="dashboardManager.handleFileUpload(this)">
               <div class="upload-progress" style="display: none;">
                 <div class="progress mt-2">
@@ -1962,9 +1964,8 @@ class DashboardManager {
               </div>
             </div>
             <input type="hidden" id="${fieldName}" value="${fieldValue || ""}" 
-              data-field-id="${fieldId}" data-original-value="${
-          fieldValue || ""
-        }">
+              data-field-id="${fieldId}" data-original-value="${fieldValue || ""
+          }">
           </div>
         `;
 
@@ -2307,9 +2308,8 @@ class DashboardManager {
     editSummaryList.style.boxSizing = "border-box";
 
     // Update the count badge
-    document.getElementById("editedFieldsCount").textContent = `${
-      editedFieldIds.length
-    } field${editedFieldIds.length > 1 ? "s" : ""}`;
+    document.getElementById("editedFieldsCount").textContent = `${editedFieldIds.length
+      } field${editedFieldIds.length > 1 ? "s" : ""}`;
 
     // Add each edited field to the summary
     editedFieldIds.forEach((fieldId) => {
@@ -2584,13 +2584,13 @@ class DashboardManager {
       .then((data) => {
         // Check for validation warnings
         if (data.validationWarnings && data.validationWarnings.length > 0) {
-          const warningMessages = data.validationWarnings.map(w => 
+          const warningMessages = data.validationWarnings.map(w =>
             `⚠️ ${w.fieldName}: ${w.message}`
           ).join('\n');
-          
+
           alert(`Changes saved successfully!\n\nValidation Warnings (informational only):\n${warningMessages}\n\nNote: Admin edits are allowed to override validation rules.`);
         }
-        
+
         // Reset edited fields
         this.editedFields = {};
         this.updateSaveButtonState();
@@ -2670,8 +2670,8 @@ class DashboardManager {
         historyContent.innerHTML = `
           <div class="edit-history-timeline">
             ${history
-              .map(
-                (edit, index) => `
+            .map(
+              (edit, index) => `
               <div class="history-card">
                 <div class="history-card-header">
                   <div class="history-meta">
@@ -2687,11 +2687,10 @@ class DashboardManager {
                         <path d="M8 8a3 3 0 1 0 0-6 3 3 0 0 0 0 6Zm2-3a2 2 0 1 1-4 0 2 2 0 0 1 4 0Zm4 8c0 1-1 1-1 1H3s-1 0-1-1 1-4 6-4 6 3 6 4Zm-1-.004c-.001-.246-.154-.986-.832-1.664C11.516 10.68 10.289 10 8 10c-2.29 0-3.516.68-4.168 1.332-.678.678-.83 1.418-.832 1.664h10Z"/>
                       </svg>
                       <span class="user-name">${edit.user}</span>
-                      <span class="user-role badge ${
-                        edit.userRole === "admin"
-                          ? "bg-primary"
-                          : "bg-secondary"
-                      }">${edit.userRole}</span>
+                      <span class="user-role badge ${edit.userRole === "admin"
+                  ? "bg-primary"
+                  : "bg-secondary"
+                }">${edit.userRole}</span>
                     </div>
                   </div>
                   <div class="field-name">
@@ -2703,8 +2702,8 @@ class DashboardManager {
                     <div class="previous-value">
                       <div class="value-label">Previous Value</div>
                       <div class="value-content">${this.formatHistoryValue(
-                        edit.previousValue
-                      )}</div>
+                  edit.previousValue
+                )}</div>
                     </div>
                     <div class="change-arrow">
                       <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" class="bi bi-arrow-right" viewBox="0 0 16 16">
@@ -2714,25 +2713,24 @@ class DashboardManager {
                     <div class="new-value">
                       <div class="value-label">New Value</div>
                       <div class="value-content">${this.formatHistoryValue(
-                        edit.newValue
-                      )}</div>
+                  edit.newValue
+                )}</div>
                     </div>
                   </div>
-                  ${
-                    edit.reason
-                      ? `
+                  ${edit.reason
+                  ? `
                   <div class="edit-reason">
                     <div class="reason-label">Reason for Change:</div>
                     <div class="reason-content">${edit.reason}</div>
                   </div>
                   `
-                      : ""
-                  }
+                  : ""
+                }
                 </div>
               </div>
             `
-              )
-              .join("")}
+            )
+            .join("")}
           </div>
         `;
       }
@@ -2834,8 +2832,8 @@ class DashboardManager {
         <small class="text-muted">
           Last updated by <span id="lastUpdatedBy">${data.updatedBy}</span> on
           <span id="lastUpdatedAt">${new Date(
-            data.updatedAt
-          ).toLocaleString()}</span>
+        data.updatedAt
+      ).toLocaleString()}</span>
         </small>`;
 
       // Update button visibility
@@ -2918,8 +2916,8 @@ class DashboardManager {
         <small class="text-muted">
           Last updated by <span id="lastUpdatedBy">${result.updatedBy}</span> on
           <span id="lastUpdatedAt">${new Date(
-            result.updatedAt
-          ).toLocaleString()}</span>
+        result.updatedAt
+      ).toLocaleString()}</span>
         </small>`;
 
       // Update button states
@@ -3104,9 +3102,9 @@ class DashboardManager {
     const tableHeader = recentAppsContainer.querySelector("thead tr");
     if (tableHeader) {
       tableHeader.innerHTML = `
-        <th>Application ID</th>
-        <th>Applicant Name</th>
-        <th>Submission Date</th>
+        <th class="text-nowrap">Application ID</th>
+        <th class="text-nowrap">Applicant Name</th>
+        <th class="text-nowrap">Submission Date</th>
         <th>Type of Disability</th>
         <th>Location</th>
         <th>Status</th>
@@ -3659,16 +3657,21 @@ class DashboardManager {
       const tbody = document.getElementById("recentApplications");
       if (!tbody) return;
 
-      // Show loading indicator
+      // Show loading indicator with shimmer animation
       tbody.innerHTML = `
         <tr>
-          <td colspan="5" class="text-center">
-            <div class="spinner-border text-primary" role="status">
-              <span class="visually-hidden">Loading...</span>
+          <td colspan="6" class="text-center">
+            <div class="skeleton-loader">
+              <div class="skeleton-table-row"></div>
+              <div class="skeleton-table-row"></div>
+              <div class="skeleton-table-row"></div>
+              <div class="skeleton-table-row"></div>
+              <div class="skeleton-table-row"></div>
             </div>
           </td>
         </tr>
       `;
+
 
       const response = await fetch("/api/admin/all-applications", {
         headers: {
@@ -3717,9 +3720,8 @@ class DashboardManager {
     // Update pagination info with proper styling
     const paginationInfo = document.getElementById("paginationInfo");
     if (paginationInfo) {
-      paginationInfo.textContent = `Showing ${startIndex + 1}-${endIndex} of ${
-        this.filteredApplications.length
-      } applications`;
+      paginationInfo.textContent = `Showing ${startIndex + 1}-${endIndex} of ${this.filteredApplications.length
+        } applications`;
     }
 
     // Update pagination buttons
@@ -3760,21 +3762,18 @@ class DashboardManager {
     // Build the complete HTML string for all rows at once
     const rowsHtml = currentPageApplications
       .map((app) => {
-        const statusHtml = `<td data-label="Status"><span class="status-badge ${
-          app.status || "pending"
-        }">${this.formatStatus(app.status || "pending")}</span></td>`;
+        const statusHtml = `<td data-label="Status"><span class="status-badge ${app.status || "pending"
+          }">${this.formatStatus(app.status || "pending")}</span></td>`;
 
         return `
-        <tr class="clickable-row" onclick="dashboardManager.viewApplication('${
-          app.applicationId
-        }')">
-          <td data-label="Application ID">${app.applicationId}</td>
-          <td data-label="Applicant Name">${app.applicantName}</td>
-          <td data-label="Submission Date">${new Date(
+        <tr class="clickable-row" onclick="dashboardManager.viewApplication('${app.applicationId
+          }')">
+          <td data-label="Application ID" class="text-nowrap">${app.applicationId}</td>
+          <td data-label="Applicant Name" class="text-nowrap">${app.applicantName}</td>
+          <td data-label="Submission Date" class="text-nowrap">${new Date(
             app.submittedAt
           ).toLocaleDateString()}</td>
-          <td data-label="Type of Disability">${
-            app.disabilityType || "Not specified"
+          <td data-label="Type of Disability">${app.disabilityType || "Not specified"
           }</td>
           <td data-label="Location">${this.parseLocationDisplay(
             app.location,
@@ -3813,6 +3812,7 @@ class DashboardManager {
           text-transform: uppercase;
           font-size: 0.75rem;
           position: relative;
+          white-space: nowrap;
         }
 
         .status-badge::before {
@@ -4170,8 +4170,7 @@ class DashboardManager {
                 <polyline points="13 2 13 9 20 9"></polyline>
               </svg>
               <span>${response.filePath.split("/").pop()}</span>
-              <button type="button" onclick="previewDocument('${
-                response.filePath
+              <button type="button" onclick="previewDocument('${response.filePath
               }')" class="btn btn-link p-0 ms-2">View</button>
               <button type="button" onclick="dashboardManager.removeFile(${fieldId}, '${fieldName}')" class="btn btn-link text-danger p-0 ms-2">Remove</button>
             `;
@@ -4642,11 +4641,10 @@ async function previewDocument(fileName) {
             </div>
             <div class="modal-body p-0">
               <div class="document-preview-container">
-                ${
-                  fileName.match(/\.(jpg|jpeg|png|gif)$/i)
-                    ? `<img src="${accessUrl}" class="img-preview" alt="Document preview">`
-                    : `<iframe src="${accessUrl}#toolbar=0" class="pdf-preview"></iframe>`
-                }
+                ${fileName.match(/\.(jpg|jpeg|png|gif)$/i)
+        ? `<img src="${accessUrl}" class="img-preview" alt="Document preview">`
+        : `<iframe src="${accessUrl}#toolbar=0" class="pdf-preview"></iframe>`
+      }
               </div>
             </div>
           </div>
@@ -5302,14 +5300,14 @@ document.head.appendChild(style);
 function toggleFullscreen() {
   const modal = document.getElementById('applicationModal');
   if (!modal) return;
-  
+
   const fullscreenBtn = document.getElementById('fullscreenBtn');
   if (!fullscreenBtn) return; // Button might be hidden on mobile
-  
+
   const fullscreenIcon = fullscreenBtn.querySelector('.fullscreen-icon');
   const exitFullscreenIcon = fullscreenBtn.querySelector('.exit-fullscreen-icon');
   if (!fullscreenIcon || !exitFullscreenIcon) return;
-  
+
   if (modal.classList.contains('fullscreen')) {
     // Exit fullscreen
     modal.classList.remove('fullscreen');
@@ -5326,7 +5324,7 @@ function toggleFullscreen() {
 }
 
 // Reset fullscreen when modal is closed
-document.getElementById('applicationModal')?.addEventListener('hidden.bs.modal', function() {
+document.getElementById('applicationModal')?.addEventListener('hidden.bs.modal', function () {
   this.classList.remove('fullscreen');
   const fullscreenBtn = document.getElementById('fullscreenBtn');
   if (fullscreenBtn) {
@@ -5339,21 +5337,21 @@ document.getElementById('applicationModal')?.addEventListener('hidden.bs.modal',
 });
 
 // Mobile menu functionality
-document.addEventListener('DOMContentLoaded', function() {
+document.addEventListener('DOMContentLoaded', function () {
   const mobileMenuToggle = document.getElementById('mobileMenuToggle');
   const leftLinks = document.getElementById('leftLinks');
-  
+
   if (!mobileMenuToggle || !leftLinks) return;
-  
+
   // Create overlay
   const overlay = document.createElement('div');
   overlay.className = 'mobile-menu-overlay';
   document.body.appendChild(overlay);
-  
+
   // Toggle menu function
   function toggleMobileMenu() {
     const isOpen = leftLinks.classList.contains('mobile-menu-open');
-    
+
     if (isOpen) {
       leftLinks.classList.remove('mobile-menu-open');
       overlay.classList.remove('active');
@@ -5364,24 +5362,29 @@ document.addEventListener('DOMContentLoaded', function() {
       document.body.style.overflow = 'hidden';
     }
   }
-  
+
   // Event listeners
   mobileMenuToggle.addEventListener('click', toggleMobileMenu);
   overlay.addEventListener('click', toggleMobileMenu);
-  
+
   // Close menu when clicking a link
   leftLinks.querySelectorAll('a').forEach(link => {
-    link.addEventListener('click', function() {
+    link.addEventListener('click', function () {
       if (window.innerWidth <= 992) {
         toggleMobileMenu();
       }
     });
   });
-  
+
   // Close menu on window resize if opened
-  window.addEventListener('resize', function() {
+  window.addEventListener('resize', function () {
     if (window.innerWidth > 992 && leftLinks.classList.contains('mobile-menu-open')) {
       toggleMobileMenu();
     }
   });
 });
+
+// Initialize dashboard
+function initializeDashboard() {
+  window.dashboardManager = new DashboardManager();
+}
