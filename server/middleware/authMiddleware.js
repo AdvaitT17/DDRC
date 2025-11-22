@@ -18,10 +18,35 @@ const authenticateToken = async (req, res, next) => {
     // OPTIMIZATION: Use pool.query() directly instead of getConnection()
     // This handles connection pooling more efficiently and auto-releases connections
     try {
+      // Helper for retry logic to handle transient connection issues
+      const executeQueryWithRetry = async (sql, params, retries = 1) => {
+        for (let i = 0; i <= retries; i++) {
+          try {
+            return await pool.query(sql, params);
+          } catch (error) {
+            // Only retry on connection-related errors
+            if (
+              i < retries &&
+              (error.code === 'ETIMEDOUT' ||
+                error.code === 'ECONNRESET' ||
+                error.code === 'PROTOCOL_CONNECTION_LOST' ||
+                error.code === 'ECONNREFUSED')
+            ) {
+              // Log as info/debug instead of warning since this is a handled recovery
+              const retryDelay = 50 * (i + 1); // Progressive delay
+              await new Promise(resolve => setTimeout(resolve, retryDelay));
+              console.log(`ℹ️  Recovering from DB connection issue (${error.code}). Retrying attempt ${i + 1}/${retries}...`);
+              continue;
+            }
+            throw error;
+          }
+        }
+      };
+
       // Check user type and fetch appropriate data
       let user = null;
       if (decoded.type === "department") {
-        const [users] = await pool.query(
+        const [users] = await executeQueryWithRetry(
           `SELECT id, username, role, full_name, email FROM users WHERE id = ?`,
           [decoded.id]
         );
@@ -29,7 +54,7 @@ const authenticateToken = async (req, res, next) => {
           user = { ...users[0], type: "department" };
         }
       } else if (decoded.type === "applicant") {
-        const [users] = await pool.query(
+        const [users] = await executeQueryWithRetry(
           `SELECT id, email, username AS full_name FROM registered_users WHERE id = ?`,
           [decoded.id]
         );
@@ -50,14 +75,14 @@ const authenticateToken = async (req, res, next) => {
         // Get pool stats for debugging
         const { getPoolStats } = require("../config/database");
         const poolStats = getPoolStats();
-        
+
         console.error("❌ Database connection timeout in authMiddleware:", {
           code: error.code,
           message: error.message,
           path: req.path,
           poolStats: poolStats
         });
-        
+
         // If pool is exhausted, suggest retry
         if (poolStats.activeConnections >= (poolStats.connectionLimit * 0.9)) {
           return res.status(503).json({
@@ -66,7 +91,7 @@ const authenticateToken = async (req, res, next) => {
             retryAfter: 2
           });
         }
-        
+
         return res.status(503).json({
           message: "Database connection timeout. Please try again in a moment.",
           code: "DB_TIMEOUT"
@@ -84,7 +109,7 @@ const authenticateToken = async (req, res, next) => {
           code: "DB_CONNECTION_LOST"
         });
       }
-      
+
       console.error("JWT verification error:", error);
       res.status(403).json({ message: "Token verification failed" });
     }
