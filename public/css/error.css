@@ -1,0 +1,160 @@
+/* Error Page Styles */
+.error-section {
+    min-height: 70vh;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    text-align: center;
+    padding: 4rem 2rem;
+    background: #f8f9fa;
+}
+
+.error-content {
+    max-width: 900px;
+    width: 100%;
+}
+
+.error-code {
+    font-size: 8rem;
+    font-weight: 700;
+    margin-bottom: 0.5rem;
+    line-height: 1;
+    color: var(--primary-color);
+}
+
+.error-message {
+    font-size: 2.2rem;
+    color: #333;
+    margin-bottom: 2rem;
+    font-weight: 600;
+}
+
+.error-description {
+    font-size: 1.2rem;
+    color: #555;
+    max-width: 700px;
+    margin: 0 auto 2.5rem;
+    line-height: 1.5;
+}
+
+.error-image {
+    max-width: 250px;
+    margin-bottom: 2.5rem;
+    animation: float 6s ease-in-out infinite;
+}
+
+@keyframes float {
+    0% {
+        transform: translateY(0px);
+    }
+
+    50% {
+        transform: translateY(-15px);
+    }
+
+    100% {
+        transform: translateY(0px);
+    }
+}
+
+.home-button {
+    background-color: var(--secondary-color);
+    color: white;
+    padding: 0.8rem 2rem;
+    border-radius: 4px;
+    font-weight: 600;
+    font-size: 1rem;
+    text-decoration: none;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    display: inline-flex;
+    align-items: center;
+    margin-bottom: 3rem;
+}
+
+.home-button:hover {
+    background-color: #e06810;
+    transform: translateY(-3px);
+    box-shadow: 0 6px 8px rgba(0, 0, 0, 0.15);
+    color: white;
+}
+
+.home-button::after {
+    content: "→";
+    margin-left: 8px;
+    transition: transform 0.2s;
+}
+
+.home-button:hover::after {
+    transform: translateX(3px);
+}
+
+.suggestions {
+    background-color: white;
+    border-radius: 8px;
+    padding: 2rem;
+    max-width: 700px;
+    width: 100%;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+    border-top: 3px solid var(--primary-color);
+    margin: 0 auto;
+}
+
+.suggestions h3 {
+    color: var(--primary-color);
+    font-size: 1.3rem;
+    margin-bottom: 1.2rem;
+}
+
+.suggestions ul {
+    text-align: left;
+    padding-left: 1.5rem;
+    margin-bottom: 0;
+    list-style-type: disc;
+}
+
+.suggestions li {
+    margin-bottom: 0.8rem;
+    font-size: 1.1rem;
+    color: #444;
+}
+
+.suggestions li a {
+    color: var(--primary-color);
+    text-decoration: none;
+    font-weight: 500;
+}
+
+.suggestions li a:hover {
+    color: var(--secondary-color);
+    text-decoration: underline;
+}
+
+@media (max-width: 768px) {
+    .error-code {
+        font-size: 6rem;
+    }
+
+    .error-message {
+        font-size: 1.8rem;
+    }
+
+    .error-image {
+        max-width: 200px;
+    }
+}
+
+@media (max-width: 576px) {
+    .error-code {
+        font-size: 5rem;
+    }
+
+    .error-message {
+        font-size: 1.5rem;
+    }
+
+    .error-section {
+        padding: 3rem 1rem;
+    }
+}

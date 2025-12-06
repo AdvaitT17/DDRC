@@ -1,0 +1,176 @@
+/* Static Pages Styles (Terms, Privacy, Copyright, Accessibility, About) */
+.page-header {
+    background: linear-gradient(135deg, #004a9f 0%, #003a7a 100%);
+    color: white;
+    padding: 3rem 0;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.breadcrumb {
+    background: transparent;
+    margin-bottom: 1.5rem;
+}
+
+.breadcrumb-item a {
+    color: rgba(255, 255, 255, 0.9);
+    text-decoration: none;
+}
+
+.breadcrumb-item.active {
+    color: white;
+}
+
+.breadcrumb-item+.breadcrumb-item::before {
+    color: rgba(255, 255, 255, 0.7);
+}
+
+.page-title {
+    font-size: 2.5rem;
+    font-weight: 700;
+    margin: 0;
+}
+
+.page-description {
+    margin-top: 1rem;
+    opacity: 0.9;
+    font-size: 1.1rem;
+}
+
+.static-content {
+    padding: 4rem 0;
+    background: #f8f9fa;
+    min-height: 60vh;
+}
+
+.content-card {
+    background: white;
+    border-radius: 12px;
+    padding: 2.5rem;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+    max-width: 900px;
+    margin: 0 auto;
+}
+
+.content-card h2 {
+    color: #004a9f;
+    font-size: 1.5rem;
+    font-weight: 600;
+    margin: 2rem 0 1rem 0;
+    padding-bottom: 0.5rem;
+    border-bottom: 2px solid #e8f4fd;
+}
+
+.content-card h2:first-child {
+    margin-top: 0;
+}
+
+.content-card h3 {
+    color: #333;
+    font-size: 1.15rem;
+    font-weight: 600;
+    margin: 1.5rem 0 0.75rem 0;
+}
+
+.content-card p {
+    color: #555;
+    line-height: 1.8;
+    margin-bottom: 1rem;
+}
+
+.content-card ul,
+.content-card ol {
+    color: #555;
+    line-height: 1.8;
+    padding-left: 1.5rem;
+    margin-bottom: 1rem;
+}
+
+.content-card li {
+    margin-bottom: 0.5rem;
+}
+
+.content-card a {
+    color: #004a9f;
+    text-decoration: none;
+}
+
+.content-card a:hover {
+    color: #f47920;
+    text-decoration: underline;
+}
+
+.last-updated {
+    color: #888;
+    font-size: 0.9rem;
+    margin-top: 2rem;
+    padding-top: 1rem;
+    border-top: 1px solid #eee;
+}
+
+/* About Page Specific */
+.about-stats {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 1.5rem;
+    margin: 2rem 0;
+}
+
+.stat-box {
+    background: linear-gradient(135deg, #004a9f 0%, #003a7a 100%);
+    color: white;
+    padding: 1.5rem;
+    border-radius: 12px;
+    text-align: center;
+}
+
+.stat-box .number {
+    font-size: 2.5rem;
+    font-weight: 700;
+}
+
+.stat-box .label {
+    font-size: 0.9rem;
+    opacity: 0.9;
+}
+
+.team-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 1.5rem;
+    margin-top: 1.5rem;
+}
+
+.team-member {
+    background: #f8f9fa;
+    padding: 1.5rem;
+    border-radius: 8px;
+}
+
+.team-member h4 {
+    color: #004a9f;
+    margin: 0 0 0.25rem 0;
+    font-size: 1.1rem;
+}
+
+.team-member .role {
+    color: #666;
+    font-size: 0.9rem;
+}
+
+@media (max-width: 768px) {
+    .page-title {
+        font-size: 2rem;
+    }
+
+    .content-card {
+        padding: 1.5rem;
+    }
+
+    .about-stats {
+        grid-template-columns: 1fr;
+    }
+
+    .team-grid {
+        grid-template-columns: 1fr;
+    }
+}
