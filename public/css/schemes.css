@@ -1,0 +1,273 @@
+/* Schemes Page Styles */
+.page-header {
+    background: linear-gradient(135deg, #004a9f 0%, #003a7a 100%);
+    color: white;
+    padding: 3rem 0;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.breadcrumb {
+    background: transparent;
+    margin-bottom: 1.5rem;
+}
+
+.breadcrumb-item a {
+    color: rgba(255, 255, 255, 0.9);
+    text-decoration: none;
+}
+
+.breadcrumb-item.active {
+    color: white;
+    font-weight: 500;
+}
+
+.breadcrumb-item+.breadcrumb-item::before {
+    color: rgba(255, 255, 255, 0.7);
+}
+
+.page-title {
+    font-size: 2.5rem;
+    font-weight: 700;
+    margin: 0;
+}
+
+.page-description {
+    margin-top: 1rem;
+    opacity: 0.9;
+    font-size: 1.2rem;
+    max-width: 700px;
+}
+
+.schemes-page-container {
+    padding: 3rem 0;
+}
+
+/* Category Filter */
+.scheme-categories {
+    display: flex;
+    gap: 1rem;
+    flex-wrap: wrap;
+    margin-bottom: 2rem;
+    justify-content: center;
+}
+
+.category-btn {
+    padding: 0.75rem 1.5rem;
+    background: white;
+    border: 2px solid #dee2e6;
+    border-radius: 8px;
+    color: #333;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.category-btn:hover,
+.category-btn.active {
+    background: #004a9f;
+    border-color: #004a9f;
+    color: white;
+}
+
+/* Schemes List */
+.schemes-list {
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+}
+
+/* Scheme Card */
+.scheme-card-full {
+    background: white;
+    border-radius: 12px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+    overflow: hidden;
+    transition: box-shadow 0.3s ease;
+}
+
+.scheme-card-full:hover {
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.1);
+}
+
+.scheme-header {
+    background: linear-gradient(135deg, #004a9f 0%, #003a7a 100%);
+    padding: 1.5rem;
+    cursor: pointer;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.scheme-header h3 {
+    color: white;
+    font-size: 1.25rem;
+    margin: 0;
+    font-weight: 600;
+}
+
+.scheme-type {
+    background: rgba(255, 255, 255, 0.2);
+    color: white;
+    padding: 0.25rem 0.75rem;
+    border-radius: 20px;
+    font-size: 0.8rem;
+    font-weight: 500;
+}
+
+.scheme-toggle {
+    background: none;
+    border: none;
+    color: white;
+    font-size: 1.5rem;
+    cursor: pointer;
+    transition: transform 0.3s ease;
+    padding: 0;
+    width: 30px;
+    height: 30px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.scheme-card-full.active .scheme-toggle {
+    transform: rotate(180deg);
+}
+
+.scheme-body {
+    max-height: 0;
+    overflow: hidden;
+    transition: max-height 0.4s ease;
+}
+
+.scheme-card-full.active .scheme-body {
+    max-height: 2000px;
+}
+
+.scheme-content {
+    padding: 1.5rem;
+}
+
+.scheme-section {
+    margin-bottom: 1.5rem;
+}
+
+.scheme-section:last-child {
+    margin-bottom: 0;
+}
+
+.scheme-section h4 {
+    color: #004a9f;
+    font-size: 1rem;
+    font-weight: 600;
+    margin: 0 0 0.5rem 0;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.scheme-section h4 svg {
+    width: 18px;
+    height: 18px;
+}
+
+.scheme-section p,
+.scheme-section ul {
+    color: #555;
+    font-size: 0.95rem;
+    line-height: 1.7;
+    margin: 0;
+}
+
+.scheme-section ul {
+    padding-left: 1.25rem;
+    margin-top: 0.5rem;
+}
+
+.scheme-section li {
+    margin-bottom: 0.5rem;
+}
+
+/* Tags */
+.scheme-tags {
+    display: flex;
+    gap: 0.5rem;
+    flex-wrap: wrap;
+    margin-top: 0.5rem;
+}
+
+.scheme-tag {
+    background: #e8f4fd;
+    color: #004a9f;
+    padding: 0.25rem 0.75rem;
+    border-radius: 20px;
+    font-size: 0.8rem;
+    font-weight: 500;
+}
+
+/* Links */
+.scheme-links {
+    display: flex;
+    gap: 1rem;
+    flex-wrap: wrap;
+    margin-top: 1rem;
+    padding-top: 1rem;
+    border-top: 1px solid #eee;
+}
+
+.scheme-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.5rem 1rem;
+    border: 1.5px solid #004a9f;
+    border-radius: 6px;
+    color: #004a9f;
+    text-decoration: none;
+    font-size: 0.9rem;
+    font-weight: 500;
+    transition: all 0.3s ease;
+}
+
+.scheme-link:hover {
+    background: #004a9f;
+    color: white;
+}
+
+.scheme-link svg {
+    width: 16px;
+    height: 16px;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .page-title {
+        font-size: 2rem;
+    }
+
+    .scheme-categories {
+        justify-content: flex-start;
+    }
+
+    .category-btn {
+        padding: 0.5rem 1rem;
+        font-size: 0.9rem;
+    }
+
+    .scheme-header h3 {
+        font-size: 1.1rem;
+    }
+}
+
+@media (max-width: 576px) {
+    .page-title {
+        font-size: 1.75rem;
+    }
+
+    .scheme-links {
+        flex-direction: column;
+    }
+
+    .scheme-link {
+        justify-content: center;
+    }
+}

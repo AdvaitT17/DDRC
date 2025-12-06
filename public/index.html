@@ -1,419 +1,458 @@
 <!DOCTYPE html>
 <html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>DDRC - District Disability Rehabilitation Centre, Mumbai</title>
-    <link
-      href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css"
-      rel="stylesheet"
-    />
-    <link rel="stylesheet" href="/css/main.css" />
-    <link rel="stylesheet" href="/css/header.css" />
-    <link rel="stylesheet" href="/css/footer.css" />
-    <link rel="stylesheet" href="/css/accessibility.css" />
-    <link rel="stylesheet" href="/css/hero-slider.css" />
-  </head>
-  <body>
-    <!-- Accessibility Announcement for Screen Readers -->
-    <div id="screenReaderAnnouncer" class="sr-only" role="alert" aria-live="polite"></div>
-    
-    <!-- Top Bar -->
-    <div class="top-bar" role="navigation" aria-label="Top Navigation">
-      <div class="left-links">
-        <a href="/" aria-label="Home">Home</a>
-        <a href="/sitemap" aria-label="Sitemap">Sitemap</a>
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>DDRC - District Disability Rehabilitation Centre, Mumbai</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet" />
+  <link rel="stylesheet" href="/css/main.css" />
+  <link rel="stylesheet" href="/css/header.css" />
+  <link rel="stylesheet" href="/css/footer.css" />
+  <link rel="stylesheet" href="/css/accessibility.css" />
+  <link rel="stylesheet" href="/css/hero-slider.css" />
+</head>
+
+<body>
+  <div id="site-header"></div>
+
+  <!-- Main Content -->
+  <main id="main-content" role="main" tabindex="-1">
+    <!-- Hero Section -->
+    <section class="hero-section" aria-label="Hero Section">
+      <div class="hero-slider" aria-label="Hero Slider">
+        <div class="hero-slide active" id="slide1">
+          <div class="hero-content">
+            <h2>Welcome to DDRC Mumbai</h2>
+            <p>Empowering persons with disabilities through comprehensive rehabilitation services</p>
+            <div class="hero-buttons">
+              <a href="/apply" class="primary-btn" aria-label="Apply Now">APPLY NOW</a>
+              <a href="/track" class="primary-btn" aria-label="Track Your Application">TRACK YOUR APPLICATION</a>
+            </div>
+          </div>
+          <div class="hero-bg-image">
+          </div>
+        </div>
+
+        <div class="hero-slide" id="slide2">
+          <div class="hero-content">
+            <h2>Accessible Rehabilitation Services</h2>
+            <p>Professional therapeutic services to enhance quality of life</p>
+            <div class="hero-buttons">
+              <a href="/services" class="primary-btn" aria-label="Our Services">OUR SERVICES</a>
+              <a href="/contact" class="primary-btn" aria-label="Contact Us">CONTACT US</a>
+            </div>
+          </div>
+          <div class="hero-bg-image">
+          </div>
+        </div>
+
+        <div class="hero-slide" id="slide3">
+          <div class="hero-content">
+            <h2>Making Mumbai Accessible</h2>
+            <p>Advocating for inclusion, accessibility, and equal rights</p>
+            <div class="hero-buttons">
+              <a href="/events" class="primary-btn" aria-label="Upcoming Events">UPCOMING EVENTS</a>
+              <a href="/join" class="primary-btn" aria-label="Get Involved">GET INVOLVED</a>
+            </div>
+          </div>
+          <div class="hero-bg-image">
+          </div>
+        </div>
+
+        <!-- Navigation controls for hero slider -->
+        <div class="hero-controls" aria-label="Slider controls">
+          <button class="hero-control-btn prev-btn" onclick="prevHeroSlide()" aria-label="Previous slide">❮</button>
+          <div class="hero-indicators">
+            <button class="hero-indicator active" onclick="jumpToHeroSlide(0)" aria-label="Go to slide 1"></button>
+            <button class="hero-indicator" onclick="jumpToHeroSlide(1)" aria-label="Go to slide 2"></button>
+            <button class="hero-indicator" onclick="jumpToHeroSlide(2)" aria-label="Go to slide 3"></button>
+          </div>
+          <button class="hero-control-btn next-btn" onclick="nextHeroSlide()" aria-label="Next slide">❯</button>
+        </div>
       </div>
-      <div class="right-links">
-        <a href="#main-content" class="skip-main" aria-label="Skip to main content">Skip to Main Content</a>
-        <a href="#" class="screen-reader" aria-label="Toggle screen reader optimized view">Screen Reader Access</a>
-        <select class="language-select" id="languageSelect" aria-label="Select language">
-          <option value="en">English</option>
-          <option value="hi">हिंदी</option>
-        </select>
+
+      <!-- Note section -->
+      <div class="important-note" role="note">
+        <strong>Note : </strong>As per the RPwD Rules 2017, disability
+        certificate/ UDID card can be issued by notified hospital at home
+        district as well as the hospital where the PwD is taking medical
+        treatment in connection with his/her disability.
+      </div>
+    </section>
+    <!-- About Section -->
+    <section class="about-hero-section" role="region" aria-labelledby="about-heading">
+      <div class="about-hero-container">
+        <div class="about-left full-width">
+          <h3>About</h3>
+          <h2 id="about-heading">DDRC Mumbai</h2>
+          <p>
+            District Disability Rehabilitation Centre (DDRC) Mumbai is dedicated to empowering persons with disabilities
+            by ensuring they receive their rightful benefits and complete access to government schemes designed for
+            their welfare.
+          </p>
+          <p>
+            Established under the Department of Empowerment of Persons with Disabilities, Ministry of Social Justice and
+            Empowerment, Government of India, DDRC Mumbai provides comprehensive rehabilitation services including UDID
+            registration assistance, disability certification support, skill development programs, and access to various
+            welfare schemes.
+          </p>
+        </div>
+    </section>
+
+    <!-- Combined Objectives & Purpose Section with Auto-Scroll -->
+    <section class="mission-section" role="region" aria-labelledby="mission-heading">
+      <div class="mission-container">
+        <div class="mission-column objectives-column">
+          <h2 id="objectives-heading">Our Objectives</h2>
+          <div class="marquee-wrapper" aria-live="polite">
+            <div class="marquee-content">
+              <div class="marquee-item">
+                <span class="marquee-bullet">●</span>
+                <p>Provide assistive devices and equipment to persons with disabilities through 5% disability fund,
+                  government schemes, NGOs, and CSR initiatives.</p>
+              </div>
+              <div class="marquee-item">
+                <span class="marquee-bullet">●</span>
+                <p>Organize camps and events to help certificate holders access government scheme benefits including
+                  insurance, pension, ST/Railway passes, and other entitlements.</p>
+              </div>
+              <div class="marquee-item">
+                <span class="marquee-bullet">●</span>
+                <p>Facilitate Swavlamban Card distribution to all eligible persons with disabilities.</p>
+              </div>
+              <div class="marquee-item">
+                <span class="marquee-bullet">●</span>
+                <p>Achieve 100% registration of all persons with disabilities in the district and make the data
+                  available online.</p>
+              </div>
+              <div class="marquee-item">
+                <span class="marquee-bullet">●</span>
+                <p>Conduct medical examinations and issue disability certificates to beneficiaries who don't have them.
+                </p>
+              </div>
+              <div class="marquee-item">
+                <span class="marquee-bullet">●</span>
+                <p>Provide referral services and treatment facilities through various government schemes for those
+                  requiring further medical care after examination.</p>
+              </div>
+              <!-- Duplicate for seamless scroll -->
+              <div class="marquee-item">
+                <span class="marquee-bullet">●</span>
+                <p>Provide assistive devices and equipment to persons with disabilities through 5% disability fund,
+                  government schemes, NGOs, and CSR initiatives.</p>
+              </div>
+              <div class="marquee-item">
+                <span class="marquee-bullet">●</span>
+                <p>Organize camps and events to help certificate holders access government scheme benefits including
+                  insurance, pension, ST/Railway passes, and other entitlements.</p>
+              </div>
+              <div class="marquee-item">
+                <span class="marquee-bullet">●</span>
+                <p>Facilitate Swavlamban Card distribution to all eligible persons with disabilities.</p>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="mission-column purpose-column">
+          <h2 id="purpose-heading">Our Purpose</h2>
+          <div class="marquee-wrapper" aria-live="polite">
+            <div class="marquee-content marquee-reverse">
+              <div class="marquee-item">
+                <span class="marquee-bullet">●</span>
+                <p>Register all persons with disabilities in the district under this campaign.</p>
+              </div>
+              <div class="marquee-item">
+                <span class="marquee-bullet">●</span>
+                <p>Conduct medical examinations and provide disability certificates to eligible individuals.</p>
+              </div>
+              <div class="marquee-item">
+                <span class="marquee-bullet">●</span>
+                <p>The main purpose of this campaign is to improve the quality of life of persons with disabilities by
+                  providing benefits of various government schemes and health-related referral services to help them
+                  overcome their disabilities.</p>
+              </div>
+              <!-- Duplicate for seamless scroll -->
+              <div class="marquee-item">
+                <span class="marquee-bullet">●</span>
+                <p>Register all persons with disabilities in the district under this campaign.</p>
+              </div>
+              <div class="marquee-item">
+                <span class="marquee-bullet">●</span>
+                <p>Conduct medical examinations and provide disability certificates to eligible individuals.</p>
+              </div>
+              <div class="marquee-item">
+                <span class="marquee-bullet">●</span>
+                <p>The main purpose of this campaign is to improve the quality of life of persons with disabilities by
+                  providing benefits of various government schemes and health-related referral services to help them
+                  overcome their disabilities.</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Schemes Section -->
+    <section class="schemes-section" role="region" aria-labelledby="schemes-heading">
+      <div class="schemes-container">
+        <div class="schemes-header">
+          <h2 id="schemes-heading">Government Schemes</h2>
+          <a href="/schemes" class="view-all" aria-label="View all schemes">View All <span>❯</span></a>
+        </div>
+        <div class="schemes-grid">
+          <a href="/schemes" class="scheme-card">
+            <div class="scheme-icon-wrapper">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M22 10v6M2 10l10-5 10 5-10 5z" />
+                <path d="M6 12v5c3 3 9 3 12 0v-5" />
+              </svg>
+            </div>
+            <h3>Educational Scholarships</h3>
+            <p>Scholarship schemes for students with disabilities</p>
+          </a>
+          <a href="/schemes" class="scheme-card">
+            <div class="scheme-icon-wrapper">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <circle cx="12" cy="5" r="3" />
+                <path d="M12 8v4m0 4v4m-4-4h8" />
+                <path d="M8 20h8" />
+              </svg>
+            </div>
+            <h3>Assistive Devices</h3>
+            <p>Provision of artificial limbs and assistive equipment</p>
+          </a>
+          <a href="/schemes" class="scheme-card">
+            <div class="scheme-icon-wrapper">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <rect x="2" y="6" width="20" height="12" rx="2" />
+                <path d="M12 12h4" />
+                <circle cx="8" cy="12" r="2" />
+              </svg>
+            </div>
+            <h3>Financial Assistance</h3>
+            <p>Financial support for rehabilitation purposes</p>
+          </a>
+          <a href="/schemes" class="scheme-card">
+            <div class="scheme-icon-wrapper">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <rect x="3" y="3" width="18" height="18" rx="2" />
+                <path d="M9 12h6m-3-3v6" />
+              </svg>
+            </div>
+            <h3>Self-Employment</h3>
+            <p>Seed capital scheme for self-employment</p>
+          </a>
+          <a href="/schemes" class="scheme-card">
+            <div class="scheme-icon-wrapper">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <circle cx="12" cy="8" r="6" />
+                <path d="M12 2v2m0 8v10" />
+                <path d="M8 18h8" />
+              </svg>
+            </div>
+            <h3>Merit Awards</h3>
+            <p>Merit prizes for students with disabilities</p>
+          </a>
+          <a href="/schemes" class="scheme-card">
+            <div class="scheme-icon-wrapper">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <rect x="3" y="4" width="18" height="16" rx="2" />
+                <path d="M7 8h10M7 12h6" />
+              </svg>
+            </div>
+            <h3>Pension Scheme</h3>
+            <p>Indira Gandhi National Disability Pension</p>
+          </a>
+        </div>
+      </div>
+    </section>
+
+    <!-- Update the main-content section -->
+    <div class="main-content">
+      <div class="grid-layout-two">
+
+        <div class="news-section wide" role="region" aria-labelledby="news-heading">
+          <div class="news-header">
+            <h2 id="news-heading">News & Updates</h2>
+            <a href="/news" class="view-all" aria-label="View all news and updates">View All <span>❯</span></a>
+          </div>
+          <div class="news-list" id="latestNews" aria-label="Latest news items">
+            <!-- News items will be loaded dynamically -->
+          </div>
+        </div>
+
+        <div class="events-section wide" role="region" aria-labelledby="events-heading">
+          <div class="events-header">
+            <h2 id="events-heading">Latest Events</h2>
+            <a href="/events" class="view-all" aria-label="View all events">View All <span>❯</span></a>
+          </div>
+          <div class="events-list" id="latestEvents" aria-label="Latest events">
+            <div class="event-slideshow">
+              <div class="event-slide-container">
+                <!-- Events will be loaded here -->
+              </div>
+              <div class="event-controls" aria-label="Event slideshow controls">
+                <button class="control-btn prev-btn" onclick="prevEvent()" aria-label="Previous event">❮</button>
+                <button class="control-btn pause-btn" onclick="togglePause()" aria-label="Pause slideshow">⏸</button>
+                <button class="control-btn next-btn" onclick="nextEvent()" aria-label="Next event">❯</button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Second Row - Full Width FAQ -->
+        <div class="faq-section full-width" role="region" aria-labelledby="faq-heading">
+          <div class="faq-header">
+            <h2 id="faq-heading">Frequently Asked Questions</h2>
+            <a href="/faqs" class="view-all" aria-label="View all FAQs">View All <span>❯</span></a>
+          </div>
+          <div class="accordion" id="faqAccordion">
+            <div class="accordion-item">
+              <h3 class="accordion-header">
+                <button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#faq1"
+                  aria-expanded="true" aria-controls="faq1">
+                  What services does DDRC Mumbai offer?
+                </button>
+              </h3>
+              <div id="faq1" class="accordion-collapse collapse show" data-bs-parent="#faqAccordion"
+                aria-labelledby="faq1-heading">
+                <div class="accordion-body">
+                  DDRC Mumbai offers assessment and early intervention services, therapeutic services (physiotherapy,
+                  occupational therapy, speech therapy), assistive device distribution, skill development programs,
+                  counseling for persons with disabilities and their families, and outreach camps.
+                </div>
+              </div>
+            </div>
+
+            <div class="accordion-item">
+              <h3 class="accordion-header">
+                <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse"
+                  data-bs-target="#faq2" aria-expanded="false" aria-controls="faq2">
+                  How can I access DDRC services?
+                </button>
+              </h3>
+              <div id="faq2" class="accordion-collapse collapse" data-bs-parent="#faqAccordion"
+                aria-labelledby="faq2-heading">
+                <div class="accordion-body">
+                  You can visit DDRC Mumbai in person during working hours, call our helpline, or apply through our
+                  online portal.
+                  Our team will guide you through the assessment process and recommend appropriate services based on
+                  individual needs.
+                </div>
+              </div>
+            </div>
+
+            <div class="accordion-item">
+              <h3 class="accordion-header">
+                <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse"
+                  data-bs-target="#faq3" aria-expanded="false" aria-controls="faq3">
+                  Are DDRC services free of cost?
+                </button>
+              </h3>
+              <div id="faq3" class="accordion-collapse collapse" data-bs-parent="#faqAccordion"
+                aria-labelledby="faq3-heading">
+                <div class="accordion-body">
+                  Yes, most of the services provided at DDRC Mumbai are free of cost as they are funded by the
+                  Government of India.
+                  This includes assessment, therapy services, counseling, and skill development programs. Some
+                  specialized services
+                  or assistive devices may have nominal charges based on income criteria.
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
       </div>
     </div>
+  </main>
 
-    <!-- Main Header -->
-    <header class="main-header" role="banner" aria-label="Site header">
-      <div class="logo-section">
-        <img
-          src="/images/emblem.png"
-          alt="Government of India Emblem"
-          class="emblem-logo"
-        />
-        <div class="header-text">
-          <h1>District Disability Rehabilitation Centre, Mumbai</h1>
-          <p>Department of Empowerment of Persons with Disabilities,</p>
-          <p>Ministry of Social Justice and Empowerment, Govt. of India</p>
-        </div>
-        <img src="/images/ddrc-logo.png" alt="DDRC Logo" class="ddrc-logo" />
-      </div>
-    </header>
+  <div id="site-footer"></div>
 
-    <!-- Navigation Menu -->
-    <nav class="main-nav" role="navigation" aria-label="Main Navigation">
-      <a href="/" class="nav-icon" aria-label="Home">
-        <img src="/images/home-icons.png" alt="Home" />
-      </a>
-      <a href="/apply" aria-label="Apply For UDID">Apply For UDID</a>
-      <a href="/track" aria-label="Track Your Application">Track Your Application</a>
-      <a href="/data" aria-label="View Aggregated Data">Aggregated-Data</a>
-      <a href="/reports" aria-label="View Pendency Reports">Pendency-Report</a>
-      <a href="/media" aria-label="Media">Media</a>
-      <a href="/faqs" aria-label="FAQs">FAQs</a>
-      <a href="/contact" aria-label="Contact Us">Contact Us</a>
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+  <script src="/js/components/header.js"></script>
+  <script src="/js/components/footer.js"></script>
+  <script src="/js/accessibility.js"></script>
+  <script src="/js/hero-slider.js"></script>
+  <script>
+    document.addEventListener("DOMContentLoaded", async () => {
+      // Load latest news
+      try {
+        const response = await fetch('/api/news/latest');
+        const data = await response.json();
 
-      <!-- Add spacer to push login buttons to the right -->
-      <div class="nav-spacer"></div>
+        if (data.success && data.news.length > 0) {
+          const newsContainer = document.getElementById('latestNews');
+          newsContainer.innerHTML = '';
 
-      <!-- Add login buttons -->
-      <a href="/login" class="nav-login-btn" aria-label="Divyangjan Login">
-        <img src="/images/login.svg" alt="Login Icon" />
-        Divyangjan Login
-      </a>
-      <a href="/department-login" class="nav-login-btn" aria-label="Department User Login">
-        <img src="/images/user-plus.svg" alt="User Icon" />
-        Department User Login
-      </a>
-    </nav>
+          data.news.forEach(news => {
+            // Format date nicely
+            const newsDate = new Date(news.published_date);
+            const formattedDate = newsDate.toLocaleDateString("en-US", {
+              year: "numeric",
+              month: "long",
+              day: "numeric"
+            });
 
-    <!-- Main Content -->
-    <main id="main-content" role="main" tabindex="-1">
-      <!-- Hero Section -->
-      <section class="hero-section" aria-label="Hero Section">
-        <div class="hero-slider" aria-label="Hero Slider">
-          <div class="hero-slide active" id="slide1">
-            <div class="hero-content">
-              <h2>Welcome to DDRC Mumbai</h2>
-              <p>Empowering persons with disabilities through comprehensive rehabilitation services</p>
-              <div class="hero-buttons">
-                <a href="/apply" class="primary-btn" aria-label="Apply Now">APPLY NOW</a>
-                <a href="/track" class="primary-btn" aria-label="Track Your Application">TRACK YOUR APPLICATION</a>
-              </div>
-            </div>
-            <div class="hero-bg-image">
-              <img src="/images/hero-bg-1.jpg" alt="" aria-hidden="true">
-            </div>
-          </div>
-          
-          <div class="hero-slide" id="slide2">
-            <div class="hero-content">
-              <h2>Accessible Rehabilitation Services</h2>
-              <p>Professional therapeutic services to enhance quality of life</p>
-              <div class="hero-buttons">
-                <a href="/services" class="primary-btn" aria-label="Our Services">OUR SERVICES</a>
-                <a href="/contact" class="primary-btn" aria-label="Contact Us">CONTACT US</a>
-              </div>
-            </div>
-            <div class="hero-bg-image">
-              <img src="/images/hero-bg-2.jpg" alt="" aria-hidden="true">
-            </div>
-          </div>
-          
-          <div class="hero-slide" id="slide3">
-            <div class="hero-content">
-              <h2>Making Mumbai Accessible</h2>
-              <p>Advocating for inclusion, accessibility, and equal rights</p>
-              <div class="hero-buttons">
-                <a href="/events" class="primary-btn" aria-label="Upcoming Events">UPCOMING EVENTS</a>
-                <a href="/join" class="primary-btn" aria-label="Get Involved">GET INVOLVED</a>
-              </div>
-            </div>
-            <div class="hero-bg-image">
-              <img src="/images/hero-bg-3.jpg" alt="" aria-hidden="true">
-            </div>
-          </div>
-          
-          <!-- Navigation controls for hero slider -->
-          <div class="hero-controls" aria-label="Slider controls">
-            <button class="hero-control-btn prev-btn" onclick="prevHeroSlide()" aria-label="Previous slide">❮</button>
-            <div class="hero-indicators">
-              <button class="hero-indicator active" onclick="jumpToHeroSlide(0)" aria-label="Go to slide 1"></button>
-              <button class="hero-indicator" onclick="jumpToHeroSlide(1)" aria-label="Go to slide 2"></button>
-              <button class="hero-indicator" onclick="jumpToHeroSlide(2)" aria-label="Go to slide 3"></button>
-            </div>
-            <button class="hero-control-btn next-btn" onclick="nextHeroSlide()" aria-label="Next slide">❯</button>
-          </div>
-        </div>
-
-        <!-- Note section -->
-        <div class="important-note" role="note">
-          <strong>Note : </strong>As per the RPwD Rules 2017, disability
-          certificate/ UDID card can be issued by notified hospital at home
-          district as well as the hospital where the PwD is taking medical
-          treatment in connection with his/her disability.
-        </div>
-      </section>
-
-      <!-- Update the main-content section -->
-      <div class="main-content">
-        <div class="grid-layout">
-          <!-- First Row -->
-          <div class="about-section" role="region" aria-labelledby="about-heading">
-            <h3>About</h3>
-            <h2 id="about-heading">DDRC Mumbai</h2>
-            <p>
-              District Disability Rehabilitation Centre (DDRC) Mumbai is a comprehensive facility 
-              providing rehabilitation services to persons with disabilities. Established under 
-              the Department of Empowerment of Persons with Disabilities, Ministry of Social Justice 
-              and Empowerment, Government of India, DDRC Mumbai aims to provide comprehensive services 
-              including prevention, early intervention, rehabilitation, vocational training, and community 
-              awareness to ensure equal opportunities and social inclusion for persons with disabilities in Mumbai.
-            </p>
-          </div>
-
-          <div class="news-section wide" role="region" aria-labelledby="news-heading">
-            <div class="news-header">
-              <h2 id="news-heading">News & Updates</h2>
-              <a href="/news" class="view-all" aria-label="View all news and updates">View All <span>❯</span></a>
-            </div>
-            <div class="news-list" id="latestNews" aria-label="Latest news items">
-              <!-- News items will be loaded dynamically -->
-            </div>
-          </div>
-
-          <div class="events-section wide" role="region" aria-labelledby="events-heading">
-            <div class="events-header">
-              <h2 id="events-heading">Latest Events</h2>
-              <a href="/events" class="view-all" aria-label="View all events">View All <span>❯</span></a>
-            </div>
-            <div class="events-list" id="latestEvents" aria-label="Latest events">
-              <div class="event-slideshow">
-                <div class="event-slide-container">
-                  <!-- Events will be loaded here -->
-                </div>
-                <div class="event-controls" aria-label="Event slideshow controls">
-                  <button class="control-btn prev-btn" onclick="prevEvent()" aria-label="Previous event">❮</button>
-                  <button class="control-btn pause-btn" onclick="togglePause()" aria-label="Pause slideshow">⏸</button>
-                  <button class="control-btn next-btn" onclick="nextEvent()" aria-label="Next event">❯</button>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          <!-- Second Row -->
-          <div class="faq-section" role="region" aria-labelledby="faq-heading">
-            <div class="faq-header">
-              <h2 id="faq-heading">Frequently Asked Questions</h2>
-              <a href="/faqs" class="view-all" aria-label="View all FAQs">View All <span>❯</span></a>
-            </div>
-            <div class="accordion" id="faqAccordion">
-              <div class="accordion-item">
-                <h3 class="accordion-header">
-                  <button
-                    class="accordion-button"
-                    type="button"
-                    data-bs-toggle="collapse"
-                    data-bs-target="#faq1"
-                    aria-expanded="true"
-                    aria-controls="faq1"
-                  >
-                    What services does DDRC Mumbai offer?
-                  </button>
-                </h3>
-                <div
-                  id="faq1"
-                  class="accordion-collapse collapse show"
-                  data-bs-parent="#faqAccordion"
-                  aria-labelledby="faq1-heading"
-                >
-                  <div class="accordion-body">
-                    DDRC Mumbai offers assessment and early intervention services, therapeutic services (physiotherapy, 
-                    occupational therapy, speech therapy), assistive device distribution, skill development programs, 
-                    counseling for persons with disabilities and their families, and outreach camps.
-                  </div>
-                </div>
-              </div>
-
-              <div class="accordion-item">
-                <h3 class="accordion-header">
-                  <button
-                    class="accordion-button collapsed"
-                    type="button"
-                    data-bs-toggle="collapse"
-                    data-bs-target="#faq2"
-                    aria-expanded="false"
-                    aria-controls="faq2"
-                  >
-                    How can I access DDRC services?
-                  </button>
-                </h3>
-                <div
-                  id="faq2"
-                  class="accordion-collapse collapse"
-                  data-bs-parent="#faqAccordion"
-                  aria-labelledby="faq2-heading"
-                >
-                  <div class="accordion-body">
-                    You can visit DDRC Mumbai in person during working hours, call our helpline, or apply through our online portal.
-                    Our team will guide you through the assessment process and recommend appropriate services based on individual needs.
-                  </div>
-                </div>
-              </div>
-
-              <div class="accordion-item">
-                <h3 class="accordion-header">
-                  <button
-                    class="accordion-button collapsed"
-                    type="button"
-                    data-bs-toggle="collapse"
-                    data-bs-target="#faq3"
-                    aria-expanded="false"
-                    aria-controls="faq3"
-                  >
-                    Are DDRC services free of cost?
-                  </button>
-                </h3>
-                <div
-                  id="faq3"
-                  class="accordion-collapse collapse"
-                  data-bs-parent="#faqAccordion"
-                  aria-labelledby="faq3-heading"
-                >
-                  <div class="accordion-body">
-                    Yes, most of the services provided at DDRC Mumbai are free of cost as they are funded by the Government of India.
-                    This includes assessment, therapy services, counseling, and skill development programs. Some specialized services
-                    or assistive devices may have nominal charges based on income criteria.
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-    </main>
-
-    <!-- Footer -->
-    <footer role="contentinfo" aria-label="Site Footer">
-      <div class="footer-content">
-        <div class="footer-section">
-          <h3>About</h3>
-          <ul>
-            <li><a href="/about-udid" aria-label="Know more about DDRC">Know more about DDRC</a></li>
-            <li>
-              <a href="/schemes" aria-label="Schemes for Persons with Disabilities">Schemes for Persons with Disabilities</a>
-            </li>
-            <li><a href="/about-department" aria-label="About Department">About Department</a></li>
-            <li><a href="/medical-camps" aria-label="Medical Camps and Hospitals">Medical Camps / Hospitals</a></li>
-          </ul>
-        </div>
-        <div class="footer-section">
-          <h3>Quick Access Key</h3>
-          <ul>
-            <li>H = Go to Home Page</li>
-            <li>S = Skip to main content</li>
-            <li>F = Site Search</li>
-            <li>T = Back to Top</li>
-          </ul>
-        </div>
-        <div class="footer-section">
-          <h3>Use keyboard for quick access</h3>
-          <ul>
-            <li>Internet Explorer - [Alt] + accesskey</li>
-            <li>Chrome - [Alt] + accesskey</li>
-            <li>Firefox - [Alt] [Shift] + accesskey</li>
-            <li>Safari - [Alt] + accesskey</li>
-          </ul>
-        </div>
-      </div>
-          <div class="footer-bottom">
-            <p>
-              &copy; Copyright <script>document.write(new Date().getFullYear())</script> District Disability Rehabilitation Centre,
-              Mumbai. All Rights Reserved.
-            </p>
-          </div>
-        <div class="footer-links">
-          <a href="/terms" aria-label="Terms and Conditions">Terms & Conditions</a>
-          <a href="/privacy" aria-label="Privacy Policy">Privacy Policy</a>
-          <a href="/copyright" aria-label="Copyright Policy">Copyright Policy</a>
-          <a href="/accessibility" aria-label="Accessibility Statement">Accessibility Statement</a>
-        </div>
-      </div>
-    </footer>
-
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
-    <script src="/js/accessibility.js"></script>
-    <script src="/js/hero-slider.js"></script>
-    <script>
-      document.addEventListener("DOMContentLoaded", async () => {
-        // Load latest news
-        try {
-          const response = await fetch('/api/news/latest');
-          const data = await response.json();
-          
-          if (data.success && data.news.length > 0) {
-            const newsContainer = document.getElementById('latestNews');
-            newsContainer.innerHTML = '';
-            
-            data.news.forEach(news => {
-              // Format date nicely
-              const newsDate = new Date(news.published_date);
-              const formattedDate = newsDate.toLocaleDateString("en-US", {
-                year: "numeric",
-                month: "long",
-                day: "numeric"
-              });
-              
-              const newsItem = document.createElement('div');
-              newsItem.className = 'news-item';
-              newsItem.onclick = function() {
-                window.location.href = '/news';
-              };
-              newsItem.innerHTML = `
+            const newsItem = document.createElement('div');
+            newsItem.className = 'news-item';
+            newsItem.onclick = function () {
+              window.location.href = '/news';
+            };
+            newsItem.innerHTML = `
                 <div class="news-item-content">
                   <span class="date">${formattedDate}</span>
                   <p>${news.title}</p>
                 </div>
               `;
-              newsContainer.appendChild(newsItem);
-            });
-          } else {
-            const newsContainer = document.getElementById('latestNews');
-            newsContainer.innerHTML = `
+            newsContainer.appendChild(newsItem);
+          });
+        } else {
+          const newsContainer = document.getElementById('latestNews');
+          newsContainer.innerHTML = `
               <div class="no-news">
                 <p>No news items available at the moment.</p>
                 <p class="mt-2" style="font-size: 0.9rem; opacity: 0.8;">Check back soon for updates.</p>
               </div>
             `;
-          }
-        } catch (error) {
-          console.error('Error loading latest news:', error);
-          const newsContainer = document.getElementById('latestNews');
-          newsContainer.innerHTML = `
+        }
+      } catch (error) {
+        console.error('Error loading latest news:', error);
+        const newsContainer = document.getElementById('latestNews');
+        newsContainer.innerHTML = `
             <div class="no-news">
               <p>Unable to load news.</p>
               <button class="btn btn-light btn-sm mt-3" onclick="window.location.reload()">Try Again</button>
             </div>
           `;
-        }
+      }
 
-        // Load latest events
-        try {
-          const response = await fetch('/api/events/latest');
-          const data = await response.json();
-          
-          if (data.success && data.events.length > 0) {
-            const slideContainer = document.querySelector('.event-slide-container');
-            slideContainer.innerHTML = '';
-            
-            data.events.forEach((event, index) => {
-              // Format date nicely
-              const eventDate = new Date(event.event_date);
-              const formattedDate = eventDate.toLocaleDateString("en-US", {
-                year: "numeric",
-                month: "long",
-                day: "numeric"
-              });
-              
-              // Limit title length to 120 characters
-              const limitedTitle = event.title.length > 120 
-                ? event.title.substring(0, 120) + '...' 
-                : event.title;
-              
-              const slide = document.createElement('div');
-              slide.className = `event-slide ${index === 0 ? 'active' : ''}`;
-              slide.innerHTML = `
+      // Load latest events
+      try {
+        const response = await fetch('/api/events/latest');
+        const data = await response.json();
+
+        if (data.success && data.events.length > 0) {
+          const slideContainer = document.querySelector('.event-slide-container');
+          slideContainer.innerHTML = '';
+
+          data.events.forEach((event, index) => {
+            // Format date nicely
+            const eventDate = new Date(event.event_date);
+            const formattedDate = eventDate.toLocaleDateString("en-US", {
+              year: "numeric",
+              month: "long",
+              day: "numeric"
+            });
+
+            // Limit title length to 120 characters
+            const limitedTitle = event.title.length > 120
+              ? event.title.substring(0, 120) + '...'
+              : event.title;
+
+            const slide = document.createElement('div');
+            slide.className = `event-slide ${index === 0 ? 'active' : ''}`;
+            slide.innerHTML = `
                 <a href="/events/event?id=${event.id}" class="event-slide-content" aria-label="${event.title}">
                   <div class="event-image">
                     <img src="${event.image_path || '/images/event-placeholder.jpg'}" alt="${event.title}">
@@ -426,653 +465,661 @@
                   </div>
                 </a>
               `;
-              slideContainer.appendChild(slide);
-            });
+            slideContainer.appendChild(slide);
+          });
 
-            // Start slideshow
-            startSlideshow();
-          } else {
-            const slideContainer = document.querySelector('.event-slide-container');
-            slideContainer.innerHTML = `
+          // Start slideshow
+          startSlideshow();
+        } else {
+          const slideContainer = document.querySelector('.event-slide-container');
+          slideContainer.innerHTML = `
               <div class="no-events">
                 <p>No upcoming events at the moment.</p>
                 <p class="mt-2" style="font-size: 0.9rem; opacity: 0.8;">Check back soon for new events and activities.</p>
               </div>
             `;
-            
-            // Hide controls if no events
-            document.querySelector('.event-controls').style.display = 'none';
-          }
-        } catch (error) {
-          console.error('Error loading latest events:', error);
-          const slideContainer = document.querySelector('.event-slide-container');
-          slideContainer.innerHTML = `
+
+          // Hide controls if no events
+          document.querySelector('.event-controls').style.display = 'none';
+        }
+      } catch (error) {
+        console.error('Error loading latest events:', error);
+        const slideContainer = document.querySelector('.event-slide-container');
+        slideContainer.innerHTML = `
             <div class="no-events">
               <p>Unable to load events.</p>
               <button class="btn btn-light btn-sm mt-3" onclick="window.location.reload()">Try Again</button>
             </div>
           `;
-          
-          // Hide controls if error
-          document.querySelector('.event-controls').style.display = 'none';
-        }
+
+        // Hide controls if error
+        document.querySelector('.event-controls').style.display = 'none';
+      }
+    });
+
+    // Slideshow functionality
+    let currentSlide = 0;
+    let slideshowInterval;
+    let isPaused = false;
+
+    function startSlideshow() {
+      slideshowInterval = setInterval(nextEvent, 5000); // Change slide every 5 seconds
+    }
+
+    function showSlide(index) {
+      const slides = document.querySelectorAll('.event-slide');
+      if (slides.length === 0) return;
+
+      // Handle wrap-around
+      if (index >= slides.length) index = 0;
+      if (index < 0) index = slides.length - 1;
+
+      // Hide all slides
+      slides.forEach(slide => {
+        slide.classList.remove('active');
+        slide.style.display = 'none';
+        // ARIA - announce slide change to screen readers
+        slide.setAttribute('aria-hidden', 'true');
       });
 
-      // Slideshow functionality
-      let currentSlide = 0;
-      let slideshowInterval;
-      let isPaused = false;
-
-      function startSlideshow() {
-        slideshowInterval = setInterval(nextEvent, 5000); // Change slide every 5 seconds
-      }
-
-      function showSlide(index) {
-        const slides = document.querySelectorAll('.event-slide');
-        if (slides.length === 0) return;
-
-        // Handle wrap-around
-        if (index >= slides.length) index = 0;
-        if (index < 0) index = slides.length - 1;
-
-        // Hide all slides
-        slides.forEach(slide => {
-          slide.classList.remove('active');
-          slide.style.display = 'none';
-          // ARIA - announce slide change to screen readers
-          slide.setAttribute('aria-hidden', 'true');
-        });
-        
-        // Show current slide with animation
+      // Show current slide with animation
+      setTimeout(() => {
+        slides[index].style.display = 'block';
+        slides[index].setAttribute('aria-hidden', 'false');
         setTimeout(() => {
-          slides[index].style.display = 'block';
-          slides[index].setAttribute('aria-hidden', 'false');
-          setTimeout(() => {
-            slides[index].classList.add('active');
-            // Announce slide change to screen readers
-            if (typeof window.announceScreenReaderMessage === 'function') {
-              window.announceScreenReaderMessage(`Showing slide ${index + 1} of ${slides.length}`);
-            }
-          }, 50);
+          slides[index].classList.add('active');
+          // Announce slide change to screen readers
+          if (typeof window.announceScreenReaderMessage === 'function') {
+            window.announceScreenReaderMessage(`Showing slide ${index + 1} of ${slides.length}`);
+          }
         }, 50);
-        
-        currentSlide = index;
-      }
+      }, 50);
 
-      function nextEvent() {
-        showSlide(currentSlide + 1);
-      }
+      currentSlide = index;
+    }
 
-      function prevEvent() {
-        showSlide(currentSlide - 1);
-      }
+    function nextEvent() {
+      showSlide(currentSlide + 1);
+    }
 
-      function togglePause() {
-        const pauseBtn = document.querySelector('.pause-btn');
-        if (isPaused) {
-          startSlideshow();
-          pauseBtn.innerHTML = '⏸';
-          pauseBtn.setAttribute('aria-label', 'Pause slideshow');
-          if (typeof window.announceScreenReaderMessage === 'function') {
-            window.announceScreenReaderMessage('Slideshow resumed');
-          }
-        } else {
-          clearInterval(slideshowInterval);
-          pauseBtn.innerHTML = '▶';
-          pauseBtn.setAttribute('aria-label', 'Play slideshow');
-          if (typeof window.announceScreenReaderMessage === 'function') {
-            window.announceScreenReaderMessage('Slideshow paused');
-          }
+    function prevEvent() {
+      showSlide(currentSlide - 1);
+    }
+
+    function togglePause() {
+      const pauseBtn = document.querySelector('.pause-btn');
+      if (isPaused) {
+        startSlideshow();
+        pauseBtn.innerHTML = '⏸';
+        pauseBtn.setAttribute('aria-label', 'Pause slideshow');
+        if (typeof window.announceScreenReaderMessage === 'function') {
+          window.announceScreenReaderMessage('Slideshow resumed');
         }
-        isPaused = !isPaused;
-      }
-
-      // Clear interval when user leaves the page
-      window.addEventListener('beforeunload', () => {
+      } else {
         clearInterval(slideshowInterval);
-      });
-    </script>
-
-    <style>
-      /* Event Slideshow Styles - NEW DESIGN */
-      .event-slideshow {
-        position: relative;
-        height: 100%;
-        border-radius: 0px;
-        overflow: hidden;
-        background: #004a9f;
-        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+        pauseBtn.innerHTML = '▶';
+        pauseBtn.setAttribute('aria-label', 'Play slideshow');
+        if (typeof window.announceScreenReaderMessage === 'function') {
+          window.announceScreenReaderMessage('Slideshow paused');
+        }
       }
+      isPaused = !isPaused;
+    }
 
-      .event-slide-container {
-        height: 100%;
-        min-height: 380px;
-      }
+    // Clear interval when user leaves the page
+    window.addEventListener('beforeunload', () => {
+      clearInterval(slideshowInterval);
+    });
+  </script>
 
-      .event-slide {
-        display: none;
-        height: 100%;
-        padding: 0;
-        border-radius: 12px;
-        transition: opacity 0.5s ease;
+  <style>
+    /* Event Slideshow Styles - NEW DESIGN */
+    .event-slideshow {
+      position: relative;
+      height: 100%;
+      border-radius: 0px;
+      overflow: hidden;
+      background: #004a9f;
+      box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+    }
+
+    .event-slide-container {
+      height: 100%;
+      min-height: 380px;
+    }
+
+    .event-slide {
+      display: none;
+      height: 100%;
+      padding: 0;
+      border-radius: 12px;
+      transition: opacity 0.5s ease;
+      opacity: 0;
+    }
+
+    .event-slide.active {
+      display: block;
+      opacity: 1;
+      animation: fadeIn 0.5s ease-in-out;
+    }
+
+    @keyframes fadeIn {
+      from {
         opacity: 0;
+        transform: translateY(10px);
       }
 
-      .event-slide.active {
-        display: block;
+      to {
         opacity: 1;
-        animation: fadeIn 0.5s ease-in-out;
+        transform: translateY(0);
       }
+    }
 
-      @keyframes fadeIn {
-        from { opacity: 0; transform: translateY(10px); }
-        to { opacity: 1; transform: translateY(0); }
-      }
+    .event-slide-content {
+      display: flex;
+      flex-direction: column;
+      text-decoration: none;
+      color: inherit;
+      height: 100%;
+      transition: transform 0.3s ease;
+      position: relative;
+    }
 
-      .event-slide-content {
-        display: flex;
-        flex-direction: column;
-        text-decoration: none;
-        color: inherit;
-        height: 100%;
-        transition: transform 0.3s ease;
-        position: relative;
-      }
+    .event-slide .event-image {
+      width: 100%;
+      height: 100%;
+      position: absolute;
+      top: 0;
+      left: 0;
+      z-index: 1;
+    }
 
-      .event-slide .event-image {
-        width: 100%;
-        height: 100%;
-        position: absolute;
-        top: 0;
-        left: 0;
-        z-index: 1;
-      }
+    .event-slide .event-image img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      transition: transform 0.5s ease;
+    }
 
-      .event-slide .event-image img {
-        width: 100%;
-        height: 100%;
-        object-fit: cover;
-        transition: transform 0.5s ease;
-      }
+    .event-slide-content:hover .event-image img {
+      transform: scale(1.05);
+    }
 
-      .event-slide-content:hover .event-image img {
-        transform: scale(1.05);
-      }
+    .event-slide .event-details {
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      z-index: 2;
+      padding: 25px 90px 25px 25px;
+      background: linear-gradient(to top, rgba(0, 0, 0, 0.85) 0%, rgba(0, 0, 0, 0.5) 60%, transparent 100%);
+      color: white;
+    }
 
-      .event-slide .event-details {
-        position: absolute;
-        bottom: 0;
-        left: 0;
-        right: 0;
-        z-index: 2;
-        padding: 25px 90px 25px 25px;
-        background: linear-gradient(to top, rgba(0, 0, 0, 0.85) 0%, rgba(0, 0, 0, 0.5) 60%, transparent 100%);
-        color: white;
-      }
+    .event-slide .date {
+      color: #ffffff;
+      font-size: 0.9rem;
+      font-weight: 600;
+      margin-bottom: 15px;
+      display: inline-flex;
+      align-items: center;
+      background-color: #f47920;
+      padding: 6px 12px;
+      border-radius: 4px;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+      align-self: flex-start;
+    }
 
-      .event-slide .date {
-        color: #ffffff;
-        font-size: 0.9rem;
-        font-weight: 600;
-        margin-bottom: 15px;
-        display: inline-flex;
-        align-items: center;
-        background-color: #f47920;
-        padding: 6px 12px;
-        border-radius: 4px;
-        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
-        align-self: flex-start;
-      }
+    .event-slide .date::before {
+      content: "";
+      display: inline-block;
+      width: 14px;
+      height: 14px;
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='white'%3E%3Cpath d='M19 4h-1V2h-2v2H8V2H6v2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 16H5V10h14v10zM5 8V6h14v2H5zm2 4h10v2H7v-2zm0 4h7v2H7v-2z'/%3E%3C/svg%3E");
+      background-size: contain;
+      margin-right: 6px;
+    }
 
-      .event-slide .date::before {
-        content: "";
-        display: inline-block;
-        width: 14px;
-        height: 14px;
-        background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='white'%3E%3Cpath d='M19 4h-1V2h-2v2H8V2H6v2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 16H5V10h14v10zM5 8V6h14v2H5zm2 4h10v2H7v-2zm0 4h7v2H7v-2z'/%3E%3C/svg%3E");
-        background-size: contain;
-        margin-right: 6px;
+    .event-slide h3 {
+      color: white;
+      margin: 0 0 15px 0;
+      font-size: 1.4rem;
+      font-weight: 700;
+      line-height: 1.3;
+      text-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
+      width: calc(100% - 90px);
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .event-slide p {
+      color: rgba(255, 255, 255, 0.9);
+      margin: 0;
+      font-size: 1rem;
+      line-height: 1.6;
+      display: -webkit-box;
+      -webkit-line-clamp: 3;
+      -webkit-box-orient: vertical;
+      overflow: hidden;
+      flex: 1;
+    }
+
+    .event-slide .view-more {
+      color: white;
+      font-size: 0.95rem;
+      font-weight: 600;
+      margin-top: 20px;
+      align-self: flex-start;
+      display: inline-flex;
+      align-items: center;
+      padding: 8px 18px;
+      background-color: rgba(244, 121, 32, 0.8);
+      border-radius: 30px;
+      transition: background-color 0.3s ease, transform 0.3s ease;
+      border: 1px solid rgba(255, 255, 255, 0.3);
+    }
+
+    .event-slide .view-more::after {
+      content: "→";
+      margin-left: 8px;
+      transition: transform 0.2s ease;
+    }
+
+    .event-slide-content:hover .view-more {
+      background-color: rgba(244, 121, 32, 1);
+      transform: translateY(-3px);
+    }
+
+    .event-slide-content:hover .view-more::after {
+      transform: translateX(3px);
+    }
+
+    .event-controls {
+      position: absolute;
+      bottom: 20px;
+      right: 20px;
+      display: flex;
+      gap: 10px;
+      z-index: 20;
+    }
+
+    .control-btn {
+      background: rgba(255, 255, 255, 0.2);
+      border: 1px solid rgba(255, 255, 255, 0.3);
+      color: white;
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: background-color 0.3s, transform 0.2s;
+      box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+    }
+
+    .control-btn:hover {
+      background: rgba(255, 255, 255, 0.3);
+      transform: translateY(-2px);
+    }
+
+    .control-btn:active {
+      transform: translateY(0);
+    }
+
+    .events-section.wide {
+      background: #ffffff;
+      border-radius: 12px;
+      padding: 0;
+      overflow: hidden;
+      box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+    }
+
+    .events-section.wide .events-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 20px 25px;
+      border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+      background: #f8f9fa;
+    }
+
+    .events-section.wide .events-header h2 {
+      color: #004a9f;
+      margin: 0;
+      font-size: 1.3rem;
+      font-weight: 600;
+    }
+
+    .events-section.wide .view-all {
+      color: #004a9f;
+      text-decoration: none;
+      font-size: 0.9rem;
+      font-weight: 500;
+      display: flex;
+      align-items: center;
+      transition: color 0.2s;
+    }
+
+    .events-section.wide .view-all:hover {
+      color: #f47920;
+    }
+
+    .events-section.wide .view-all span {
+      margin-left: 5px;
+      transition: transform 0.2s;
+    }
+
+    .events-section.wide .view-all:hover span {
+      transform: translateX(3px);
+    }
+
+    .events-section.wide .events-list {
+      padding: 0;
+    }
+
+    /* No events state */
+    .no-events {
+      padding: 40px 25px;
+      text-align: center;
+      color: #6c757d;
+      background: #f8f9fa;
+    }
+
+    .no-events p {
+      font-size: 1.1rem;
+      margin-bottom: 0;
+    }
+
+    /* Responsive adjustments */
+    @media (max-width: 768px) {
+      .event-slide-container {
+        min-height: 350px;
       }
 
       .event-slide h3 {
-        color: white;
-        margin: 0 0 15px 0;
-        font-size: 1.4rem;
-        font-weight: 700;
-        line-height: 1.3;
-        text-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
-        width: calc(100% - 90px);
-        overflow: hidden;
-        text-overflow: ellipsis;
+        font-size: 1.3rem;
+        width: calc(100% - 80px);
+        margin-bottom: 10px;
       }
 
       .event-slide p {
-        color: rgba(255, 255, 255, 0.9);
-        margin: 0;
-        font-size: 1rem;
-        line-height: 1.6;
-        display: -webkit-box;
-        -webkit-line-clamp: 3;
-        -webkit-box-orient: vertical;
-        overflow: hidden;
-        flex: 1;
+        -webkit-line-clamp: 2;
+        font-size: 0.95rem;
+        width: calc(100% - 80px);
+      }
+
+      .event-slide .event-details {
+        padding: 20px 90px 20px 20px;
+      }
+
+      .event-slide .date {
+        font-size: 0.85rem;
+        padding: 5px 10px;
+        margin-bottom: 12px;
       }
 
       .event-slide .view-more {
-        color: white;
-        font-size: 0.95rem;
-        font-weight: 600;
-        margin-top: 20px;
-        align-self: flex-start;
-        display: inline-flex;
-        align-items: center;
-        padding: 8px 18px;
-        background-color: rgba(244, 121, 32, 0.8);
-        border-radius: 30px;
-        transition: background-color 0.3s ease, transform 0.3s ease;
-        border: 1px solid rgba(255, 255, 255, 0.3);
+        padding: 6px 15px;
+        font-size: 0.9rem;
+        margin-top: 15px;
       }
+    }
 
-      .event-slide .view-more::after {
-        content: "→";
-        margin-left: 8px;
-        transition: transform 0.2s ease;
-      }
-
-      .event-slide-content:hover .view-more {
-        background-color: rgba(244, 121, 32, 1);
-        transform: translateY(-3px);
-      }
-
-      .event-slide-content:hover .view-more::after {
-        transform: translateX(3px);
-      }
-
-      .event-controls {
-        position: absolute;
-        bottom: 20px;
-        right: 20px;
-        display: flex;
-        gap: 10px;
-        z-index: 20;
-      }
-
-      .control-btn {
-        background: rgba(255, 255, 255, 0.2);
-        border: 1px solid rgba(255, 255, 255, 0.3);
-        color: white;
-        width: 40px;
-        height: 40px;
-        border-radius: 50%;
-        cursor: pointer;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        transition: background-color 0.3s, transform 0.2s;
-        box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
-      }
-
-      .control-btn:hover {
-        background: rgba(255, 255, 255, 0.3);
-        transform: translateY(-2px);
-      }
-
-      .control-btn:active {
-        transform: translateY(0);
-      }
-
-      .events-section.wide {
-        background: #ffffff;
-        border-radius: 12px;
-        padding: 0;
-        overflow: hidden;
-        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+    @media (max-width: 576px) {
+      .event-slide-container {
+        min-height: 320px;
       }
 
       .events-section.wide .events-header {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        padding: 20px 25px;
-        border-bottom: 1px solid rgba(0, 0, 0, 0.1);
-        background: #f8f9fa;
+        padding: 15px 20px;
       }
 
       .events-section.wide .events-header h2 {
-        color: #004a9f;
-        margin: 0;
-        font-size: 1.3rem;
-        font-weight: 600;
+        font-size: 1.2rem;
       }
 
-      .events-section.wide .view-all {
-        color: #004a9f;
-        text-decoration: none;
-        font-size: 0.9rem;
-        font-weight: 500;
-        display: flex;
-        align-items: center;
-        transition: color 0.2s;
+      .event-controls {
+        bottom: 15px;
+        right: 15px;
       }
 
-      .events-section.wide .view-all:hover {
-        color: #f47920;
+      .control-btn {
+        width: 36px;
+        height: 36px;
       }
 
-      .events-section.wide .view-all span {
-        margin-left: 5px;
-        transition: transform 0.2s;
+      .event-slide .date {
+        font-size: 0.8rem;
+        padding: 4px 8px;
+        margin-bottom: 10px;
       }
 
-      .events-section.wide .view-all:hover span {
-        transform: translateX(3px);
+      .event-slide .event-details {
+        padding: 15px 80px 15px 15px;
       }
 
-      .events-section.wide .events-list {
-        padding: 0;
+      .event-slide h3 {
+        font-size: 1.2rem;
+        margin-bottom: 10px;
+        width: calc(100% - 70px);
       }
 
-      /* No events state */
-      .no-events {
-        padding: 40px 25px;
-        text-align: center;
-        color: #6c757d;
-        background: #f8f9fa;
+      .event-slide p {
+        -webkit-line-clamp: 2;
       }
 
-      .no-events p {
-        font-size: 1.1rem;
-        margin-bottom: 0;
+      .event-slide .view-more {
+        padding: 5px 12px;
+        font-size: 0.85rem;
+        margin-top: 12px;
       }
+    }
 
-      /* Responsive adjustments */
-      @media (max-width: 768px) {
-        .event-slide-container {
-          min-height: 350px;
-        }
+    /* News Section Styles - PRESERVED */
+    .news-section.wide {
+      background: linear-gradient(135deg, #004a9f 0%, #003a7a 100%);
+      border-radius: 12px;
+      padding: 0;
+      overflow: hidden;
+      box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+    }
 
-        .event-slide h3 {
-          font-size: 1.3rem;
-          width: calc(100% - 80px);
-          margin-bottom: 10px;
-        }
+    .news-section.wide .news-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 20px 25px;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    }
 
-        .event-slide p {
-          -webkit-line-clamp: 2;
-          font-size: 0.95rem;
-          width: calc(100% - 80px);
-        }
-        
-        .event-slide .event-details {
-          padding: 20px 90px 20px 20px;
-        }
-        
-        .event-slide .date {
-          font-size: 0.85rem;
-          padding: 5px 10px;
-          margin-bottom: 12px;
-        }
-        
-        .event-slide .view-more {
-          padding: 6px 15px;
-          font-size: 0.9rem;
-          margin-top: 15px;
-        }
-      }
+    .news-section.wide .news-header h2 {
+      color: white;
+      margin: 0;
+      font-size: 1.3rem;
+      font-weight: 600;
+    }
 
-      @media (max-width: 576px) {
-        .event-slide-container {
-          min-height: 320px;
-        }
+    .news-section.wide .view-all {
+      color: rgba(255, 255, 255, 0.9);
+      text-decoration: none;
+      font-size: 0.9rem;
+      font-weight: 500;
+      display: flex;
+      align-items: center;
+      transition: color 0.2s;
+    }
 
-        .events-section.wide .events-header {
-          padding: 15px 20px;
-        }
+    .news-section.wide .view-all:hover {
+      color: white;
+    }
 
-        .events-section.wide .events-header h2 {
-          font-size: 1.2rem;
-        }
+    .news-section.wide .view-all span {
+      margin-left: 5px;
+      transition: transform 0.2s;
+    }
 
-        .event-controls {
-          bottom: 15px;
-          right: 15px;
-        }
+    .news-section.wide .view-all:hover span {
+      transform: translateX(3px);
+    }
 
-        .control-btn {
-          width: 36px;
-          height: 36px;
-        }
-        
-        .event-slide .date {
-          font-size: 0.8rem;
-          padding: 4px 8px;
-          margin-bottom: 10px;
-        }
-        
-        .event-slide .event-details {
-          padding: 15px 80px 15px 15px;
-        }
-        
-        .event-slide h3 {
-          font-size: 1.2rem;
-          margin-bottom: 10px;
-          width: calc(100% - 70px);
-        }
-        
-        .event-slide p {
-          -webkit-line-clamp: 2;
-        }
-        
-        .event-slide .view-more {
-          padding: 5px 12px;
-          font-size: 0.85rem;
-          margin-top: 12px;
-        }
-      }
+    .news-section.wide .news-list {
+      padding: 0;
+      overflow: visible;
+    }
 
-      /* News Section Styles - PRESERVED */
-      .news-section.wide {
-        background: linear-gradient(135deg, #004a9f 0%, #003a7a 100%);
-        border-radius: 12px;
-        padding: 0;
-        overflow: hidden;
-        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
-      }
+    .news-section.wide .news-item {
+      padding: 18px 25px;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+      transition: background-color 0.3s ease;
+      cursor: pointer;
+      position: relative;
+      overflow: visible;
+      display: block;
+    }
 
+    .news-section.wide .news-item:last-child {
+      border-bottom: none;
+    }
+
+    .news-section.wide .news-item:hover {
+      background-color: rgba(255, 255, 255, 0.05);
+    }
+
+    /* Use a pseudo-element for the hover animation instead of transforming the entire item */
+    .news-section.wide .news-item::before {
+      content: "";
+      position: absolute;
+      left: 0;
+      top: 0;
+      width: 5px;
+      height: 100%;
+      background-color: transparent;
+      transition: background-color 0.3s ease;
+    }
+
+    .news-section.wide .news-item:hover::before {
+      background-color: #f47920;
+    }
+
+    .news-section.wide .news-item::after {
+      content: "→";
+      position: absolute;
+      right: 25px;
+      top: 50%;
+      transform: translateY(-50%);
+      color: #f47920;
+      font-size: 1.1rem;
+      opacity: 0;
+      transition: opacity 0.3s ease, transform 0.3s ease;
+      pointer-events: none;
+    }
+
+    .news-section.wide .news-item:hover::after {
+      opacity: 1;
+      transform: translate(-5px, -50%);
+    }
+
+    .news-section.wide .news-item-content {
+      position: relative;
+      left: 0;
+      transition: left 0.3s ease;
+    }
+
+    .news-section.wide .news-item:hover .news-item-content {
+      left: 5px;
+    }
+
+    .news-section.wide .date {
+      color: #f47920;
+      font-size: 0.9rem;
+      font-weight: 600;
+      margin-bottom: 8px;
+      display: flex;
+      align-items: center;
+    }
+
+    .news-section.wide .date::before {
+      content: "";
+      display: inline-block;
+      width: 14px;
+      height: 14px;
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%23f47920'%3E%3Cpath d='M19 4h-1V2h-2v2H8V2H6v2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 16H5V10h14v10zM5 8V6h14v2H5zm2 4h10v2H7v-2zm0 4h7v2H7v-2z'/%3E%3C/svg%3E");
+      background-size: contain;
+      margin-right: 6px;
+    }
+
+    .news-section.wide p {
+      color: white;
+      margin: 0;
+      font-size: 1rem;
+      line-height: 1.5;
+      padding-right: 30px;
+      transition: color 0.2s ease;
+      white-space: normal;
+      overflow: visible;
+      text-overflow: ellipsis;
+      max-width: 100%;
+    }
+
+    .news-section.wide .news-item:hover p {
+      color: rgba(255, 255, 255, 0.95);
+    }
+
+    /* No news state */
+    .no-news {
+      padding: 40px 25px;
+      text-align: center;
+      color: rgba(255, 255, 255, 0.8);
+    }
+
+    .no-news p {
+      font-size: 1.1rem;
+      margin-bottom: 0;
+    }
+
+    /* Responsive adjustments for news section */
+    @media (max-width: 768px) {
       .news-section.wide .news-header {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        padding: 20px 25px;
-        border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        padding: 15px 20px;
       }
 
       .news-section.wide .news-header h2 {
-        color: white;
-        margin: 0;
-        font-size: 1.3rem;
-        font-weight: 600;
-      }
-
-      .news-section.wide .view-all {
-        color: rgba(255, 255, 255, 0.9);
-        text-decoration: none;
-        font-size: 0.9rem;
-        font-weight: 500;
-        display: flex;
-        align-items: center;
-        transition: color 0.2s;
-      }
-
-      .news-section.wide .view-all:hover {
-        color: white;
-      }
-
-      .news-section.wide .view-all span {
-        margin-left: 5px;
-        transition: transform 0.2s;
-      }
-
-      .news-section.wide .view-all:hover span {
-        transform: translateX(3px);
-      }
-
-      .news-section.wide .news-list {
-        padding: 0;
-        overflow: visible;
+        font-size: 1.2rem;
       }
 
       .news-section.wide .news-item {
-        padding: 18px 25px;
-        border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-        transition: background-color 0.3s ease;
-        cursor: pointer;
-        position: relative;
-        overflow: visible;
-        display: block;
-      }
-
-      .news-section.wide .news-item:last-child {
-        border-bottom: none;
-      }
-
-      .news-section.wide .news-item:hover {
-        background-color: rgba(255, 255, 255, 0.05);
-      }
-      
-      /* Use a pseudo-element for the hover animation instead of transforming the entire item */
-      .news-section.wide .news-item::before {
-        content: "";
-        position: absolute;
-        left: 0;
-        top: 0;
-        width: 5px;
-        height: 100%;
-        background-color: transparent;
-        transition: background-color 0.3s ease;
-      }
-      
-      .news-section.wide .news-item:hover::before {
-        background-color: #f47920;
+        padding: 15px 20px;
       }
 
       .news-section.wide .news-item::after {
-        content: "→";
-        position: absolute;
-        right: 25px;
-        top: 50%;
-        transform: translateY(-50%);
-        color: #f47920;
-        font-size: 1.1rem;
-        opacity: 0;
-        transition: opacity 0.3s ease, transform 0.3s ease;
-        pointer-events: none;
-      }
-
-      .news-section.wide .news-item:hover::after {
-        opacity: 1;
-        transform: translate(-5px, -50%);
-      }
-
-      .news-section.wide .news-item-content {
-        position: relative;
-        left: 0;
-        transition: left 0.3s ease;
-      }
-      
-      .news-section.wide .news-item:hover .news-item-content {
-        left: 5px;
-      }
-
-      .news-section.wide .date {
-        color: #f47920;
-        font-size: 0.9rem;
-        font-weight: 600;
-        margin-bottom: 8px;
-        display: flex;
-        align-items: center;
-      }
-
-      .news-section.wide .date::before {
-        content: "";
-        display: inline-block;
-        width: 14px;
-        height: 14px;
-        background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%23f47920'%3E%3Cpath d='M19 4h-1V2h-2v2H8V2H6v2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 16H5V10h14v10zM5 8V6h14v2H5zm2 4h10v2H7v-2zm0 4h7v2H7v-2z'/%3E%3C/svg%3E");
-        background-size: contain;
-        margin-right: 6px;
+        right: 20px;
       }
 
       .news-section.wide p {
-        color: white;
-        margin: 0;
+        font-size: 0.95rem;
+      }
+    }
+
+    @media (max-width: 576px) {
+      .news-section.wide .news-item {
+        padding: 12px 15px;
+      }
+
+      .news-section.wide .date {
+        font-size: 0.85rem;
+      }
+
+      .news-section.wide p {
+        font-size: 0.9rem;
+      }
+
+      .news-section.wide .news-item::after {
+        right: 15px;
         font-size: 1rem;
-        line-height: 1.5;
-        padding-right: 30px;
-        transition: color 0.2s ease;
-        white-space: normal;
-        overflow: visible;
-        text-overflow: ellipsis;
-        max-width: 100%;
       }
+    }
+  </style>
+</body>
 
-      .news-section.wide .news-item:hover p {
-        color: rgba(255, 255, 255, 0.95);
-      }
-
-      /* No news state */
-      .no-news {
-        padding: 40px 25px;
-        text-align: center;
-        color: rgba(255, 255, 255, 0.8);
-      }
-
-      .no-news p {
-        font-size: 1.1rem;
-        margin-bottom: 0;
-      }
-
-      /* Responsive adjustments for news section */
-      @media (max-width: 768px) {
-        .news-section.wide .news-header {
-          padding: 15px 20px;
-        }
-
-        .news-section.wide .news-header h2 {
-          font-size: 1.2rem;
-        }
-
-        .news-section.wide .news-item {
-          padding: 15px 20px;
-        }
-
-        .news-section.wide .news-item::after {
-          right: 20px;
-        }
-
-        .news-section.wide p {
-          font-size: 0.95rem;
-        }
-      }
-
-      @media (max-width: 576px) {
-        .news-section.wide .news-item {
-          padding: 12px 15px;
-        }
-
-        .news-section.wide .date {
-          font-size: 0.85rem;
-        }
-
-        .news-section.wide p {
-          font-size: 0.9rem;
-        }
-
-        .news-section.wide .news-item::after {
-          right: 15px;
-          font-size: 1rem;
-        }
-      }
-    </style>
-  </body>
 </html>
