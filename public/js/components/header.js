@@ -71,7 +71,29 @@
     <!-- Accessibility Announcement for Screen Readers -->
     <div id="screenReaderAnnouncer" class="sr-only" role="alert" aria-live="polite"></div>
     
-    <!-- Top Bar -->
+    <!-- Mobile Menu Overlay -->
+    <div class="mobile-menu-overlay" id="mobileMenuOverlay"></div>
+    
+    <!-- Mobile Top Bar (visible only on mobile) -->
+    <div class="mobile-top-bar">
+      <div class="mobile-top-bar-left">
+        <button id="mobileTopContrastToggle" class="mobile-contrast-toggle" aria-label="Toggle high contrast mode">
+          <span class="contrast-icon">◐</span>
+          <span class="contrast-text-short">Normal</span>
+        </button>
+        <select class="mobile-language-select" id="languageSelectMobileTop" aria-label="Select language">
+          <option value="en">English</option>
+          <option value="hi">हिंदी</option>
+        </select>
+      </div>
+      <button class="hamburger-menu" id="hamburgerBtn" aria-label="Toggle navigation menu" aria-expanded="false">
+        <span></span>
+        <span></span>
+        <span></span>
+      </button>
+    </div>
+    
+    <!-- Top Bar (Desktop Only) -->
     <div class="top-bar" role="navigation" aria-label="Top Navigation">
       <div class="left-links">
         <a href="/" aria-label="Home">Home</a>
@@ -79,8 +101,11 @@
       </div>
       <div class="right-links">
         <a href="#main-content" class="skip-main" aria-label="Skip to main content">Skip to Main Content</a>
-        <a href="#" class="screen-reader" aria-label="Toggle screen reader optimized view">Screen Reader Access</a>
-        <select class="language-select" id="languageSelect" aria-label="Select language">
+        <a href="#" class="screen-reader" aria-label="Toggle screen reader mode">Screen Reader Access</a>
+        <button id="contrastToggle" class="contrast-toggle" aria-label="Toggle high contrast mode">
+          <span class="contrast-icon">◐</span> Normal Contrast
+        </button>
+        <select class="language-select" id="languageSelectDesktop" aria-label="Select language">
           <option value="en">English</option>
           <option value="hi">हिंदी</option>
         </select>
@@ -96,17 +121,55 @@
           class="emblem-logo"
         />
         <div class="header-text">
-          <h1>District Disability Rehabilitation Centre, Mumbai</h1>
-          <p>Department of Empowerment of Persons with Disabilities,</p>
-          <p>Ministry of Social Justice and Empowerment, Govt. of India</p>
+          <!-- Desktop version -->
+          <h1 class="header-title-desktop">District Disability Rehabilitation Centre, Mumbai</h1>
+          <p class="header-subtitle-desktop">Department of Empowerment of Persons with Disabilities,</p>
+          <p class="header-subtitle-desktop">Ministry of Social Justice and Empowerment, Govt. of India</p>
+          
+          <!-- Mobile version -->
+          <h1 class="header-title-mobile">DDRC Mumbai</h1>
+          <p class="header-subtitle-mobile">DEPwD, Ministry of Social Justice & Empowerment, Govt. of India</p>
         </div>
         <img src="/images/ddrc-logo.png" alt="DDRC Logo" class="ddrc-logo" />
       </div>
     </header>
 
     <!-- Navigation Menu -->
-    <nav class="main-nav" role="navigation" aria-label="Main Navigation">
+    <nav class="main-nav" id="mainNav" role="navigation" aria-label="Main Navigation">
+      <!-- Mobile Menu Header (visible only on mobile) -->
+      <div class="mobile-menu-header">
+        <h2>Menu</h2>
+        <button class="mobile-menu-close" id="mobileMenuClose" aria-label="Close menu">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <line x1="18" y1="6" x2="6" y2="18"></line>
+            <line x1="6" y1="6" x2="18" y2="18"></line>
+          </svg>
+        </button>
+      </div>
+      
+      <hr class="mobile-menu-divider" />
+      
       ${navLinks}
+      
+      <hr class="mobile-menu-divider" />
+      
+      <!-- Mobile Accessibility Controls -->
+      <div class="mobile-accessibility-controls">
+        <button id="mobileContrastToggle" class="mobile-contrast-btn" aria-label="Toggle high contrast mode">
+          <span class="contrast-icon">◐</span>
+          <span class="contrast-text">Normal Contrast</span>
+        </button>
+      </div>
+      
+      
+      <!-- Language Selector in Mobile Menu -->
+      <div class="language-selector-mobile">
+        <label for="languageSelectMobile">Language:</label>
+        <select id="languageSelectMobile" aria-label="Select language">
+          <option value="en">English</option>
+          <option value="hi">हिंदी</option>
+        </select>
+      </div>
     </nav>
 
     <!-- External Link Warning Modal -->
@@ -132,6 +195,159 @@
   const headerContainer = document.getElementById('site-header');
   if (headerContainer) {
     headerContainer.innerHTML = headerHTML;
+
+    // Mobile Menu Functionality
+    const hamburgerBtn = document.getElementById('hamburgerBtn');
+    const mainNav = document.getElementById('mainNav');
+    const mobileMenuOverlay = document.getElementById('mobileMenuOverlay');
+    const mobileMenuClose = document.getElementById('mobileMenuClose');
+    const body = document.body;
+
+    // Toggle mobile menu
+    function toggleMobileMenu() {
+      const isOpen = mainNav.classList.contains('active');
+
+      if (isOpen) {
+        // Close menu
+        mainNav.classList.remove('active');
+        hamburgerBtn.classList.remove('active');
+        mobileMenuOverlay.classList.remove('active');
+        body.classList.remove('menu-open');
+        hamburgerBtn.setAttribute('aria-expanded', 'false');
+      } else {
+        // Open menu
+        mainNav.classList.add('active');
+        hamburgerBtn.classList.add('active');
+        mobileMenuOverlay.classList.add('active');
+        body.classList.add('menu-open');
+        hamburgerBtn.setAttribute('aria-expanded', 'true');
+      }
+    }
+
+    // Hamburger button click
+    if (hamburgerBtn) {
+      hamburgerBtn.addEventListener('click', toggleMobileMenu);
+    }
+
+    // Mobile menu close button click
+    if (mobileMenuClose) {
+      mobileMenuClose.addEventListener('click', toggleMobileMenu);
+    }
+
+    // Overlay click to close
+    if (mobileMenuOverlay) {
+      mobileMenuOverlay.addEventListener('click', toggleMobileMenu);
+    }
+
+    // Close menu when clicking navigation links
+    const navLinks = mainNav.querySelectorAll('a');
+    navLinks.forEach(link => {
+      link.addEventListener('click', () => {
+        if (mainNav.classList.contains('active')) {
+          toggleMobileMenu();
+        }
+      });
+    });
+
+    // Close menu on Escape key
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape' && mainNav.classList.contains('active')) {
+        toggleMobileMenu();
+      }
+    });
+
+    // Close menu on window resize to desktop
+    let resizeTimer;
+    window.addEventListener('resize', () => {
+      clearTimeout(resizeTimer);
+      resizeTimer = setTimeout(() => {
+        if (window.innerWidth > 767 && mainNav.classList.contains('active')) {
+          toggleMobileMenu();
+        }
+      }, 250);
+    });
+
+    // Contrast Toggle Functionality
+    const contrastToggle = document.getElementById('contrastToggle');
+    const mobileContrastToggle = document.getElementById('mobileContrastToggle');
+    const mobileTopContrastToggle = document.getElementById('mobileTopContrastToggle');
+
+    // Check saved contrast preference
+    const savedContrast = localStorage.getItem('highContrast');
+    if (savedContrast === 'true') {
+      body.classList.add('high-contrast');
+      updateContrastButtons(true);
+    }
+
+    function updateContrastButtons(isHighContrast) {
+      const text = isHighContrast ? 'High Contrast' : 'Normal Contrast';
+      const shortText = isHighContrast ? 'High' : 'Normal';
+
+      if (contrastToggle) {
+        contrastToggle.innerHTML = `<span class="contrast-icon">◐</span> ${text}`;
+      }
+
+      if (mobileContrastToggle) {
+        const textSpan = mobileContrastToggle.querySelector('.contrast-text');
+        if (textSpan) {
+          textSpan.textContent = text;
+        }
+      }
+
+      if (mobileTopContrastToggle) {
+        const textSpan = mobileTopContrastToggle.querySelector('.contrast-text-short');
+        if (textSpan) {
+          textSpan.textContent = shortText;
+        }
+      }
+    }
+
+    function toggleContrast() {
+      const isHighContrast = body.classList.toggle('high-contrast');
+      localStorage.setItem('highContrast', isHighContrast);
+      updateContrastButtons(isHighContrast);
+
+      // Announce to screen readers
+      const announcer = document.getElementById('screenReaderAnnouncer');
+      if (announcer) {
+        announcer.textContent = isHighContrast ? 'High contrast mode enabled' : 'Normal contrast mode enabled';
+      }
+    }
+
+    if (contrastToggle) {
+      contrastToggle.addEventListener('click', toggleContrast);
+    }
+
+    if (mobileContrastToggle) {
+      mobileContrastToggle.addEventListener('click', toggleContrast);
+    }
+
+    if (mobileTopContrastToggle) {
+      mobileTopContrastToggle.addEventListener('click', toggleContrast);
+    }
+
+    // Sync language selectors (desktop, mobile top, mobile menu)
+    const languageSelectDesktop = document.getElementById('languageSelectDesktop');
+    const languageSelectMobileTop = document.getElementById('languageSelectMobileTop');
+    const languageSelectMobile = document.getElementById('languageSelectMobile');
+
+    function syncLanguageSelectors(value) {
+      if (languageSelectDesktop) languageSelectDesktop.value = value;
+      if (languageSelectMobileTop) languageSelectMobileTop.value = value;
+      if (languageSelectMobile) languageSelectMobile.value = value;
+    }
+
+    if (languageSelectDesktop) {
+      languageSelectDesktop.addEventListener('change', (e) => syncLanguageSelectors(e.target.value));
+    }
+
+    if (languageSelectMobileTop) {
+      languageSelectMobileTop.addEventListener('change', (e) => syncLanguageSelectors(e.target.value));
+    }
+
+    if (languageSelectMobile) {
+      languageSelectMobile.addEventListener('change', (e) => syncLanguageSelectors(e.target.value));
+    }
 
     // Add logout functionality if logout button exists
     const logoutBtn = document.getElementById('logoutBtn');

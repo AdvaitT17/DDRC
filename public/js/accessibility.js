@@ -13,9 +13,6 @@ document.addEventListener("DOMContentLoaded", function () {
   // Initialize font size controls
   initFontSizeControls();
 
-  // Initialize high contrast mode
-  initHighContrastMode();
-
   // Initialize keyboard shortcuts
   initKeyboardShortcuts();
 
@@ -105,54 +102,7 @@ function applyFontSize(level) {
   }
 }
 
-// High contrast mode toggle
-function initHighContrastMode() {
-  // Check if high contrast mode was previously enabled
-  const highContrastEnabled = localStorage.getItem("highContrast") === "true";
 
-  if (highContrastEnabled) {
-    document.body.classList.add("high-contrast");
-  }
-
-  // Create high contrast toggle button
-  const topBar = document.querySelector(".right-links");
-
-  if (topBar) {
-    const contrastButton = document.createElement("button");
-    contrastButton.className = "contrast-toggle";
-    contrastButton.setAttribute(
-      "aria-pressed",
-      highContrastEnabled ? "true" : "false"
-    );
-    contrastButton.setAttribute("aria-label", "Toggle high contrast mode");
-    contrastButton.innerHTML = highContrastEnabled
-      ? "Normal Contrast"
-      : "High Contrast";
-
-    contrastButton.addEventListener("click", function () {
-      const isEnabled = document.body.classList.toggle("high-contrast");
-      localStorage.setItem("highContrast", isEnabled);
-      contrastButton.setAttribute("aria-pressed", isEnabled ? "true" : "false");
-      contrastButton.innerHTML = isEnabled
-        ? "Normal Contrast"
-        : "High Contrast";
-      announceScreenReaderMessage(
-        isEnabled ? "High contrast mode enabled" : "High contrast mode disabled"
-      );
-    });
-
-    // Insert after language selector
-    const languageSelect = document.getElementById("languageSelect");
-    if (languageSelect) {
-      languageSelect.parentNode.insertBefore(
-        contrastButton,
-        languageSelect.nextSibling
-      );
-    } else {
-      topBar.appendChild(contrastButton);
-    }
-  }
-}
 
 // Keyboard shortcuts
 function initKeyboardShortcuts() {
