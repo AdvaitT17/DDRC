@@ -37,12 +37,6 @@ class DashboardManager {
       document.getElementById("authLoader").style.display = "none";
       document.getElementById("mainContent").style.display = "block";
 
-      // Set user info
-      const user = AuthManager.getUserInfo();
-      if (user) {
-        document.getElementById("userInfo").textContent = user.email;
-      }
-
       // Load dashboard data
       await this.loadDashboardData();
     } catch (error) {
@@ -51,16 +45,14 @@ class DashboardManager {
   }
 
   setupEventListeners() {
-    // Setup logout handler
-    document.getElementById("logoutBtn").addEventListener("click", (e) => {
-      e.preventDefault();
-      AuthManager.logout();
-    });
-
     // Setup download button
-    document.getElementById("downloadBtn").addEventListener("click", () => {
-      this.handleDownload();
-    });
+    const downloadBtn = document.getElementById("downloadBtn");
+    if (downloadBtn) {
+      downloadBtn.addEventListener("click", () => {
+        this.handleDownload();
+      });
+    }
+    // Note: Logout is now handled by the header component
   }
 
   async loadDashboardData() {
@@ -75,7 +67,7 @@ class DashboardManager {
 
       const data = await response.json();
       this.updateDashboard(data);
-    } catch (error) {}
+    } catch (error) { }
   }
 
   updateDashboard(data) {
@@ -174,18 +166,12 @@ class DashboardManager {
         break;
     }
 
-    // Update user info if available
-    if (data.formData) {
-      const userInfo = document.getElementById("userInfo");
-      userInfo.textContent =
-        data.applicantName || data.formData.email || "User";
-    }
-
     // Remove any existing status text
     const existingStatus = document.querySelector(".status-text");
     if (existingStatus) {
       existingStatus.remove();
     }
+    // Note: User info is now displayed by the header component
   }
 
   async handleDownload() {
