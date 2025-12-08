@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sitemap | DDRC Mumbai</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="/css/main.css">
+    <link rel="stylesheet" href="/css/header.css">
+    <link rel="stylesheet" href="/css/footer.css">
+    <link rel="stylesheet" href="/css/static-pages.css">
+    <style>
+        .sitemap-section {
+            margin-bottom: 30px;
+        }
+
+        .sitemap-section h3 {
+            color: #1a237e;
+            font-size: 1.3rem;
+            font-weight: 600;
+            margin-bottom: 15px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid #f47920;
+            display: inline-block;
+        }
+
+        .sitemap-section ul {
+            list-style: none;
+            padding-left: 0;
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+            gap: 10px;
+        }
+
+        .sitemap-section ul li {
+            padding: 8px 0;
+        }
+
+        .sitemap-section ul li a {
+            color: #333;
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            transition: color 0.2s, transform 0.2s;
+        }
+
+        .sitemap-section ul li a:hover {
+            color: #f47920;
+            transform: translateX(5px);
+        }
+
+        .sitemap-section ul li a::before {
+            content: "→";
+            color: #f47920;
+            font-weight: bold;
+        }
+
+        .sitemap-intro {
+            background: linear-gradient(135deg, rgba(26, 35, 126, 0.05), rgba(244, 121, 32, 0.05));
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 30px;
+        }
+
+        .sitemap-intro p {
+            margin: 0;
+            color: #555;
+        }
+
+        @media (max-width: 576px) {
+            .sitemap-section ul {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <!-- Header Component -->
+    <div id="site-header"></div>
+
+    <!-- Page Header -->
+    <div class="page-header">
+        <div class="container">
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb">
+                    <li class="breadcrumb-item"><a href="/">Home</a></li>
+                    <li class="breadcrumb-item active" aria-current="page">Sitemap</li>
+                </ol>
+            </nav>
+            <h2 class="page-title">Sitemap</h2>
+            <p class="page-description">Complete navigation guide to DDRC Mumbai website</p>
+        </div>
+    </div>
+
+    <main id="main-content" class="static-content" tabindex="-1">
+        <div class="container">
+            <div class="content-card">
+                <div class="sitemap-intro">
+                    <p>This sitemap provides a comprehensive overview of all the pages available on the DDRC Mumbai
+                        website. Use the links below to quickly navigate to any section.</p>
+                </div>
+
+                <div class="sitemap-section">
+                    <h3>Main Pages</h3>
+                    <ul>
+                        <li><a href="/">Home</a></li>
+                        <li><a href="/about-udid">About DDRC</a></li>
+                        <li><a href="/schemes">Government Schemes</a></li>
+                        <li><a href="/news">News & Updates</a></li>
+                        <li><a href="/events">Events</a></li>
+                        <li><a href="/faqs">Frequently Asked Questions</a></li>
+                        <li><a href="/contact">Contact Us</a></li>
+                    </ul>
+                </div>
+
+                <div class="sitemap-section">
+                    <h3>Services</h3>
+                    <ul>
+                        <li><a href="https://swavlambancard.gov.in/Applyforudid" class="external-link"
+                                target="_blank">Apply for UDID</a></li>
+                        <li><a href="/track">Track Application</a></li>
+                        <li><a href="/about-udid#our-services">Our Services</a></li>
+                    </ul>
+                </div>
+
+                <div class="sitemap-section">
+                    <h3>User Account</h3>
+                    <ul>
+                        <li><a href="/login">Login</a></li>
+                        <li><a href="/registration">Register</a></li>
+                    </ul>
+                </div>
+
+                <div class="sitemap-section">
+                    <h3>Legal & Policies</h3>
+                    <ul>
+                        <li><a href="/privacy">Privacy Policy</a></li>
+                        <li><a href="/terms">Terms & Conditions</a></li>
+                        <li><a href="/copyright">Copyright Policy</a></li>
+                        <li><a href="/accessibility">Accessibility Statement</a></li>
+                    </ul>
+                </div>
+
+                <div class="sitemap-section">
+                    <h3>Administration</h3>
+                    <ul>
+                        <li><a href="/department-login">Department Login</a></li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Footer Component -->
+    <div id="site-footer"></div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="/js/components/header.js"></script>
+    <script src="/js/components/footer.js"></script>
+    <script src="/js/accessibility.js"></script>
+</body>
+
+</html>

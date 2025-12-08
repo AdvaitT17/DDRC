@@ -10,8 +10,8 @@ function renderFooter() {
                 <ul>
                     <li><a href="/about-udid" aria-label="Know more about DDRC">Know more about DDRC</a></li>
                     <li><a href="/schemes" aria-label="Schemes for Persons with Disabilities">Schemes for Persons with Disabilities</a></li>
-                    <li><a href="/about-department" aria-label="About Department">About Department</a></li>
-                    <li><a href="/medical-camps" aria-label="Medical Camps and Hospitals">Medical Camps / Hospitals</a></li>
+                    <li><a href="/news" aria-label="News & Updates">News & Updates</a></li>
+                    <li><a href="/events" aria-label="Latest Events">Latest Events</a></li>
                 </ul>
             </div>
             <div class="footer-section">
