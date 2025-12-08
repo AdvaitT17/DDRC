@@ -1002,7 +1002,7 @@ body.menu-open {
 }
 
 .external-modal-header h3::before {
-  content: 'âš ï¸';
+  content: '⚠️';
   font-size: 16px;
 }
 
