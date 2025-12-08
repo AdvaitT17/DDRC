@@ -706,6 +706,16 @@
     margin-top: auto;
   }
 
+  /* User email in mobile menu */
+  .nav-user-email {
+    display: block;
+    text-align: center;
+    margin: 10px 15px;
+    padding: 10px 15px;
+    font-size: 14px;
+    max-width: none;
+  }
+
   .nav-login-btn {
     background-color: rgba(255, 255, 255, 0.1);
   }
@@ -870,6 +880,21 @@ body.menu-open {
 .nav-logout-btn:hover {
   background-color: #e06810 !important;
   color: white;
+}
+
+/* User email display in navigation */
+.nav-user-email {
+  color: rgba(255, 255, 255, 0.9);
+  font-size: 13px;
+  padding: 8px 15px;
+  padding-left: 15px;
+  white-space: nowrap;
+  max-width: 300px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  margin-left: 15px;
+  border-left: 2px solid rgba(255, 255, 255, 0.3);
+  font-weight: 400;
 }
 
 /* Divyangjan login button styles */

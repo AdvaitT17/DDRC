@@ -1,15 +1,51 @@
 // Header Component - Reusable header for all pages
 (function () {
-  // Check if user is logged in
-  const token = localStorage.getItem('token');
-  const userType = localStorage.getItem('userType');
-  const userName = localStorage.getItem('userName');
+  // Check if user is logged in using AuthManager
+  let isAuthenticated = false;
+  let userType = null;
+  let userName = null;
 
-  // Build navigation links based on authentication status
+  // Check authentication using AuthManager if available
+  if (typeof AuthManager !== 'undefined') {
+    isAuthenticated = AuthManager.isAuthenticated();
+    if (isAuthenticated) {
+      const userInfo = AuthManager.getUserInfo();
+      userType = userInfo?.type || AuthManager.getCurrentUserType();
+      userName = userInfo?.name || userInfo?.email;
+    }
+  } else {
+    // Fallback to direct localStorage check if AuthManager not loaded yet
+    const token = localStorage.getItem('token');
+    userType = localStorage.getItem('userType');
+    userName = localStorage.getItem('userName');
+    isAuthenticated = !!token;
+  }
+
+  // Check if we're on the dashboard page
+  const isDashboardPage = window.location.pathname === '/dashboard' || window.location.pathname.startsWith('/dashboard/');
+
+  // Build navigation links based on authentication status and page
   let navLinks = '';
 
-  if (token && userType === 'divyangjan') {
-    // Logged in divyangjan user
+  if (isDashboardPage && isAuthenticated) {
+    // Dashboard-specific navigation
+    const userEmail = userName || 'User';
+    navLinks = `
+      <a href="/" class="nav-icon" aria-label="Home">
+        <img src="/images/home-icons.png" alt="Home" />
+      </a>
+      <a href="/dashboard/profile" aria-label="View Profile">Profile</a>
+      <a href="/dashboard/documents" aria-label="Access Documents">Documents</a>
+      <div class="nav-spacer"></div>
+      <span class="nav-user-email" aria-label="Logged in as ${userEmail}">Logged in as: ${userEmail}</span>
+      <a href="#" class="nav-logout-btn" id="logoutBtn" aria-label="Logout">
+        <img src="/images/logout.svg" alt="Logout Icon" />
+        Logout
+      </a>
+    `;
+  } else if (isAuthenticated && (userType === 'applicant' || userType === 'divyangjan')) {
+    // Logged in divyangjan/applicant user
+    const userEmail = userName || 'User';
     navLinks = `
       <a href="/" class="nav-icon" aria-label="Home">
         <img src="/images/home-icons.png" alt="Home" />
@@ -21,13 +57,15 @@
       <a href="/faqs" aria-label="FAQs">FAQs</a>
       <a href="/contact" aria-label="Contact Us">Contact Us</a>
       <div class="nav-spacer"></div>
+      <span class="nav-user-email" aria-label="Logged in as ${userEmail}">Logged in as: ${userEmail}</span>
       <a href="#" class="nav-logout-btn" id="logoutBtn" aria-label="Logout">
         <img src="/images/logout.svg" alt="Logout Icon" />
         Logout
       </a>
     `;
-  } else if (token && userType === 'department') {
+  } else if (isAuthenticated && userType === 'department') {
     // Logged in department user
+    const userEmail = userName || 'Admin';
     navLinks = `
       <a href="/" class="nav-icon" aria-label="Home">
         <img src="/images/home-icons.png" alt="Home" />
@@ -38,6 +76,7 @@
       <a href="/faqs" aria-label="FAQs">FAQs</a>
       <a href="/contact" aria-label="Contact Us">Contact Us</a>
       <div class="nav-spacer"></div>
+      <span class="nav-user-email" aria-label="Logged in as ${userEmail}">Logged in as: ${userEmail}</span>
       <a href="#" class="nav-logout-btn" id="logoutBtn" aria-label="Logout">
         <img src="/images/logout.svg" alt="Logout Icon" />
         Logout
@@ -355,14 +394,21 @@
       logoutBtn.addEventListener('click', function (e) {
         e.preventDefault();
 
-        // Clear all auth data
-        localStorage.removeItem('token');
-        localStorage.removeItem('userType');
-        localStorage.removeItem('userName');
-        localStorage.removeItem('userId');
-
-        // Redirect to home page
-        window.location.href = '/';
+        // Use AuthManager if available, otherwise fallback to manual cleanup
+        if (typeof AuthManager !== 'undefined') {
+          AuthManager.logout();
+        } else {
+          // Fallback: clear all possible auth-related items
+          localStorage.removeItem('token');
+          localStorage.removeItem('userType');
+          localStorage.removeItem('userName');
+          localStorage.removeItem('userId');
+          localStorage.removeItem('applicantAuthToken');
+          localStorage.removeItem('applicantUserInfo');
+          localStorage.removeItem('departmentAuthToken');
+          localStorage.removeItem('departmentUserInfo');
+          window.location.href = '/';
+        }
       });
     }
 
