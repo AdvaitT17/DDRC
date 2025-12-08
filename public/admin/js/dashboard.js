@@ -4844,31 +4844,48 @@ style.textContent = `
       padding: 1rem;
       gap: 0.75rem;
       align-items: center;
+      justify-content: space-between;
     }
     
     .main-header .emblem-logo,
     .main-header .ddrc-logo {
-      width: 50px;
-      height: 50px;
+      height: 60px;
+      width: auto;
       object-fit: contain;
       flex-shrink: 0;
     }
     
     .main-header .header-text {
       flex: 1;
-      text-align: center;
+      text-align: left;
+      min-width: 0;
     }
     
-    .main-header .header-text h1 {
-      font-size: 1rem;
-      margin: 0;
-      line-height: 1.3;
+    /* Hide desktop header text on mobile */
+    .main-header .header-title-desktop,
+    .main-header .header-subtitle-desktop {
+      display: none;
     }
     
-    .main-header .header-text p {
-      font-size: 0.7rem;
-      margin: 0.25rem 0 0;
+    /* Show mobile header text */
+    .main-header .header-title-mobile,
+    .main-header .header-subtitle-mobile {
+      display: block;
+    }
+    
+    .main-header .header-title-mobile {
+      font-size: 16px;
       line-height: 1.2;
+      font-weight: 600;
+      color: var(--primary-color);
+      margin: 0;
+    }
+    
+    .main-header .header-subtitle-mobile {
+      font-size: 9px;
+      line-height: 1.3;
+      margin: 2px 0 0 0;
+      color: #495057;
     }
     
     /* Stats grid responsive */
@@ -4910,30 +4927,25 @@ style.textContent = `
     
     /* Header even more compact on small mobile */
     .main-header .logo-section {
-      padding: 0.75rem 0.5rem;
-      gap: 0.5rem;
+      padding: 12px 15px;
+      gap: 12px;
     }
     
     .main-header .emblem-logo,
     .main-header .ddrc-logo {
-      width: 40px;
-      height: 40px;
+      height: 50px;
+      width: auto;
       object-fit: contain;
     }
     
-    .main-header .header-text h1 {
-      font-size: 0.875rem;
-      line-height: 1.2;
-    }
-    
-    .main-header .header-text p {
-      font-size: 0.625rem;
+    .main-header .header-title-mobile {
+      font-size: 14px;
       line-height: 1.1;
     }
     
-    /* Hide second line of subtext on very small screens */
-    .main-header .header-text p:last-child {
-      display: none;
+    .main-header .header-subtitle-mobile {
+      font-size: 8px;
+      line-height: 1.2;
     }
     
     /* Mobile menu full width */

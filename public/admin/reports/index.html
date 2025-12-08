@@ -1,1588 +1,1443 @@
 <!DOCTYPE html>
 <html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Reports | DDRC Admin</title>
-    <link
-      href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css"
-      rel="stylesheet"
-    />
-    <link
-      href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css"
-      rel="stylesheet"
-    />
-    <link
-      rel="stylesheet"
-      href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css"
-    />
-    <link rel="stylesheet" href="/css/main.css" />
-    <link rel="stylesheet" href="/admin/css/style.css" />
-    <style>
-      /* Custom CSS for reports page */
-      :root {
-        --primary-rgb: 26, 35, 126; /* RGB values for #1a237e */
-      }
 
-      /* Reports specific styling */
-      .report-card {
-        background-color: #fff;
-        border-radius: 8px;
-        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
-        margin-bottom: 2rem;
-      }
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Reports | DDRC Admin</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet" />
+  <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css" />
+  <link rel="stylesheet" href="/css/main.css" />
+  <link rel="stylesheet" href="/admin/css/style.css" />
+  <style>
+    /* Custom CSS for reports page */
+    :root {
+      --primary-rgb: 26, 35, 126;
+      /* RGB values for #1a237e */
+    }
 
-      .report-header {
-        padding: 1.25rem;
-        border-bottom: 1px solid #eee;
-      }
+    /* Reports specific styling */
+    .report-card {
+      background-color: #fff;
+      border-radius: 8px;
+      box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+      margin-bottom: 2rem;
+    }
 
-      .report-body {
-        padding: 1.5rem;
-      }
+    .report-header {
+      padding: 1.25rem;
+      border-bottom: 1px solid #eee;
+    }
 
-      .filter-section {
-        background-color: #f8f9fa;
-        border-radius: 6px;
-        padding: 1rem;
-        margin-bottom: 1.5rem;
-      }
+    .report-body {
+      padding: 1.5rem;
+    }
 
-      .filter-header {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        margin-bottom: 1rem;
-      }
+    .filter-section {
+      background-color: #f8f9fa;
+      border-radius: 6px;
+      padding: 1rem;
+      margin-bottom: 1.5rem;
+    }
 
-      .saved-filters {
-        margin-top: 1rem;
-        padding-top: 1rem;
-        border-top: 1px dashed #ddd;
-      }
+    .filter-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 1rem;
+    }
 
-      .saved-filter-badge {
-        cursor: pointer;
-        margin-right: 0.5rem;
+    .saved-filters {
+      margin-top: 1rem;
+      padding-top: 1rem;
+      border-top: 1px dashed #ddd;
+    }
+
+    .saved-filter-badge {
+      cursor: pointer;
+      margin-right: 0.5rem;
+      margin-bottom: 0.5rem;
+    }
+
+    .cross-tab-container {
+      overflow-x: auto;
+    }
+
+    .cross-tab-table {
+      min-width: 800px;
+    }
+
+    .cross-tab-table th {
+      background-color: #f1f5f9;
+      position: sticky;
+      top: 0;
+      z-index: 10;
+    }
+
+    .cross-tab-table th.row-header {
+      background-color: #f1f5f9;
+      position: sticky;
+      left: 0;
+      z-index: 11;
+    }
+
+    .cross-tab-table td.row-label {
+      position: sticky;
+      left: 0;
+      background-color: #f8fafc;
+      font-weight: 500;
+      z-index: 9;
+    }
+
+    .cross-tab-table th.total-header,
+    .cross-tab-table td.total-cell {
+      background-color: #e2e8f0;
+      font-weight: 600;
+    }
+
+    .aggregation-type-selector {
+      margin-left: auto;
+    }
+
+    .aggregation-type-selector .btn-group {
+      border: 1px solid #dee2e6;
+      border-radius: 6px;
+      overflow: hidden;
+    }
+
+    .aggregation-type-selector .btn {
+      font-size: 0.85rem;
+      padding: 0.35rem 0.75rem;
+      border: none;
+      margin-right: -1px;
+    }
+
+    .aggregation-type-selector .btn-outline-primary {
+      color: #495057;
+      background-color: #f8f9fa;
+    }
+
+    .aggregation-type-selector .btn-outline-primary:hover {
+      color: #0d6efd;
+      background-color: #f1f8ff;
+    }
+
+    .aggregation-type-selector .btn-check:checked+.btn-outline-primary {
+      background-color: #0d6efd;
+      color: white;
+    }
+
+    .filter-badge {
+      margin-right: 0.5rem;
+      margin-bottom: 0.5rem;
+      display: inline-flex;
+      align-items: center;
+    }
+
+    .filter-badge .close {
+      margin-left: 0.5rem;
+      font-size: 0.8rem;
+    }
+
+    .select2-container {
+      width: 100% !important;
+    }
+
+    /* Loader */
+    .report-loader {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 200px;
+    }
+
+    .report-loader .spinner-border {
+      width: 3rem;
+      height: 3rem;
+    }
+
+    /* Nested Select Filters */
+    #nestedSelectFiltersContainer {
+      border-left: 4px solid #5b9bd5;
+      margin-top: 1.5rem;
+      margin-bottom: 1.5rem;
+    }
+
+    .nested-select-filter {
+      border-bottom: 1px dashed #ddd;
+      padding-bottom: 1rem;
+    }
+
+    .nested-select-filter:last-child {
+      border-bottom: none;
+    }
+
+    .nested-level-select {
+      transition: all 0.3s ease;
+    }
+
+    .nested-level-select:disabled {
+      background-color: #f5f5f5;
+      cursor: not-allowed;
+    }
+
+    /* Improve spacing for small screens */
+    @media (max-width: 768px) {
+      .nested-select-filter .col-md-3 {
         margin-bottom: 0.5rem;
       }
+    }
 
-      .cross-tab-container {
-        overflow-x: auto;
-      }
+    /* New Comprehensive Filter Panel Styles */
+    .filter-panel {
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+      border: 1px solid #eaeaea;
+      border-radius: 10px;
+      overflow: hidden;
+      margin-bottom: 1.5rem;
+    }
 
-      .cross-tab-table {
-        min-width: 800px;
-      }
+    .filter-panel-header {
+      background-color: #fcfcfd;
+      border-bottom: 1px solid #eaeaea;
+      padding: 12px 16px;
+    }
 
-      .cross-tab-table th {
-        background-color: #f1f5f9;
-        position: sticky;
-        top: 0;
-        z-index: 10;
-      }
+    .filter-panel-header h5 {
+      font-weight: 600;
+      color: #333;
+      display: flex;
+      align-items: center;
+    }
 
-      .cross-tab-table th.row-header {
-        background-color: #f1f5f9;
-        position: sticky;
-        left: 0;
-        z-index: 11;
-      }
+    .filter-panel-header h5 i {
+      color: #0d6efd;
+      margin-right: 10px;
+    }
 
-      .cross-tab-table td.row-label {
-        position: sticky;
-        left: 0;
-        background-color: #f8fafc;
-        font-weight: 500;
-        z-index: 9;
-      }
+    .filter-collapse-btn {
+      width: 32px;
+      height: 32px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 0;
+      border-radius: 6px;
+    }
 
-      .cross-tab-table th.total-header,
-      .cross-tab-table td.total-cell {
-        background-color: #e2e8f0;
-        font-weight: 600;
-      }
+    .filter-collapse-btn:focus {
+      box-shadow: none;
+    }
 
-      .aggregation-type-selector {
-        margin-left: auto;
-      }
+    .filter-count {
+      font-size: 0.7rem;
+      vertical-align: top;
+      padding: 3px 6px;
+      border-radius: 10px;
+    }
 
-      .aggregation-type-selector .btn-group {
-        border: 1px solid #dee2e6;
-        border-radius: 6px;
-        overflow: hidden;
-      }
+    .filter-tag {
+      background-color: #f5f9ff;
+      border: 1px solid #dae8fc;
+      color: #1a56db;
+      border-radius: 8px;
+      padding: 8px 14px;
+      margin-right: 8px;
+      margin-bottom: 8px;
+      display: inline-flex;
+      align-items: center;
+      font-size: 0.875rem;
+      transition: all 0.2s ease;
+      box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+      font-weight: 500;
+    }
 
-      .aggregation-type-selector .btn {
-        font-size: 0.85rem;
-        padding: 0.35rem 0.75rem;
-        border: none;
-        margin-right: -1px;
-      }
+    .filter-tag.has-sequence {
+      padding: 6px 14px 6px 6px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
 
-      .aggregation-type-selector .btn-outline-primary {
-        color: #495057;
-        background-color: #f8f9fa;
-      }
+    /* Highlighted filter tag - visual indicator when a new filter is added */
+    .filter-tag-highlight {
+      background-color: #fffdf0;
+      border-color: #ffecb5;
+      box-shadow: 0 2px 8px rgba(255, 193, 7, 0.2);
+      animation: filterPulse 2s ease;
+    }
 
-      .aggregation-type-selector .btn-outline-primary:hover {
-        color: #0d6efd;
-        background-color: #f1f8ff;
-      }
-
-      .aggregation-type-selector .btn-check:checked + .btn-outline-primary {
-        background-color: #0d6efd;
-        color: white;
-      }
-
-      .filter-badge {
-        margin-right: 0.5rem;
-        margin-bottom: 0.5rem;
-        display: inline-flex;
-        align-items: center;
-      }
-
-      .filter-badge .close {
-        margin-left: 0.5rem;
-        font-size: 0.8rem;
-      }
-
-      .select2-container {
-        width: 100% !important;
-      }
-
-      /* Loader */
-      .report-loader {
-        display: flex;
-        justify-content: center;
-        align-items: center;
-        height: 200px;
-      }
-
-      .report-loader .spinner-border {
-        width: 3rem;
-        height: 3rem;
-      }
-
-      /* Nested Select Filters */
-      #nestedSelectFiltersContainer {
-        border-left: 4px solid #5b9bd5;
-        margin-top: 1.5rem;
-        margin-bottom: 1.5rem;
-      }
-
-      .nested-select-filter {
-        border-bottom: 1px dashed #ddd;
-        padding-bottom: 1rem;
-      }
-
-      .nested-select-filter:last-child {
-        border-bottom: none;
-      }
-
-      .nested-level-select {
-        transition: all 0.3s ease;
-      }
-
-      .nested-level-select:disabled {
-        background-color: #f5f5f5;
-        cursor: not-allowed;
-      }
-
-      /* Improve spacing for small screens */
-      @media (max-width: 768px) {
-        .nested-select-filter .col-md-3 {
-          margin-bottom: 0.5rem;
-        }
-      }
-
-      /* New Comprehensive Filter Panel Styles */
-      .filter-panel {
-        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
-        border: 1px solid #eaeaea;
-        border-radius: 10px;
-        overflow: hidden;
-        margin-bottom: 1.5rem;
-      }
-
-      .filter-panel-header {
-        background-color: #fcfcfd;
-        border-bottom: 1px solid #eaeaea;
-        padding: 12px 16px;
-      }
-
-      .filter-panel-header h5 {
-        font-weight: 600;
-        color: #333;
-        display: flex;
-        align-items: center;
-      }
-
-      .filter-panel-header h5 i {
-        color: #0d6efd;
-        margin-right: 10px;
-      }
-
-      .filter-collapse-btn {
-        width: 32px;
-        height: 32px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        padding: 0;
-        border-radius: 6px;
-      }
-
-      .filter-collapse-btn:focus {
-        box-shadow: none;
-      }
-
-      .filter-count {
-        font-size: 0.7rem;
-        vertical-align: top;
-        padding: 3px 6px;
-        border-radius: 10px;
-      }
-
-      .filter-tag {
-        background-color: #f5f9ff;
-        border: 1px solid #dae8fc;
-        color: #1a56db;
-        border-radius: 8px;
-        padding: 8px 14px;
-        margin-right: 8px;
-        margin-bottom: 8px;
-        display: inline-flex;
-        align-items: center;
-        font-size: 0.875rem;
-        transition: all 0.2s ease;
-        box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
-        font-weight: 500;
-      }
-
-      .filter-tag.has-sequence {
-        padding: 6px 14px 6px 6px;
-        display: flex;
-        align-items: center;
-        gap: 6px;
-      }
-
-      /* Highlighted filter tag - visual indicator when a new filter is added */
-      .filter-tag-highlight {
-        background-color: #fffdf0;
-        border-color: #ffecb5;
+    @keyframes filterPulse {
+      0% {
+        transform: translateY(0);
         box-shadow: 0 2px 8px rgba(255, 193, 7, 0.2);
-        animation: filterPulse 2s ease;
       }
 
-      @keyframes filterPulse {
-        0% {
-          transform: translateY(0);
-          box-shadow: 0 2px 8px rgba(255, 193, 7, 0.2);
-        }
-        50% {
-          transform: translateY(-2px);
-          box-shadow: 0 4px 12px rgba(255, 193, 7, 0.4);
-        }
-        100% {
-          transform: translateY(0);
-          box-shadow: 0 2px 8px rgba(255, 193, 7, 0.2);
-        }
-      }
-
-      .filter-tag .filter-tag-name {
-        font-weight: 600;
-        margin-right: 4px;
-        color: #3b73d3;
-      }
-
-      .filter-tag .filter-tag-operator {
-        margin-right: 4px;
-        color: #64748b;
-        font-weight: 400;
-      }
-
-      .filter-tag .filter-tag-value {
-        margin-right: 8px;
-      }
-
-      .filter-tag .filter-remove-btn {
-        border: none;
-        background: transparent;
-        color: #64748b;
-        width: 22px;
-        height: 22px;
-        border-radius: 50%;
-        padding: 0;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        line-height: 1;
-        cursor: pointer;
-        margin-left: 6px;
-        transition: all 0.15s ease;
-      }
-
-      .filter-tag .filter-remove-btn:hover {
-        background-color: rgba(220, 53, 69, 0.1);
-        color: #dc3545;
-      }
-
-      .filter-tag .filter-remove-btn:focus {
-        outline: none;
-        box-shadow: 0 0 0 2px rgba(220, 53, 69, 0.25);
-      }
-
-      .filter-section-title {
-        position: relative;
-        padding-bottom: 10px;
-        margin-bottom: 16px;
-        font-size: 1rem;
-        color: #212529;
-        font-weight: 600;
-      }
-
-      .filter-section-title:after {
-        content: "";
-        position: absolute;
-        bottom: 0;
-        left: 0;
-        width: 40px;
-        height: 3px;
-        background-color: #0d6efd;
-        border-radius: 3px;
-      }
-
-      /* Dynamic Filter Controls */
-      .filter-controls {
-        background-color: #f8fafc;
-        border-radius: 6px;
-        padding: 18px;
-        margin: 16px 0;
-        border: 1px solid #e6edf5;
-      }
-
-      .filter-control-group {
-        margin-bottom: 15px;
-      }
-
-      .filter-control-group:last-child {
-        margin-bottom: 0;
-      }
-
-      .date-range-container {
-        display: flex;
-        gap: 10px;
-        align-items: center;
-      }
-
-      .operator-badge {
-        display: inline-block;
-        padding: 4px 8px;
-        background-color: #e9ecef;
-        border-radius: 4px;
-        font-size: 0.8rem;
-        color: #495057;
-      }
-
-      .checkbox-group {
-        max-height: 200px;
-        overflow-y: auto;
-        border: 1px solid #ced4da;
-        border-radius: 0.25rem;
-        padding: 10px;
-      }
-
-      .checkbox-item {
-        display: block;
-        margin-bottom: 8px;
-      }
-
-      .checkbox-item:last-child {
-        margin-bottom: 0;
-      }
-
-      /* Saved Filters */
-      .saved-filter-item {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        padding: 10px 14px;
-        background-color: #f8f9fa;
-        border-radius: 8px;
-        margin-right: 8px;
-        margin-bottom: 8px;
-        cursor: pointer;
-        transition: all 0.2s ease;
-        border: 1px solid #e9ecef;
-        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
-      }
-
-      .saved-filter-item:hover {
-        background-color: #f1f3f5;
+      50% {
         transform: translateY(-2px);
-        box-shadow: 0 3px 6px rgba(0, 0, 0, 0.08);
-        border-color: #dee2e6;
-      }
-
-      .saved-filter-item .filter-name {
-        font-weight: 500;
-        color: #495057;
-        font-size: 0.95rem;
-      }
-
-      .saved-filter-items {
-        display: flex;
-        flex-wrap: wrap;
-        gap: 8px;
-        margin-top: 15px;
-      }
-
-      .saved-filter-actions {
-        display: flex;
-        align-items: center;
-        gap: 10px;
-      }
-
-      .saved-filter-actions button {
-        background: transparent;
-        border: none;
-        padding: 6px;
-        border-radius: 6px;
-        color: #6c757d;
-        transition: all 0.2s ease;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-      }
-
-      .saved-filter-actions button:hover {
-        background-color: rgba(0, 0, 0, 0.05);
-        color: #0d6efd;
-      }
-
-      .saved-filter-actions button.text-danger:hover {
-        background-color: rgba(220, 53, 69, 0.1);
-        color: #dc3545;
-      }
-
-      /* Fix filter dropdown issues */
-      #enhanced-filterField {
-        font-size: 0.95rem;
-        border-color: #ced4da;
-        border-radius: 6px;
-        box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
-        background-color: #fff;
-        transition: all 0.2s ease;
-      }
-
-      #enhanced-filterField:focus {
-        border-color: #0d6efd;
-        box-shadow: 0 0 0 3px rgba(13, 110, 253, 0.2);
-      }
-
-      /* Field select label */
-      .filter-builder .form-label {
-        font-size: 0.9rem;
-        font-weight: 500;
-        color: #495057;
-        margin-bottom: 8px;
-      }
-
-      /* Ensure select2 doesn't interfere with our dropdowns */
-      .select2-hidden-accessible {
-        display: none !important;
-      }
-
-      /* Override any select2 containers that might be covering our dropdown */
-      .select2-container {
-        display: none !important;
-      }
-
-      /* Make sure the filter panel is visible */
-      .filter-panel,
-      .filter-panel * {
-        visibility: visible !important;
-        opacity: 1 !important;
-      }
-
-      /* Make filter panel visible and properly styled */
-      .filter-builder {
-        background-color: #f8f9fa;
-        border-radius: 8px;
-        padding: 20px;
-        margin-bottom: 20px;
-        border: 1px solid #e9ecef;
-        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
-      }
-
-      /* Hide original filter section */
-      .filter-section {
-        display: none;
-      }
-
-      /* Make active filters display more prominent */
-      #activeFilterTags {
-        min-height: 40px;
-        padding: 15px;
-        background-color: #f8fafc;
-        border-radius: 8px;
-        margin-bottom: 15px;
-        border: 1px solid #e6edf5;
-      }
-
-      /* Show a message when there are no filters applied */
-      .no-filters-message {
-        color: #6c757d;
-        font-style: italic;
-        text-align: center;
-        padding: 5px 0;
-      }
-
-      /* Improve filter action buttons visibility */
-      #enhanced-filterActionButtons {
-        margin-top: 20px !important;
-        display: flex !important;
-        gap: 10px !important;
-      }
-
-      /* Fix filter action buttons */
-      #enhanced-addFilterBtn,
-      #enhanced-cancelFilterBtn {
-        min-width: 120px;
-        padding: 8px 16px;
-        border-radius: 6px;
-        transition: all 0.2s ease;
-        font-weight: 500;
-        font-size: 0.9rem;
-      }
-
-      #enhanced-addFilterBtn {
-        background-color: #0d6efd;
-        border-color: #0d6efd;
-      }
-
-      #enhanced-addFilterBtn:hover {
-        background-color: #0b5ed7;
-        border-color: #0a58ca;
-        transform: translateY(-1px);
-        box-shadow: 0 2px 5px rgba(0, 0, 0, 0.15);
-      }
-
-      #enhanced-cancelFilterBtn {
-        color: #6c757d;
-        border-color: #dee2e6;
-      }
-
-      #enhanced-cancelFilterBtn:hover {
-        background-color: #f8f9fa;
-        border-color: #c6ccd2;
-      }
-
-      /* Sequential filter styling */
-      .filter-sequence-description {
-        background-color: #f0f7ff;
-        border-radius: 8px;
-        border-left: 4px solid #4285f4;
-        padding: 10px 16px;
-        margin-bottom: 15px;
-        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
-        color: #495057;
-      }
-
-      .filter-sequence-description small {
-        font-size: 0.9rem;
-        display: flex;
-        align-items: center;
-        gap: 8px;
-      }
-
-      .filter-sequence-description i {
-        color: #4285f4;
-        font-size: 1rem;
-      }
-
-      .filter-sequence-number {
-        background-color: #3b73d3;
-        color: white;
-        border-radius: 50%;
-        width: 24px;
-        height: 24px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        font-size: 0.8rem;
-        font-weight: bold;
-        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
-        flex-shrink: 0;
-      }
-
-      .filter-arrow {
-        color: #64748b;
-        margin: 0 10px;
-        opacity: 0.8;
-        display: flex;
-        align-items: center;
-      }
-
-      .filter-tags-container {
-        display: flex;
-        flex-wrap: wrap;
-        gap: 6px;
-      }
-
-      /* Toast notification styling */
-      #filter-toast-container,
-      #saved-filter-toast-container,
-      #toast-container {
-        position: fixed;
-        bottom: 20px;
-        right: 20px;
-        z-index: 9999;
-      }
-
-      .toast {
-        background-color: white;
-        border-radius: 8px;
-        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-        margin-top: 10px;
-        min-width: 300px;
-        border-left: 4px solid #0d6efd;
-        overflow: hidden;
-      }
-
-      .toast.bg-success {
-        border-left-color: #198754;
-      }
-
-      .toast.bg-danger {
-        border-left-color: #dc3545;
-      }
-
-      .toast.bg-warning {
-        border-left-color: #ffc107;
-      }
-
-      .toast.bg-info {
-        border-left-color: #0dcaf0;
-      }
-
-      .toast-header {
-        border-bottom: 1px solid #e9ecef;
-        padding: 0.75rem 1rem;
-        background-color: white;
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        font-weight: 500;
-        color: #212529;
-      }
-
-      .toast-header .btn-close {
-        padding: 0.5rem;
-        margin: -0.5rem -0.5rem -0.5rem auto;
-        background-size: 0.7em;
-      }
-
-      .toast-body {
-        padding: 1rem;
-        color: #212529;
-      }
-
-      .toast .btn-outline-light {
-        color: #0d6efd;
-        border-color: #0d6efd;
-        background-color: transparent;
-      }
-
-      .toast .btn-outline-light:hover {
-        color: white;
-        background-color: #0d6efd;
-      }
-
-      /* Filter sequential tooltip */
-      #filter-sequential-tooltip {
-        border-left: 4px solid #0dcaf0;
-        background-color: #f0fdff;
-      }
-
-      /* Saved Reports styling */
-      #savedReportsSection {
-        margin-bottom: 1.5rem;
-      }
-
-      .saved-report-card {
-        box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
-        transition: all 0.2s ease;
-        border: 1px solid #efefef;
-      }
-
-      .saved-report-card:hover {
-        transform: translateY(-2px);
-        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
-      }
-
-      .saved-report-card .card-title {
-        font-size: 0.95rem;
-        font-weight: 600;
-        color: #495057;
-      }
-
-      .saved-report-card .card-body {
-        padding: 0.75rem;
-      }
-
-      .saved-report-card .badge {
-        padding: 3px 6px;
-        font-weight: normal;
-        border: 1px solid #e9ecef;
-      }
-
-      /* Highlight pulse animation for loaded reports */
-      @keyframes highlightPulse {
-        0% {
-          box-shadow: 0 0 0 0 rgba(13, 110, 253, 0.7);
-          border-color: rgba(13, 110, 253, 0.7);
-        }
-        50% {
-          box-shadow: 0 0 0 10px rgba(13, 110, 253, 0);
-          border-color: rgba(13, 110, 253, 1);
-        }
-        100% {
-          box-shadow: 0 0 0 0 rgba(13, 110, 253, 0);
-          border-color: #efefef;
-        }
-      }
-
-      .highlight-pulse {
-        animation: highlightPulse 2s ease;
-        border-color: #0d6efd;
-      }
-
-      #saveReportBtn {
-        background-color: #198754;
-        border-color: #198754;
-        color: white;
-      }
-
-      /* Animation for saved reports */
-      @keyframes fadeIn {
-        from {
-          opacity: 0;
-          transform: translateY(10px);
-        }
-        to {
-          opacity: 1;
-          transform: translateY(0);
-        }
-      }
-
-      .saved-report-card {
-        animation: fadeIn 0.3s ease-out;
-      }
-
-      /* Empty state styling */
-      .empty-state {
-        text-align: center;
-        padding: 2rem;
-        color: #6c757d;
-      }
-
-      .empty-state i {
-        font-size: 2.5rem;
-        margin-bottom: 1rem;
-        opacity: 0.5;
-      }
-
-      /* Modal Fixes */
-      .modal {
-        z-index: 9999 !important;
-      }
-
-      .modal-backdrop {
-        z-index: 9998 !important;
-        opacity: 0.7 !important; /* Make backdrop more opaque */
-      }
-
-      .modal-open #enhanced-filterField,
-      .modal-open .filter-controls,
-      .modal-open #enhanced-dynamicFilterControls {
-        display: none !important;
-      }
-
-      .modal-dialog {
-        z-index: 10000 !important;
-        position: relative;
-      }
-
-      /* Ensure the modals are properly contained */
-      .modal-content {
-        box-shadow: 0 5px 15px rgba(0, 0, 0, 0.5);
-        border: 1px solid rgba(0, 0, 0, 0.2);
-      }
-
-      /* Fix any select fields appearing in front of modals */
-      select,
-      .form-select {
-        z-index: 1 !important;
-      }
-
-      /* Only when not in modals */
-      .form-select:not(.modal *) {
-        position: relative;
-        z-index: 50;
-      }
-
-      /* Specific fix for the enhanced filter field */
-      #enhanced-filterField {
-        z-index: 50 !important;
-      }
-
-      /* Hide enhanced filter field when modal is open */
-      body.modal-open #enhanced-filterField,
-      body.modal-open #enhanced-dynamicFilterControls,
-      body.modal-open .filter-controls {
-        display: none !important;
-        visibility: hidden !important;
-        opacity: 0 !important;
-        z-index: -1 !important;
-      }
-
-      /* Custom Cross Button Styling */
-      .cross-icon,
-      .filter-tag .filter-remove-btn .bi-x {
-        transition: all 0.2s ease;
-        color: #6c757d;
-      }
-
-      .cross-icon:hover,
-      .filter-tag .filter-remove-btn:hover .bi-x {
-        color: #dc3545;
-        transform: scale(1.1);
-      }
-
-      .filter-tag .filter-remove-btn {
-        background: transparent;
-        border: none;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        width: 20px;
-        height: 20px;
-        padding: 0;
-        border-radius: 50%;
-        cursor: pointer;
-        transition: all 0.2s ease;
-        margin-left: 4px;
-      }
-
-      .filter-tag .filter-remove-btn:hover {
-        background-color: rgba(220, 53, 69, 0.1);
-      }
-
-      .filter-tag .filter-remove-btn:focus {
-        outline: none;
-        box-shadow: 0 0 0 2px rgba(220, 53, 69, 0.25);
-      }
-
-      #generateReportBtn {
-        width: 100%;
-        margin-top: 5%;
-        margin-bottom: 3%;
-        padding: 14px;
-        font-size: 15px;
-        font-weight: 500;
-        background: var(--primary-color);
-        color: white;
-        border: none;
-        border-radius: 8px;
-        position: relative;
-        overflow: hidden;
-        transition: all 0.3s ease;
-        letter-spacing: 0.2px;
-      }
-
-      #generateReportBtn::before {
-        content: "";
-        position: absolute;
-        top: 0;
-        left: 0;
-        width: 100%;
-        height: 100%;
-        background: linear-gradient(
-          120deg,
+        box-shadow: 0 4px 12px rgba(255, 193, 7, 0.4);
+      }
+
+      100% {
+        transform: translateY(0);
+        box-shadow: 0 2px 8px rgba(255, 193, 7, 0.2);
+      }
+    }
+
+    .filter-tag .filter-tag-name {
+      font-weight: 600;
+      margin-right: 4px;
+      color: #3b73d3;
+    }
+
+    .filter-tag .filter-tag-operator {
+      margin-right: 4px;
+      color: #64748b;
+      font-weight: 400;
+    }
+
+    .filter-tag .filter-tag-value {
+      margin-right: 8px;
+    }
+
+    .filter-tag .filter-remove-btn {
+      border: none;
+      background: transparent;
+      color: #64748b;
+      width: 22px;
+      height: 22px;
+      border-radius: 50%;
+      padding: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      line-height: 1;
+      cursor: pointer;
+      margin-left: 6px;
+      transition: all 0.15s ease;
+    }
+
+    .filter-tag .filter-remove-btn:hover {
+      background-color: rgba(220, 53, 69, 0.1);
+      color: #dc3545;
+    }
+
+    .filter-tag .filter-remove-btn:focus {
+      outline: none;
+      box-shadow: 0 0 0 2px rgba(220, 53, 69, 0.25);
+    }
+
+    .filter-section-title {
+      position: relative;
+      padding-bottom: 10px;
+      margin-bottom: 16px;
+      font-size: 1rem;
+      color: #212529;
+      font-weight: 600;
+    }
+
+    .filter-section-title:after {
+      content: "";
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      width: 40px;
+      height: 3px;
+      background-color: #0d6efd;
+      border-radius: 3px;
+    }
+
+    /* Dynamic Filter Controls */
+    .filter-controls {
+      background-color: #f8fafc;
+      border-radius: 6px;
+      padding: 18px;
+      margin: 16px 0;
+      border: 1px solid #e6edf5;
+    }
+
+    .filter-control-group {
+      margin-bottom: 15px;
+    }
+
+    .filter-control-group:last-child {
+      margin-bottom: 0;
+    }
+
+    .date-range-container {
+      display: flex;
+      gap: 10px;
+      align-items: center;
+    }
+
+    .operator-badge {
+      display: inline-block;
+      padding: 4px 8px;
+      background-color: #e9ecef;
+      border-radius: 4px;
+      font-size: 0.8rem;
+      color: #495057;
+    }
+
+    .checkbox-group {
+      max-height: 200px;
+      overflow-y: auto;
+      border: 1px solid #ced4da;
+      border-radius: 0.25rem;
+      padding: 10px;
+    }
+
+    .checkbox-item {
+      display: block;
+      margin-bottom: 8px;
+    }
+
+    .checkbox-item:last-child {
+      margin-bottom: 0;
+    }
+
+    /* Saved Filters */
+    .saved-filter-item {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 10px 14px;
+      background-color: #f8f9fa;
+      border-radius: 8px;
+      margin-right: 8px;
+      margin-bottom: 8px;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      border: 1px solid #e9ecef;
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+    }
+
+    .saved-filter-item:hover {
+      background-color: #f1f3f5;
+      transform: translateY(-2px);
+      box-shadow: 0 3px 6px rgba(0, 0, 0, 0.08);
+      border-color: #dee2e6;
+    }
+
+    .saved-filter-item .filter-name {
+      font-weight: 500;
+      color: #495057;
+      font-size: 0.95rem;
+    }
+
+    .saved-filter-items {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-top: 15px;
+    }
+
+    .saved-filter-actions {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .saved-filter-actions button {
+      background: transparent;
+      border: none;
+      padding: 6px;
+      border-radius: 6px;
+      color: #6c757d;
+      transition: all 0.2s ease;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .saved-filter-actions button:hover {
+      background-color: rgba(0, 0, 0, 0.05);
+      color: #0d6efd;
+    }
+
+    .saved-filter-actions button.text-danger:hover {
+      background-color: rgba(220, 53, 69, 0.1);
+      color: #dc3545;
+    }
+
+    /* Fix filter dropdown issues */
+    #enhanced-filterField {
+      font-size: 0.95rem;
+      border-color: #ced4da;
+      border-radius: 6px;
+      box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+      background-color: #fff;
+      transition: all 0.2s ease;
+    }
+
+    #enhanced-filterField:focus {
+      border-color: #0d6efd;
+      box-shadow: 0 0 0 3px rgba(13, 110, 253, 0.2);
+    }
+
+    /* Field select label */
+    .filter-builder .form-label {
+      font-size: 0.9rem;
+      font-weight: 500;
+      color: #495057;
+      margin-bottom: 8px;
+    }
+
+    /* Ensure select2 doesn't interfere with our dropdowns */
+    .select2-hidden-accessible {
+      display: none !important;
+    }
+
+    /* Override any select2 containers that might be covering our dropdown */
+    .select2-container {
+      display: none !important;
+    }
+
+    /* Make sure the filter panel is visible */
+    .filter-panel,
+    .filter-panel * {
+      visibility: visible !important;
+      opacity: 1 !important;
+    }
+
+    /* Make filter panel visible and properly styled */
+    .filter-builder {
+      background-color: #f8f9fa;
+      border-radius: 8px;
+      padding: 20px;
+      margin-bottom: 20px;
+      border: 1px solid #e9ecef;
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+    }
+
+    /* Hide original filter section */
+    .filter-section {
+      display: none;
+    }
+
+    /* Make active filters display more prominent */
+    #activeFilterTags {
+      min-height: 40px;
+      padding: 15px;
+      background-color: #f8fafc;
+      border-radius: 8px;
+      margin-bottom: 15px;
+      border: 1px solid #e6edf5;
+    }
+
+    /* Show a message when there are no filters applied */
+    .no-filters-message {
+      color: #6c757d;
+      font-style: italic;
+      text-align: center;
+      padding: 5px 0;
+    }
+
+    /* Improve filter action buttons visibility */
+    #enhanced-filterActionButtons {
+      margin-top: 20px !important;
+      display: flex !important;
+      gap: 10px !important;
+    }
+
+    /* Fix filter action buttons */
+    #enhanced-addFilterBtn,
+    #enhanced-cancelFilterBtn {
+      min-width: 120px;
+      padding: 8px 16px;
+      border-radius: 6px;
+      transition: all 0.2s ease;
+      font-weight: 500;
+      font-size: 0.9rem;
+    }
+
+    #enhanced-addFilterBtn {
+      background-color: #0d6efd;
+      border-color: #0d6efd;
+    }
+
+    #enhanced-addFilterBtn:hover {
+      background-color: #0b5ed7;
+      border-color: #0a58ca;
+      transform: translateY(-1px);
+      box-shadow: 0 2px 5px rgba(0, 0, 0, 0.15);
+    }
+
+    #enhanced-cancelFilterBtn {
+      color: #6c757d;
+      border-color: #dee2e6;
+    }
+
+    #enhanced-cancelFilterBtn:hover {
+      background-color: #f8f9fa;
+      border-color: #c6ccd2;
+    }
+
+    /* Sequential filter styling */
+    .filter-sequence-description {
+      background-color: #f0f7ff;
+      border-radius: 8px;
+      border-left: 4px solid #4285f4;
+      padding: 10px 16px;
+      margin-bottom: 15px;
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+      color: #495057;
+    }
+
+    .filter-sequence-description small {
+      font-size: 0.9rem;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .filter-sequence-description i {
+      color: #4285f4;
+      font-size: 1rem;
+    }
+
+    .filter-sequence-number {
+      background-color: #3b73d3;
+      color: white;
+      border-radius: 50%;
+      width: 24px;
+      height: 24px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 0.8rem;
+      font-weight: bold;
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+      flex-shrink: 0;
+    }
+
+    .filter-arrow {
+      color: #64748b;
+      margin: 0 10px;
+      opacity: 0.8;
+      display: flex;
+      align-items: center;
+    }
+
+    .filter-tags-container {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+    }
+
+    /* Toast notification styling */
+    #filter-toast-container,
+    #saved-filter-toast-container,
+    #toast-container {
+      position: fixed;
+      bottom: 20px;
+      right: 20px;
+      z-index: 9999;
+    }
+
+    .toast {
+      background-color: white;
+      border-radius: 8px;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+      margin-top: 10px;
+      min-width: 300px;
+      border-left: 4px solid #0d6efd;
+      overflow: hidden;
+    }
+
+    .toast.bg-success {
+      border-left-color: #198754;
+    }
+
+    .toast.bg-danger {
+      border-left-color: #dc3545;
+    }
+
+    .toast.bg-warning {
+      border-left-color: #ffc107;
+    }
+
+    .toast.bg-info {
+      border-left-color: #0dcaf0;
+    }
+
+    .toast-header {
+      border-bottom: 1px solid #e9ecef;
+      padding: 0.75rem 1rem;
+      background-color: white;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      font-weight: 500;
+      color: #212529;
+    }
+
+    .toast-header .btn-close {
+      padding: 0.5rem;
+      margin: -0.5rem -0.5rem -0.5rem auto;
+      background-size: 0.7em;
+    }
+
+    .toast-body {
+      padding: 1rem;
+      color: #212529;
+    }
+
+    .toast .btn-outline-light {
+      color: #0d6efd;
+      border-color: #0d6efd;
+      background-color: transparent;
+    }
+
+    .toast .btn-outline-light:hover {
+      color: white;
+      background-color: #0d6efd;
+    }
+
+    /* Filter sequential tooltip */
+    #filter-sequential-tooltip {
+      border-left: 4px solid #0dcaf0;
+      background-color: #f0fdff;
+    }
+
+    /* Saved Reports styling */
+    #savedReportsSection {
+      margin-bottom: 1.5rem;
+    }
+
+    .saved-report-card {
+      box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+      transition: all 0.2s ease;
+      border: 1px solid #efefef;
+    }
+
+    .saved-report-card:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+    }
+
+    .saved-report-card .card-title {
+      font-size: 0.95rem;
+      font-weight: 600;
+      color: #495057;
+    }
+
+    .saved-report-card .card-body {
+      padding: 0.75rem;
+    }
+
+    .saved-report-card .badge {
+      padding: 3px 6px;
+      font-weight: normal;
+      border: 1px solid #e9ecef;
+    }
+
+    /* Highlight pulse animation for loaded reports */
+    @keyframes highlightPulse {
+      0% {
+        box-shadow: 0 0 0 0 rgba(13, 110, 253, 0.7);
+        border-color: rgba(13, 110, 253, 0.7);
+      }
+
+      50% {
+        box-shadow: 0 0 0 10px rgba(13, 110, 253, 0);
+        border-color: rgba(13, 110, 253, 1);
+      }
+
+      100% {
+        box-shadow: 0 0 0 0 rgba(13, 110, 253, 0);
+        border-color: #efefef;
+      }
+    }
+
+    .highlight-pulse {
+      animation: highlightPulse 2s ease;
+      border-color: #0d6efd;
+    }
+
+    #saveReportBtn {
+      background-color: #198754;
+      border-color: #198754;
+      color: white;
+    }
+
+    /* Animation for saved reports */
+    @keyframes fadeIn {
+      from {
+        opacity: 0;
+        transform: translateY(10px);
+      }
+
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    .saved-report-card {
+      animation: fadeIn 0.3s ease-out;
+    }
+
+    /* Empty state styling */
+    .empty-state {
+      text-align: center;
+      padding: 2rem;
+      color: #6c757d;
+    }
+
+    .empty-state i {
+      font-size: 2.5rem;
+      margin-bottom: 1rem;
+      opacity: 0.5;
+    }
+
+    /* Modal Fixes */
+    .modal {
+      z-index: 9999 !important;
+    }
+
+    .modal-backdrop {
+      z-index: 9998 !important;
+      opacity: 0.7 !important;
+      /* Make backdrop more opaque */
+    }
+
+    .modal-open #enhanced-filterField,
+    .modal-open .filter-controls,
+    .modal-open #enhanced-dynamicFilterControls {
+      display: none !important;
+    }
+
+    .modal-dialog {
+      z-index: 10000 !important;
+      position: relative;
+    }
+
+    /* Ensure the modals are properly contained */
+    .modal-content {
+      box-shadow: 0 5px 15px rgba(0, 0, 0, 0.5);
+      border: 1px solid rgba(0, 0, 0, 0.2);
+    }
+
+    /* Fix any select fields appearing in front of modals */
+    select,
+    .form-select {
+      z-index: 1 !important;
+    }
+
+    /* Only when not in modals */
+    .form-select:not(.modal *) {
+      position: relative;
+      z-index: 50;
+    }
+
+    /* Specific fix for the enhanced filter field */
+    #enhanced-filterField {
+      z-index: 50 !important;
+    }
+
+    /* Hide enhanced filter field when modal is open */
+    body.modal-open #enhanced-filterField,
+    body.modal-open #enhanced-dynamicFilterControls,
+    body.modal-open .filter-controls {
+      display: none !important;
+      visibility: hidden !important;
+      opacity: 0 !important;
+      z-index: -1 !important;
+    }
+
+    /* Custom Cross Button Styling */
+    .cross-icon,
+    .filter-tag .filter-remove-btn .bi-x {
+      transition: all 0.2s ease;
+      color: #6c757d;
+    }
+
+    .cross-icon:hover,
+    .filter-tag .filter-remove-btn:hover .bi-x {
+      color: #dc3545;
+      transform: scale(1.1);
+    }
+
+    .filter-tag .filter-remove-btn {
+      background: transparent;
+      border: none;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 20px;
+      height: 20px;
+      padding: 0;
+      border-radius: 50%;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      margin-left: 4px;
+    }
+
+    .filter-tag .filter-remove-btn:hover {
+      background-color: rgba(220, 53, 69, 0.1);
+    }
+
+    .filter-tag .filter-remove-btn:focus {
+      outline: none;
+      box-shadow: 0 0 0 2px rgba(220, 53, 69, 0.25);
+    }
+
+    #generateReportBtn {
+      width: 100%;
+      margin-top: 5%;
+      margin-bottom: 3%;
+      padding: 14px;
+      font-size: 15px;
+      font-weight: 500;
+      background: var(--primary-color);
+      color: white;
+      border: none;
+      border-radius: 8px;
+      position: relative;
+      overflow: hidden;
+      transition: all 0.3s ease;
+      letter-spacing: 0.2px;
+    }
+
+    #generateReportBtn::before {
+      content: "";
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: linear-gradient(120deg,
           transparent 0%,
           rgba(255, 255, 255, 0.2) 50%,
-          transparent 100%
-        );
-        transform: translateX(-100%);
-        transition: transform 0.5s ease;
-      }
+          transparent 100%);
+      transform: translateX(-100%);
+      transition: transform 0.5s ease;
+    }
 
-      #generateReportBtn:hover {
-        box-shadow: 0 4px 20px rgba(var(--primary-rgb), 0.15);
-      }
+    #generateReportBtn:hover {
+      box-shadow: 0 4px 20px rgba(var(--primary-rgb), 0.15);
+    }
 
-      #generateReportBtn:hover::before {
-        transform: translateX(100%);
-      }
+    #generateReportBtn:hover::before {
+      transform: translateX(100%);
+    }
 
-      #generateReportBtn i {
-        margin-right: 8px;
-      }
+    #generateReportBtn i {
+      margin-right: 8px;
+    }
 
-      /* Filter Header Button Group */
-      .filter-action-buttons {
-        display: flex;
-        align-items: center;
-        gap: 8px;
-      }
+    /* Filter Header Button Group */
+    .filter-action-buttons {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
 
-      .filter-action-buttons .btn {
-        border-radius: 6px;
-        padding: 6px 12px;
-        font-size: 0.875rem;
-        font-weight: 500;
-        display: flex;
-        align-items: center;
-        transition: all 0.2s ease;
-        border-color: #dee2e6;
-      }
+    .filter-action-buttons .btn {
+      border-radius: 6px;
+      padding: 6px 12px;
+      font-size: 0.875rem;
+      font-weight: 500;
+      display: flex;
+      align-items: center;
+      transition: all 0.2s ease;
+      border-color: #dee2e6;
+    }
 
-      .filter-action-buttons .btn:hover {
-        transform: translateY(-1px);
-        box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
-      }
+    .filter-action-buttons .btn:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+    }
 
-      .filter-action-buttons .btn i {
-        margin-right: 6px;
-        font-size: 0.9rem;
-      }
+    .filter-action-buttons .btn i {
+      margin-right: 6px;
+      font-size: 0.9rem;
+    }
 
-      .filter-action-buttons .filter-collapse-btn {
-        width: 34px;
-        height: 34px;
-        padding: 0;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-      }
+    .filter-action-buttons .filter-collapse-btn {
+      width: 34px;
+      height: 34px;
+      padding: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
 
-      .filter-action-buttons .filter-collapse-btn i {
-        margin-right: 0;
-      }
+    .filter-action-buttons .filter-collapse-btn i {
+      margin-right: 0;
+    }
 
-      .filter-tag-group {
-        display: inline-flex;
-        align-items: center;
-        margin-right: 0px;
-        margin-bottom: 4px;
-      }
+    .filter-tag-group {
+      display: inline-flex;
+      align-items: center;
+      margin-right: 0px;
+      margin-bottom: 4px;
+    }
 
-      /* Responsive adjustments for the results controls */
-      @media (max-width: 768px) {
-        #reportResults .mb-3.d-flex {
-          flex-direction: column;
-          gap: 1rem;
-        }
-
-        .aggregation-type-selector {
-          margin-left: 0;
-          width: 100%;
-        }
-
-        .aggregation-type-selector .btn-group {
-          width: 100%;
-          display: flex;
-        }
-
-        .aggregation-type-selector .btn {
-          flex: 1;
-        }
-      }
-
-      /* Chart View Styling */
-      .chart-type-selector .btn-group {
-        border: 1px solid #dee2e6;
-        border-radius: 6px;
-        overflow: hidden;
-      }
-
-      .chart-type-selector .btn {
-        font-size: 0.9rem;
-        padding: 0.4rem 0.9rem;
-        border: none;
-        margin-right: -1px;
-        font-weight: 500;
-      }
-
-      .chart-type-selector .btn-outline-primary {
-        color: #495057;
-        background-color: #f8f9fa;
-      }
-
-      .chart-type-selector .btn-outline-primary:hover {
-        color: #0d6efd;
-        background-color: #f1f8ff;
-        transform: translateY(-1px);
-        box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
-      }
-
-      .chart-type-selector .btn-check:checked + .btn-outline-primary {
-        background-color: #0d6efd;
-        color: white;
-      }
-
-      .chart-container {
-        background-color: #ffffff;
-        border-radius: 8px;
-        min-height: 400px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        transition: all 0.3s ease;
-        box-shadow: 0 2px 12px rgba(0, 0, 0, 0.08);
-        position: relative;
-        overflow: hidden;
-      }
-
-      #chartView {
-        transition: opacity 0.3s ease;
-        margin-top: 2rem;
-        padding-top: 1rem;
-        border-top: 1px solid #eee;
-      }
-
-      @media (max-width: 768px) {
-        .chart-container {
-          min-height: 300px;
-        }
-
-        .chart-type-selector .btn {
-          font-size: 0.8rem;
-          padding: 0.35rem 0.7rem;
-        }
-      }
-
-      /* Add a nice legend to charts */
-      .chart-legend {
-        display: flex;
-        flex-wrap: wrap;
-        justify-content: center;
-        margin-top: 1rem;
+    /* Responsive adjustments for the results controls */
+    @media (max-width: 768px) {
+      #reportResults .mb-3.d-flex {
+        flex-direction: column;
         gap: 1rem;
       }
 
-      .chart-legend-item {
+      .aggregation-type-selector {
+        margin-left: 0;
+        width: 100%;
+      }
+
+      .aggregation-type-selector .btn-group {
+        width: 100%;
         display: flex;
-        align-items: center;
-        font-size: 0.85rem;
-        margin-right: 0.5rem;
       }
 
-      .chart-legend-color {
-        width: 12px;
-        height: 12px;
-        border-radius: 2px;
-        margin-right: 5px;
+      .aggregation-type-selector .btn {
+        flex: 1;
+      }
+    }
+
+    /* Chart View Styling */
+    .chart-type-selector .btn-group {
+      border: 1px solid #dee2e6;
+      border-radius: 6px;
+      overflow: hidden;
+    }
+
+    .chart-type-selector .btn {
+      font-size: 0.9rem;
+      padding: 0.4rem 0.9rem;
+      border: none;
+      margin-right: -1px;
+      font-weight: 500;
+    }
+
+    .chart-type-selector .btn-outline-primary {
+      color: #495057;
+      background-color: #f8f9fa;
+    }
+
+    .chart-type-selector .btn-outline-primary:hover {
+      color: #0d6efd;
+      background-color: #f1f8ff;
+      transform: translateY(-1px);
+      box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+    }
+
+    .chart-type-selector .btn-check:checked+.btn-outline-primary {
+      background-color: #0d6efd;
+      color: white;
+    }
+
+    .chart-container {
+      background-color: #ffffff;
+      border-radius: 8px;
+      min-height: 400px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.3s ease;
+      box-shadow: 0 2px 12px rgba(0, 0, 0, 0.08);
+      position: relative;
+      overflow: hidden;
+    }
+
+    #chartView {
+      transition: opacity 0.3s ease;
+      margin-top: 2rem;
+      padding-top: 1rem;
+      border-top: 1px solid #eee;
+    }
+
+    @media (max-width: 768px) {
+      .chart-container {
+        min-height: 300px;
       }
 
-      /* Enhance matrix/heatmap appearance */
-      canvas.matrix-element {
-        border-radius: 3px;
-        transition: transform 0.15s ease;
+      .chart-type-selector .btn {
+        font-size: 0.8rem;
+        padding: 0.35rem 0.7rem;
       }
+    }
 
-      canvas.matrix-element:hover {
-        transform: scale(1.05);
-      }
-    </style>
-  </head>
-  <body>
-    <!-- Auth check loader -->
-    <div id="authLoader" class="auth-loader">
-      <div class="spinner"></div>
+    /* Add a nice legend to charts */
+    .chart-legend {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      margin-top: 1rem;
+      gap: 1rem;
+    }
+
+    .chart-legend-item {
+      display: flex;
+      align-items: center;
+      font-size: 0.85rem;
+      margin-right: 0.5rem;
+    }
+
+    .chart-legend-color {
+      width: 12px;
+      height: 12px;
+      border-radius: 2px;
+      margin-right: 5px;
+    }
+
+    /* Enhance matrix/heatmap appearance */
+    canvas.matrix-element {
+      border-radius: 3px;
+      transition: transform 0.15s ease;
+    }
+
+    canvas.matrix-element:hover {
+      transform: scale(1.05);
+    }
+  </style>
+</head>
+
+<body>
+  <!-- Auth check loader -->
+  <div id="authLoader" class="auth-loader">
+    <div class="spinner"></div>
+  </div>
+
+  <!-- Main content will be hidden until auth check -->
+  <div id="mainContent" style="display: none">
+    <div class="admin-top-bar">
+      <button class="mobile-menu-toggle" id="mobileMenuToggle" aria-label="Toggle menu">
+        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none"
+          stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <line x1="3" y1="12" x2="21" y2="12"></line>
+          <line x1="3" y1="6" x2="21" y2="6"></line>
+          <line x1="3" y1="18" x2="21" y2="18"></line>
+        </svg>
+      </button>
+      <div class="left-links" id="leftLinks">
+        <a href="/admin/dashboard">Dashboard</a>
+        <a href="/admin/reports" class="active">Reports</a>
+        <a href="/admin/forms">Form Management</a>
+        <a href="/admin/news">News</a>
+        <a href="/admin/events/index.html">Events</a>
+        <a href="/admin/logbook">Logs</a>
+        <a href="/admin/users">Users</a>
+      </div>
+      <div class="right-links">
+        <span id="userInfo"></span>
+        <button id="logoutBtn" class="btn btn-link" onclick="AuthManager.logout()">
+          Logout
+        </button>
+      </div>
     </div>
 
-    <!-- Main content will be hidden until auth check -->
-    <div id="mainContent" style="display: none">
-      <div class="admin-top-bar">
-        <button class="mobile-menu-toggle" id="mobileMenuToggle" aria-label="Toggle menu">
-          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <line x1="3" y1="12" x2="21" y2="12"></line>
-            <line x1="3" y1="6" x2="21" y2="6"></line>
-            <line x1="3" y1="18" x2="21" y2="18"></line>
-          </svg>
-        </button>
-        <div class="left-links" id="leftLinks">
-          <a href="/admin/dashboard">Dashboard</a>
-          <a href="/admin/reports" class="active">Reports</a>
-          <a href="/admin/forms">Form Management</a>
-          <a href="/admin/news">News</a>
-          <a href="/admin/events/index.html">Events</a>
-          <a href="/admin/logbook">Logs</a>
-          <a href="/admin/users">Users</a>
+    <!-- Main Header -->
+    <header class="main-header">
+      <div class="logo-section">
+        <img src="/images/emblem.png" alt="Government of India Emblem" class="emblem-logo" />
+        <div class="header-text">
+          <!-- Desktop version -->
+          <h1 class="header-title-desktop">District Disability Rehabilitation Centre, Mumbai</h1>
+          <p class="header-subtitle-desktop">Department of Empowerment of Persons with Disabilities,</p>
+          <p class="header-subtitle-desktop">Ministry of Social Justice and Empowerment, Govt. of India</p>
+
+          <!-- Mobile version -->
+          <h1 class="header-title-mobile">DDRC Mumbai</h1>
+          <p class="header-subtitle-mobile">DEPwD, Ministry of Social Justice & Empowerment, Govt. of India</p>
         </div>
-        <div class="right-links">
-          <span id="userInfo"></span>
-          <button
-            id="logoutBtn"
-            class="btn btn-link"
-            onclick="AuthManager.logout()"
-          >
-            Logout
-          </button>
+        <img src="/images/ddrc-logo.png" alt="DDRC Logo" class="ddrc-logo" />
+      </div>
+    </header>
+
+    <div class="admin-content">
+      <div class="dashboard-header">
+        <div>
+          <h1>Reports</h1>
+          <p class="text-muted">Generate reports and analyze registration data</p>
         </div>
       </div>
 
-      <!-- Main Header -->
-      <header class="main-header">
-        <div class="logo-section">
-          <img
-            src="/images/emblem.png"
-            alt="Government of India Emblem"
-            class="emblem-logo"
-          />
-          <div class="header-text">
-            <h1>District Disability Rehabilitation Centre, Mumbai</h1>
-            <p>Department of Empowerment of Persons with Disabilities,</p>
-            <p>Ministry of Social Justice and Empowerment</p>
-          </div>
-          <img src="/images/ddrc-logo.png" alt="DDRC Logo" class="ddrc-logo" />
+      <!-- Cross Tabulation Report Generator -->
+      <div class="report-card" id="crossTabReport">
+        <div class="report-header">
+          <h3>Cross-Tabulation Analysis</h3>
+          <p class="text-muted mb-0">
+            Analyze relationships between two categorical variables
+          </p>
         </div>
-      </header>
-
-        <div class="admin-content">
-          <div class="dashboard-header">
-              <div>
-                <h1>Reports</h1>
-                <p class="text-muted">Generate reports and analyze registration data</p>
-            </div>
-          </div>
-
-        <!-- Cross Tabulation Report Generator -->
-        <div class="report-card" id="crossTabReport">
-          <div class="report-header">
-            <h3>Cross-Tabulation Analysis</h3>
-            <p class="text-muted mb-0">
-              Analyze relationships between two categorical variables
-            </p>
-          </div>
-          <div class="report-body">
-            <!-- Filter Section -->
-            <div
-              class="filter-section"
-              id="legacyFilterSection"
-              style="display: none"
-            >
-              <div class="filter-header">
-                <h5 class="mb-0">Filters</h5>
-                <button
-                  class="btn btn-sm btn-outline-primary"
-                  id="addFilterBtn"
-                >
-                  <i class="bi bi-plus-lg"></i> Add Filter
-                </button>
-              </div>
-              <div id="activeFilters" class="mb-3">
-                <p class="text-muted mb-0">No filters applied</p>
-              </div>
-              <div
-                class="row align-items-end"
-                id="filterRow"
-                style="display: none"
-              >
-                <div class="col-md-4 mb-3">
-                  <label for="filterField" class="form-label">Field</label>
-                  <select class="form-select" id="filterField">
-                    <option value="">Select a field</option>
-                    <!-- Will be populated by JavaScript -->
-                  </select>
-                </div>
-                <div class="col-md-3 mb-3">
-                  <label for="filterOperator" class="form-label"
-                    >Operator</label
-                  >
-                  <select class="form-select" id="filterOperator">
-                    <option value="equals">Equals</option>
-                    <option value="not_equals">Not Equals</option>
-                    <option value="contains">Contains</option>
-                    <option value="starts_with">Starts With</option>
-                    <option value="ends_with">Ends With</option>
-                    <option value="greater_than">Greater Than</option>
-                    <option value="less_than">Less Than</option>
-                    <option value="between">Between</option>
-                    <option value="is_empty">Is Empty</option>
-                    <option value="is_not_empty">Is Not Empty</option>
-                  </select>
-                </div>
-                <div class="col-md-3 mb-3" id="filterValueContainer">
-                  <label for="filterValue" class="form-label">Value</label>
-                  <input type="text" class="form-control" id="filterValue" />
-                </div>
-                <div class="col-md-2 mb-3">
-                  <button class="btn btn-primary w-100" id="applyFilterBtn">
-                    Apply
-                  </button>
-                </div>
-              </div>
-              <div class="saved-filters">
-                <div
-                  class="d-flex justify-content-between align-items-center mb-2"
-                >
-                  <h6 class="mb-0">Saved Filters</h6>
-                  <button
-                    class="btn btn-sm btn-outline-secondary"
-                    id="saveCurrentFiltersBtn"
-                  >
-                    <i class="bi bi-bookmark-plus"></i> Save Current Filters
-                  </button>
-                </div>
-                <div id="savedFiltersContainer">
-                  <p class="text-muted mb-0">No saved filters</p>
-                </div>
-              </div>
-            </div>
-
-            <!-- New Comprehensive Filter Panel -->
-            <div class="card filter-panel mb-4">
-              <div
-                class="card-header d-flex justify-content-between align-items-center filter-panel-header"
-              >
-                <div>
-                  <h5 class="mb-0">
-                    <i class="bi bi-funnel-fill me-2"></i>Filters
-                  </h5>
-                </div>
-                <div class="filter-action-buttons">
-                  <button
-                    class="btn btn-sm btn-outline-primary"
-                    id="clearAllFiltersBtn"
-                  >
-                    <i class="bi bi-x-circle"></i> Clear All Filters
-                  </button>
-                  <button
-                    class="btn btn-sm btn-outline-primary"
-                    id="saveCurrentFiltersBtn"
-                  >
-                    <i class="bi bi-bookmark-plus"></i> Save Filters
-                  </button>
-                  <button
-                    class="btn btn-sm btn-outline-secondary filter-collapse-btn"
-                    data-bs-toggle="collapse"
-                    data-bs-target="#filterPanelContent"
-                  >
-                    <i class="bi bi-chevron-down"></i>
-                  </button>
-                </div>
-              </div>
-
-              <div id="filterPanelContent" class="collapse">
-                <div class="card-body">
-                  <!-- Active Filters Display -->
-                  <div id="activeFiltersContainer" class="mb-3">
-                    <div id="activeFilterTags" class="mb-3">
-                      <!-- Active filter tags will be inserted here -->
-                      <p class="text-muted mb-0 no-filters-message">
-                        No filters applied
-                      </p>
-                    </div>
-                  </div>
-
-                  <!-- Filter Builder Interface -->
-                  <div class="filter-builder">
-                    <h6 class="filter-section-title mb-3">Add New Filter</h6>
-
-                    <!-- Field Selection -->
-                    <div class="row mb-3">
-                      <div class="col-md-12">
-                        <label for="filterField" class="form-label"
-                          >Select Field</label
-                        >
-                        <select class="form-select" id="enhanced-filterField">
-                          <option value="">Select a field to filter</option>
-                          <!-- Will be populated by JavaScript -->
-                        </select>
-                      </div>
-                    </div>
-
-                    <!-- Dynamic Filter Controls Container - will be populated based on field type -->
-                    <div
-                      id="enhanced-dynamicFilterControls"
-                      class="filter-controls"
-                      style="display: none"
-                    >
-                      <!-- Filter type specific controls will be inserted here -->
-                    </div>
-
-                    <!-- Apply Filter Button -->
-                    <div
-                      class="row mt-3"
-                      id="enhanced-filterActionButtons"
-                      style="display: none"
-                    >
-                      <div class="col-md-12">
-                        <button
-                          id="enhanced-addFilterBtn"
-                          class="btn btn-primary"
-                        >
-                          <i class="bi bi-check-lg"></i> Add This Filter
-                        </button>
-                        <button
-                          id="enhanced-cancelFilterBtn"
-                          class="btn btn-outline-secondary ms-2"
-                        >
-                          <i class="bi bi-x"></i> Cancel
-                        </button>
-                      </div>
-                    </div>
-                  </div>
-
-                  <!-- Saved Filters Section -->
-                  <div class="saved-filters mt-4">
-                    <h6 class="filter-section-title mb-3">Saved Filters</h6>
-                    <div id="enhanced-savedFiltersContainer">
-                      <p class="text-muted mb-0">No saved filters</p>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            <!-- Variable Selection -->
-            <div class="row mb-3">
-              <div class="col-md-6">
-                <label for="rowVariable" class="form-label">Row Variable</label>
-                <select class="form-select" id="rowVariable">
-                  <option value="">Select row variable</option>
-                  <!-- Will be populated by JavaScript -->
-                </select>
-              </div>
-              <div class="col-md-6">
-                <label for="columnVariable" class="form-label"
-                  >Column Variable</label
-                >
-                <select class="form-select" id="columnVariable">
-                  <option value="">Select column variable</option>
-                  <!-- Will be populated by JavaScript -->
-                </select>
-              </div>
-            </div>
-
-            <!-- Generate Report Button -->
-            <div class="d-grid gap-2 col-md-6 mx-auto mb-4">
-              <button class="btn btn-primary" id="generateReportBtn">
-                <i class="bi bi-gear"></i> Generate Report
+        <div class="report-body">
+          <!-- Filter Section -->
+          <div class="filter-section" id="legacyFilterSection" style="display: none">
+            <div class="filter-header">
+              <h5 class="mb-0">Filters</h5>
+              <button class="btn btn-sm btn-outline-primary" id="addFilterBtn">
+                <i class="bi bi-plus-lg"></i> Add Filter
               </button>
             </div>
-
-            <!-- Results Section -->
-            <div id="reportResults" style="display: none">
-              <h4 class="mb-3">Results</h4>
-              <div
-                class="mb-3 d-flex justify-content-between align-items-center"
-              >
-                <div>
-                  <div
-                    class="btn-group me-2"
-                    role="group"
-                    aria-label="Report actions"
-                  >
-                    <button class="btn btn-outline-secondary" id="exportCsvBtn">
-                      <i class="bi bi-file-earmark-excel"></i> Export Excel
-                    </button>
-                    <button
-                      class="btn btn-outline-secondary"
-                      id="printReportBtn"
-                    >
-                      <i class="bi bi-printer"></i> Print
-                    </button>
-                  </div>
-                  <button class="btn btn-outline-primary" id="showChartBtn">
-                    <i class="bi bi-bar-chart"></i> Show Chart
-                  </button>
-                </div>
-
-                <!-- Moved Aggregation Type here -->
-                <div class="aggregation-type-selector">
-                  <div
-                    class="btn-group"
-                    role="group"
-                    aria-label="Aggregation Type"
-                  >
-                    <input
-                      type="radio"
-                      class="btn-check"
-                      name="aggregationType"
-                      id="countAggregation"
-                      value="count"
-                      checked
-                    />
-                    <label
-                      class="btn btn-outline-primary"
-                      for="countAggregation"
-                      >Count</label
-                    >
-
-                    <input
-                      type="radio"
-                      class="btn-check"
-                      name="aggregationType"
-                      id="percentTotalAggregation"
-                      value="percent_total"
-                    />
-                    <label
-                      class="btn btn-outline-primary"
-                      for="percentTotalAggregation"
-                      >% of Total</label
-                    >
-                  </div>
-                </div>
-              </div>
-              <div class="cross-tab-container">
-                <div id="reportLoading" class="report-loader">
-                  <div class="spinner-border text-primary" role="status">
-                    <span class="visually-hidden">Loading...</span>
-                  </div>
-                </div>
-                <table
-                  class="table table-bordered cross-tab-table"
-                  id="crossTabTable"
-                  style="display: none"
-                >
+            <div id="activeFilters" class="mb-3">
+              <p class="text-muted mb-0">No filters applied</p>
+            </div>
+            <div class="row align-items-end" id="filterRow" style="display: none">
+              <div class="col-md-4 mb-3">
+                <label for="filterField" class="form-label">Field</label>
+                <select class="form-select" id="filterField">
+                  <option value="">Select a field</option>
                   <!-- Will be populated by JavaScript -->
-                </table>
+                </select>
+              </div>
+              <div class="col-md-3 mb-3">
+                <label for="filterOperator" class="form-label">Operator</label>
+                <select class="form-select" id="filterOperator">
+                  <option value="equals">Equals</option>
+                  <option value="not_equals">Not Equals</option>
+                  <option value="contains">Contains</option>
+                  <option value="starts_with">Starts With</option>
+                  <option value="ends_with">Ends With</option>
+                  <option value="greater_than">Greater Than</option>
+                  <option value="less_than">Less Than</option>
+                  <option value="between">Between</option>
+                  <option value="is_empty">Is Empty</option>
+                  <option value="is_not_empty">Is Not Empty</option>
+                </select>
+              </div>
+              <div class="col-md-3 mb-3" id="filterValueContainer">
+                <label for="filterValue" class="form-label">Value</label>
+                <input type="text" class="form-control" id="filterValue" />
+              </div>
+              <div class="col-md-2 mb-3">
+                <button class="btn btn-primary w-100" id="applyFilterBtn">
+                  Apply
+                </button>
               </div>
             </div>
-
-            <!-- Chart View -->
-            <div id="chartView" style="display: none" class="mt-4">
-              <div
-                class="d-flex justify-content-between align-items-center mb-3"
-              >
-                <h4 class="mb-0">Chart View</h4>
-                <div
-                  class="btn-group chart-type-selector"
-                  role="group"
-                  aria-label="Chart type"
-                >
-                  <input
-                    type="radio"
-                    class="btn-check"
-                    name="chartType"
-                    id="barChartInput"
-                    value="bar"
-                    checked
-                  />
-                  <label
-                    class="btn btn-outline-primary"
-                    for="barChartInput"
-                    id="barChartBtn"
-                    >Bar Chart</label
-                  >
-
-                  <input
-                    type="radio"
-                    class="btn-check"
-                    name="chartType"
-                    id="pieChartInput"
-                    value="pie"
-                  />
-                  <label
-                    class="btn btn-outline-primary"
-                    for="pieChartInput"
-                    id="pieChartBtn"
-                    >Pie Chart</label
-                  >
-
-                  <input
-                    type="radio"
-                    class="btn-check"
-                    name="chartType"
-                    id="heatmapInput"
-                    value="heatmap"
-                  />
-                  <label
-                    class="btn btn-outline-primary"
-                    for="heatmapInput"
-                    id="heatmapBtn"
-                    >Heatmap</label
-                  >
-                </div>
+            <div class="saved-filters">
+              <div class="d-flex justify-content-between align-items-center mb-2">
+                <h6 class="mb-0">Saved Filters</h6>
+                <button class="btn btn-sm btn-outline-secondary" id="saveCurrentFiltersBtn">
+                  <i class="bi bi-bookmark-plus"></i> Save Current Filters
+                </button>
               </div>
-              <div
-                class="chart-container p-3 bg-white border rounded shadow-sm"
-              >
-                <canvas id="reportChart" width="400" height="300"></canvas>
+              <div id="savedFiltersContainer">
+                <p class="text-muted mb-0">No saved filters</p>
               </div>
             </div>
           </div>
-        </div>
 
-        <!-- Save Filter Modal -->
-        <div class="modal fade" id="saveFilterModal" tabindex="-1">
-          <div class="modal-dialog">
-            <div class="modal-content">
-              <div class="modal-header">
-                <h5 class="modal-title">Save Filters</h5>
-                <button
-                  type="button"
-                  class="btn-close"
-                  data-bs-dismiss="modal"
-                  aria-label="Close"
-                ></button>
+          <!-- New Comprehensive Filter Panel -->
+          <div class="card filter-panel mb-4">
+            <div class="card-header d-flex justify-content-between align-items-center filter-panel-header">
+              <div>
+                <h5 class="mb-0">
+                  <i class="bi bi-funnel-fill me-2"></i>Filters
+                </h5>
               </div>
-              <div class="modal-body">
-                <div class="mb-3">
-                  <label for="filterName" class="form-label">Filter Name</label>
-                  <input
-                    type="text"
-                    class="form-control"
-                    id="filterName"
-                    placeholder="Enter a name for this filter set"
-                  />
+              <div class="filter-action-buttons">
+                <button class="btn btn-sm btn-outline-primary" id="clearAllFiltersBtn">
+                  <i class="bi bi-x-circle"></i> Clear All Filters
+                </button>
+                <button class="btn btn-sm btn-outline-primary" id="saveCurrentFiltersBtn">
+                  <i class="bi bi-bookmark-plus"></i> Save Filters
+                </button>
+                <button class="btn btn-sm btn-outline-secondary filter-collapse-btn" data-bs-toggle="collapse"
+                  data-bs-target="#filterPanelContent">
+                  <i class="bi bi-chevron-down"></i>
+                </button>
+              </div>
+            </div>
+
+            <div id="filterPanelContent" class="collapse">
+              <div class="card-body">
+                <!-- Active Filters Display -->
+                <div id="activeFiltersContainer" class="mb-3">
+                  <div id="activeFilterTags" class="mb-3">
+                    <!-- Active filter tags will be inserted here -->
+                    <p class="text-muted mb-0 no-filters-message">
+                      No filters applied
+                    </p>
+                  </div>
                 </div>
-                <div class="mb-3">
-                  <label class="form-label">Applied Filters</label>
-                  <div id="modalFilterList" class="p-3 bg-light rounded">
-                    <!-- Will be populated by JavaScript -->
+
+                <!-- Filter Builder Interface -->
+                <div class="filter-builder">
+                  <h6 class="filter-section-title mb-3">Add New Filter</h6>
+
+                  <!-- Field Selection -->
+                  <div class="row mb-3">
+                    <div class="col-md-12">
+                      <label for="filterField" class="form-label">Select Field</label>
+                      <select class="form-select" id="enhanced-filterField">
+                        <option value="">Select a field to filter</option>
+                        <!-- Will be populated by JavaScript -->
+                      </select>
+                    </div>
+                  </div>
+
+                  <!-- Dynamic Filter Controls Container - will be populated based on field type -->
+                  <div id="enhanced-dynamicFilterControls" class="filter-controls" style="display: none">
+                    <!-- Filter type specific controls will be inserted here -->
+                  </div>
+
+                  <!-- Apply Filter Button -->
+                  <div class="row mt-3" id="enhanced-filterActionButtons" style="display: none">
+                    <div class="col-md-12">
+                      <button id="enhanced-addFilterBtn" class="btn btn-primary">
+                        <i class="bi bi-check-lg"></i> Add This Filter
+                      </button>
+                      <button id="enhanced-cancelFilterBtn" class="btn btn-outline-secondary ms-2">
+                        <i class="bi bi-x"></i> Cancel
+                      </button>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Saved Filters Section -->
+                <div class="saved-filters mt-4">
+                  <h6 class="filter-section-title mb-3">Saved Filters</h6>
+                  <div id="enhanced-savedFiltersContainer">
+                    <p class="text-muted mb-0">No saved filters</p>
                   </div>
                 </div>
               </div>
-              <div class="modal-footer">
-                <button
-                  type="button"
-                  class="btn btn-secondary"
-                  data-bs-dismiss="modal"
-                >
-                  Cancel
-                </button>
-                <button
-                  type="button"
-                  class="btn btn-primary"
-                  id="confirmSaveFilterBtn"
-                >
-                  Save
+            </div>
+          </div>
+
+          <!-- Variable Selection -->
+          <div class="row mb-3">
+            <div class="col-md-6">
+              <label for="rowVariable" class="form-label">Row Variable</label>
+              <select class="form-select" id="rowVariable">
+                <option value="">Select row variable</option>
+                <!-- Will be populated by JavaScript -->
+              </select>
+            </div>
+            <div class="col-md-6">
+              <label for="columnVariable" class="form-label">Column Variable</label>
+              <select class="form-select" id="columnVariable">
+                <option value="">Select column variable</option>
+                <!-- Will be populated by JavaScript -->
+              </select>
+            </div>
+          </div>
+
+          <!-- Generate Report Button -->
+          <div class="d-grid gap-2 col-md-6 mx-auto mb-4">
+            <button class="btn btn-primary" id="generateReportBtn">
+              <i class="bi bi-gear"></i> Generate Report
+            </button>
+          </div>
+
+          <!-- Results Section -->
+          <div id="reportResults" style="display: none">
+            <h4 class="mb-3">Results</h4>
+            <div class="mb-3 d-flex justify-content-between align-items-center">
+              <div>
+                <div class="btn-group me-2" role="group" aria-label="Report actions">
+                  <button class="btn btn-outline-secondary" id="exportCsvBtn">
+                    <i class="bi bi-file-earmark-excel"></i> Export Excel
+                  </button>
+                  <button class="btn btn-outline-secondary" id="printReportBtn">
+                    <i class="bi bi-printer"></i> Print
+                  </button>
+                </div>
+                <button class="btn btn-outline-primary" id="showChartBtn">
+                  <i class="bi bi-bar-chart"></i> Show Chart
                 </button>
               </div>
+
+              <!-- Moved Aggregation Type here -->
+              <div class="aggregation-type-selector">
+                <div class="btn-group" role="group" aria-label="Aggregation Type">
+                  <input type="radio" class="btn-check" name="aggregationType" id="countAggregation" value="count"
+                    checked />
+                  <label class="btn btn-outline-primary" for="countAggregation">Count</label>
+
+                  <input type="radio" class="btn-check" name="aggregationType" id="percentTotalAggregation"
+                    value="percent_total" />
+                  <label class="btn btn-outline-primary" for="percentTotalAggregation">% of Total</label>
+                </div>
+              </div>
+            </div>
+            <div class="cross-tab-container">
+              <div id="reportLoading" class="report-loader">
+                <div class="spinner-border text-primary" role="status">
+                  <span class="visually-hidden">Loading...</span>
+                </div>
+              </div>
+              <table class="table table-bordered cross-tab-table" id="crossTabTable" style="display: none">
+                <!-- Will be populated by JavaScript -->
+              </table>
+            </div>
+          </div>
+
+          <!-- Chart View -->
+          <div id="chartView" style="display: none" class="mt-4">
+            <div class="d-flex justify-content-between align-items-center mb-3">
+              <h4 class="mb-0">Chart View</h4>
+              <div class="btn-group chart-type-selector" role="group" aria-label="Chart type">
+                <input type="radio" class="btn-check" name="chartType" id="barChartInput" value="bar" checked />
+                <label class="btn btn-outline-primary" for="barChartInput" id="barChartBtn">Bar Chart</label>
+
+                <input type="radio" class="btn-check" name="chartType" id="pieChartInput" value="pie" />
+                <label class="btn btn-outline-primary" for="pieChartInput" id="pieChartBtn">Pie Chart</label>
+
+                <input type="radio" class="btn-check" name="chartType" id="heatmapInput" value="heatmap" />
+                <label class="btn btn-outline-primary" for="heatmapInput" id="heatmapBtn">Heatmap</label>
+              </div>
+            </div>
+            <div class="chart-container p-3 bg-white border rounded shadow-sm">
+              <canvas id="reportChart" width="400" height="300"></canvas>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Save Filter Modal -->
+      <div class="modal fade" id="saveFilterModal" tabindex="-1">
+        <div class="modal-dialog">
+          <div class="modal-content">
+            <div class="modal-header">
+              <h5 class="modal-title">Save Filters</h5>
+              <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+              <div class="mb-3">
+                <label for="filterName" class="form-label">Filter Name</label>
+                <input type="text" class="form-control" id="filterName"
+                  placeholder="Enter a name for this filter set" />
+              </div>
+              <div class="mb-3">
+                <label class="form-label">Applied Filters</label>
+                <div id="modalFilterList" class="p-3 bg-light rounded">
+                  <!-- Will be populated by JavaScript -->
+                </div>
+              </div>
+            </div>
+            <div class="modal-footer">
+              <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                Cancel
+              </button>
+              <button type="button" class="btn btn-primary" id="confirmSaveFilterBtn">
+                Save
+              </button>
             </div>
           </div>
         </div>
       </div>
     </div>
+  </div>
 
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/chartjs-chart-matrix@1.2.0/dist/chartjs-chart-matrix.min.js"></script>
-    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
-    <!-- Replace SheetJS with ExcelJS for Excel export -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/exceljs/4.3.0/exceljs.min.js"></script>
-    <!-- Add FileSaver.js for better cross-browser file saving -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/FileSaver.js/2.0.5/FileSaver.min.js"></script>
-    <script src="/js/auth.js"></script>
-    <script src="/admin/js/mobile-menu.js"></script>
-    <script src="/admin/js/reports.js"></script>
-    <script src="/admin/js/enhancedFilters.js"></script>
-  </body>
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chartjs-chart-matrix@1.2.0/dist/chartjs-chart-matrix.min.js"></script>
+  <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
+  <!-- Replace SheetJS with ExcelJS for Excel export -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/exceljs/4.3.0/exceljs.min.js"></script>
+  <!-- Add FileSaver.js for better cross-browser file saving -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/FileSaver.js/2.0.5/FileSaver.min.js"></script>
+  <script src="/js/auth.js"></script>
+  <script src="/admin/js/mobile-menu.js"></script>
+  <script src="/admin/js/reports.js"></script>
+  <script src="/admin/js/enhancedFilters.js"></script>
+</body>
+
 </html>
