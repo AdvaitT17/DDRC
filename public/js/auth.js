@@ -51,6 +51,11 @@ class AuthManager {
 
       const userType = userInfo.type;
 
+      // SINGLE LOGIN: Clear the other user type's session to prevent dual login
+      const otherType = userType === 'department' ? 'applicant' : 'department';
+      localStorage.removeItem(`${otherType}AuthToken`);
+      localStorage.removeItem(`${otherType}UserInfo`);
+
       // Store token
       localStorage.setItem(`${userType}AuthToken`, token);
 
@@ -60,13 +65,15 @@ class AuthManager {
       // Verify storage
       const storedToken = localStorage.getItem(`${userType}AuthToken`);
       const storedUserInfo = localStorage.getItem(`${userType}UserInfo`);
-    } catch (error) {}
+    } catch (error) { }
   }
 
   static clearAuth() {
-    const userType = this.getCurrentUserType();
-    localStorage.removeItem(`${userType}AuthToken`);
-    localStorage.removeItem(`${userType}UserInfo`);
+    // Clear BOTH session types to ensure complete logout
+    localStorage.removeItem('departmentAuthToken');
+    localStorage.removeItem('departmentUserInfo');
+    localStorage.removeItem('applicantAuthToken');
+    localStorage.removeItem('applicantUserInfo');
   }
 
   static async verifyAuth() {
@@ -102,15 +109,18 @@ class AuthManager {
   }
 
   static redirectToLogin() {
-    const userType = this.getCurrentUserType();
-    window.location.href =
-      userType === "department" ? "/department-login" : "/login";
+    // Detect actual logged-in user type from localStorage, not URL
+    const wasDepartment = localStorage.getItem('departmentAuthToken') ||
+      localStorage.getItem('departmentUserInfo');
+    window.location.href = wasDepartment ? "/department-login" : "/login";
   }
 
   static logout() {
-    const userType = this.getCurrentUserType();
+    // Detect actual logged-in user type BEFORE clearing
+    const wasDepartment = !!localStorage.getItem('departmentAuthToken');
     this.clearAuth();
-    this.redirectToLogin();
+    // Redirect to appropriate login page
+    window.location.href = wasDepartment ? "/department-login" : "/login";
   }
 
   static initLogoutHandler() {

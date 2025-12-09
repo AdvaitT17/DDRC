@@ -188,6 +188,11 @@
   filter: brightness(0) invert(1);
 }
 
+/* Hide Home text on desktop/tablet - only show icon */
+.nav-icon-text {
+  display: none !important;
+}
+
 /* Mobile Top Bar - Hidden on Desktop */
 .mobile-top-bar {
   display: none;
@@ -690,6 +695,11 @@
 
   .nav-icon img {
     height: 20px;
+  }
+
+  /* Show Home text in mobile menu with matching style */
+  .nav-icon-text {
+    display: inline !important;
   }
 
   /* Login/Logout buttons in mobile menu */

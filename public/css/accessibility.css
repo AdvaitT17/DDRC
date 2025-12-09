@@ -120,6 +120,22 @@
   filter: invert(100%) hue-rotate(180deg);
 }
 
+/* Don't counter-invert header logos - let them invert with the page for better visibility */
+.high-contrast .ddrc-logo,
+.high-contrast .emblem-logo {
+  filter: none;
+}
+
+.high-contrast .mobile-menu-overlay {
+  filter: invert(100%) hue-rotate(180deg);
+}
+
+/* When modal is moved outside body for proper positioning in high contrast mode */
+.high-contrast-modal {
+  filter: invert(100%) hue-rotate(180deg);
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+}
+
 /* Screen reader announcer */
 #screenReaderAnnouncer {
   position: absolute;
