@@ -690,64 +690,7 @@
 </head>
 
 <body>
-  <!-- Accessibility Announcement for Screen Readers -->
-  <div id="screenReaderAnnouncer" class="sr-only" role="alert" aria-live="polite"></div>
-
-  <!-- Top Bar -->
-  <div class="top-bar" role="navigation" aria-label="Top Navigation">
-    <div class="left-links">
-      <a href="/" aria-label="Home">Home</a>
-      <a href="/sitemap" aria-label="Sitemap">Sitemap</a>
-    </div>
-    <div class="right-links">
-      <a href="#main-content" class="skip-main" aria-label="Skip to main content">Skip to Main Content</a>
-      <a href="#" class="screen-reader" aria-label="Toggle screen reader optimized view">Screen Reader Access</a>
-      <select class="language-select" id="languageSelect" aria-label="Select language">
-        <option value="en">English</option>
-        <option value="hi">हिंदी</option>
-      </select>
-    </div>
-  </div>
-
-  <!-- Main Header -->
-  <header class="main-header" role="banner" aria-label="Site header">
-    <div class="logo-section">
-      <img src="/images/emblem.png" alt="Government of India Emblem" class="emblem-logo" />
-      <div class="header-text">
-        <h1>District Disability Rehabilitation Centre, Mumbai</h1>
-        <p>Department of Empowerment of Persons with Disabilities,</p>
-        <p>Ministry of Social Justice and Empowerment, Govt. of India</p>
-      </div>
-      <img src="/images/ddrc-logo.png" alt="DDRC Logo" class="ddrc-logo" />
-    </div>
-  </header>
-
-  <!-- Navigation Menu -->
-  <nav class="main-nav" role="navigation" aria-label="Main Navigation">
-    <a href="/" class="nav-icon" aria-label="Home">
-      <img src="/images/home-icons.png" alt="Home" />
-    </a>
-    <a href="/apply" aria-label="Apply For UDID">Apply For UDID</a>
-    <a href="/track" aria-label="Track Your Application">Track Your Application</a>
-    <a href="/data" aria-label="View Aggregated Data">Aggregated-Data</a>
-    <a href="/reports" aria-label="View Pendency Reports">Pendency-Report</a>
-    <a href="/media" aria-label="Media">Media</a>
-    <a href="/faqs" aria-label="FAQs">FAQs</a>
-    <a href="/contact" aria-label="Contact Us">Contact Us</a>
-
-    <!-- Add spacer to push login buttons to the right -->
-    <div class="nav-spacer"></div>
-
-    <!-- Add login buttons -->
-    <a href="/login" class="nav-login-btn" aria-label="Divyangjan Login">
-      <img src="/images/login.svg" alt="Login Icon" />
-      Divyangjan Login
-    </a>
-    <a href="/department-login" class="nav-login-btn" aria-label="Department User Login">
-      <img src="/images/user-plus.svg" alt="User Icon" />
-      Department User Login
-    </a>
-  </nav>
+  <div id="site-header"></div>
 
   <!-- Event Header -->
   <div class="event-header" role="region" aria-label="Event header">
@@ -831,59 +774,13 @@
     </div>
   </div>
 
-  <!-- Footer -->
-  <footer>
-    <div class="footer-content">
-      <div class="footer-section">
-        <h3>About</h3>
-        <ul>
-          <li><a href="/about-ddrc">Know more about DDRC</a></li>
-          <li>
-            <a href="/schemes">Schemes for Persons with Disabilities</a>
-          </li>
-          <li><a href="/about-department">About Department</a></li>
-          <li><a href="/medical-camps">Medical Camps / Hospitals</a></li>
-        </ul>
-      </div>
-      <div class="footer-section">
-        <h3>Quick Access Key</h3>
-        <ul>
-          <li>H = Go to Home Page</li>
-          <li>S = Skip to main content</li>
-          <li>F = Site Search</li>
-          <li>T = Back to Top</li>
-        </ul>
-      </div>
-      <div class="footer-section">
-        <h3>Use keyboard for quick access</h3>
-        <ul>
-          <li>Internet Explorer - [Alt] + accesskey</li>
-          <li>Chrome - [Alt] + accesskey</li>
-          <li>Firefox - [Alt] [Shift] + accesskey</li>
-          <li>Safari - [Alt] + accesskey</li>
-        </ul>
-      </div>
-    </div>
-    <div class="footer-bottom">
-      <p>
-        &copy; Copyright
-        <script>
-          document.write(new Date().getFullYear());
-        </script>
-        District Disability Rehabilitation Centre, Mumbai. All Rights
-        Reserved.
-      </p>
-    </div>
-    <div class="footer-links">
-      <a href="/terms">Terms & Conditions</a>
-      <a href="/privacy">Privacy Policy</a>
-      <a href="/copyright">Copyright Policy</a>
-      <a href="/accessibility">Accessibility Statement</a>
-    </div>
-  </footer>
+  <div id="site-footer"></div>
 
   <!-- Scripts -->
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+  <script src="/js/auth.js"></script>
+  <script src="/js/components/header.js"></script>
+  <script src="/js/components/footer.js"></script>
   <script src="/js/accessibility.js"></script>
   <script>
     // Get event ID from URL

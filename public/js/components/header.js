@@ -5,13 +5,37 @@
   let userType = null;
   let userName = null;
 
-  // Check authentication using AuthManager if available
+  // Check authentication - need to check BOTH token types since AuthManager.getCurrentUserType()
+  // is URL-based and won't find department tokens on public pages
   if (typeof AuthManager !== 'undefined') {
-    isAuthenticated = AuthManager.isAuthenticated();
-    if (isAuthenticated) {
-      const userInfo = AuthManager.getUserInfo();
-      userType = userInfo?.type || AuthManager.getCurrentUserType();
-      userName = userInfo?.name || userInfo?.email;
+    // First try to detect department user (check departmentAuthToken directly)
+    const departmentToken = localStorage.getItem('departmentAuthToken');
+    const departmentUserInfo = localStorage.getItem('departmentUserInfo');
+
+    if (departmentToken && departmentUserInfo) {
+      isAuthenticated = true;
+      try {
+        const userInfo = JSON.parse(departmentUserInfo);
+        userType = 'department';
+        userName = userInfo?.name || userInfo?.email;
+      } catch (e) {
+        userType = 'department';
+      }
+    } else {
+      // Then try applicant
+      const applicantToken = localStorage.getItem('applicantAuthToken');
+      const applicantUserInfo = localStorage.getItem('applicantUserInfo');
+
+      if (applicantToken && applicantUserInfo) {
+        isAuthenticated = true;
+        try {
+          const userInfo = JSON.parse(applicantUserInfo);
+          userType = userInfo?.type || 'applicant';
+          userName = userInfo?.name || userInfo?.email;
+        } catch (e) {
+          userType = 'applicant';
+        }
+      }
     }
   } else {
     // Fallback to direct localStorage check if AuthManager not loaded yet
@@ -32,7 +56,8 @@
     const userEmail = userName || 'User';
     navLinks = `
       <a href="/" class="nav-icon" aria-label="Home">
-        <img src="/images/home-icons.png" alt="Home" />
+        <img src="/images/home.svg" alt="Home" />
+        <span class="nav-icon-text">Home</span>
       </a>
       <a href="/dashboard/profile" aria-label="View Profile">Profile</a>
       <a href="/dashboard/documents" aria-label="Access Documents">Documents</a>
@@ -48,7 +73,8 @@
     const userEmail = userName || 'User';
     navLinks = `
       <a href="/" class="nav-icon" aria-label="Home">
-        <img src="/images/home-icons.png" alt="Home" />
+        <img src="/images/home.svg" alt="Home" />
+        <span class="nav-icon-text">Home</span>
       </a>
       <a href="/dashboard" aria-label="Dashboard">Dashboard</a>
       <a href="/track" aria-label="Track Your Application">Track Application</a>
@@ -68,7 +94,8 @@
     const userEmail = userName || 'Admin';
     navLinks = `
       <a href="/" class="nav-icon" aria-label="Home">
-        <img src="/images/home-icons.png" alt="Home" />
+        <img src="/images/home.svg" alt="Home" />
+        <span class="nav-icon-text">Home</span>
       </a>
       <a href="/admin" aria-label="Admin Dashboard">Admin Dashboard</a>
       <a href="/schemes" aria-label="Government Schemes">Schemes</a>
@@ -86,7 +113,8 @@
     // Not logged in
     navLinks = `
       <a href="/" class="nav-icon" aria-label="Home">
-        <img src="/images/home-icons.png" alt="Home" />
+        <img src="/images/home.svg" alt="Home" />
+        <span class="nav-icon-text">Home</span>
       </a>
       <a href="https://swavlambancard.gov.in/Applyforudid" class="external-link" target="_blank" aria-label="Apply For UDID">Apply For UDID</a>
       <a href="/track" aria-label="Track Your Application">Track Your Application</a>
@@ -418,51 +446,93 @@
     const cancelBtn = document.getElementById('cancelExternal');
     const proceedBtn = document.getElementById('proceedExternal');
 
+    // Helper functions to handle high contrast mode and modal positioning
+    // CSS filter on body breaks position: fixed, so we move modal outside body temporarily
+    const originalParent = modal.parentElement;
+
+    function showModal() {
+      // If high contrast is enabled, move modal to html element so it's not affected by body's filter
+      if (body.classList.contains('high-contrast')) {
+        document.documentElement.appendChild(modal);
+        modal.classList.add('high-contrast-modal');
+      }
+      modal.style.display = 'flex';
+    }
+
+    function hideModal() {
+      modal.style.display = 'none';
+      pendingExternalUrl = null;
+      // Move modal back to original parent if we moved it
+      if (modal.classList.contains('high-contrast-modal')) {
+        originalParent.appendChild(modal);
+        modal.classList.remove('high-contrast-modal');
+      }
+    }
+
+    // Helper function to check if URL is truly external
+    function isExternalUrl(url) {
+      // Relative URLs (starting with / or not starting with http) are internal
+      if (!url || url.startsWith('/') || url.startsWith('#') || url.startsWith('mailto:') || url.startsWith('tel:')) {
+        return false;
+      }
+
+      // Check if it's an absolute URL with a different host
+      try {
+        const urlObj = new URL(url, window.location.origin);
+        return urlObj.origin !== window.location.origin;
+      } catch (e) {
+        // If URL parsing fails, assume it's internal
+        return false;
+      }
+    }
+
     // Handle all links with target="_blank" or class="external-link"
     document.addEventListener('click', function (e) {
       const link = e.target.closest('a[target="_blank"], a.external-link');
       if (link && link.getAttribute('href')) {
-        e.preventDefault();
-        pendingExternalUrl = link.getAttribute('href');
+        const href = link.getAttribute('href');
 
-        // Display the URL in the modal
-        const urlDisplay = document.getElementById('externalUrlDisplay');
-        if (urlDisplay) {
-          urlDisplay.textContent = pendingExternalUrl;
+        // Only show warning for truly external URLs
+        if (isExternalUrl(href)) {
+          e.preventDefault();
+          pendingExternalUrl = href;
+
+          // Display the URL in the modal
+          const urlDisplay = document.getElementById('externalUrlDisplay');
+          if (urlDisplay) {
+            urlDisplay.textContent = pendingExternalUrl;
+          }
+
+          showModal();
         }
-
-        modal.style.display = 'flex';
+        // For internal URLs, let them proceed normally (don't prevent default)
       }
     });
 
     // Cancel button
     cancelBtn.addEventListener('click', function () {
-      modal.style.display = 'none';
-      pendingExternalUrl = null;
+      hideModal();
     });
 
     // Proceed button
     proceedBtn.addEventListener('click', function () {
       if (pendingExternalUrl) {
         window.open(pendingExternalUrl, '_blank');
-        modal.style.display = 'none';
-        pendingExternalUrl = null;
+        hideModal();
       }
     });
 
     // Close modal on outside click
     modal.addEventListener('click', function (e) {
       if (e.target === modal) {
-        modal.style.display = 'none';
-        pendingExternalUrl = null;
+        hideModal();
       }
     });
 
     // Close modal on Escape key
     document.addEventListener('keydown', function (e) {
       if (e.key === 'Escape' && modal.style.display === 'flex') {
-        modal.style.display = 'none';
-        pendingExternalUrl = null;
+        hideModal();
       }
     });
   }

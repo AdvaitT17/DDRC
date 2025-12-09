@@ -26,7 +26,7 @@
             <h2>Welcome to DDRC Mumbai</h2>
             <p>Empowering persons with disabilities through comprehensive rehabilitation services</p>
             <div class="hero-buttons">
-              <a href="/apply" class="primary-btn" aria-label="Apply Now">APPLY NOW</a>
+              <a href="/registration" class="primary-btn" aria-label="Apply Now">APPLY NOW</a>
               <a href="/track" class="primary-btn" aria-label="Track Your Application">TRACK YOUR APPLICATION</a>
             </div>
           </div>
@@ -39,7 +39,7 @@
             <h2>Accessible Rehabilitation Services</h2>
             <p>Professional therapeutic services to enhance quality of life</p>
             <div class="hero-buttons">
-              <a href="/about-udid#our-services" class="primary-btn" aria-label="Our Services">OUR SERVICES</a>
+              <a href="about-ddrc#our-services" class="primary-btn" aria-label="Our Services">OUR SERVICES</a>
               <a href="/contact" class="primary-btn" aria-label="Contact Us">CONTACT US</a>
             </div>
           </div>
@@ -53,7 +53,7 @@
             <p>Advocating for inclusion, accessibility, and equal rights</p>
             <div class="hero-buttons">
               <a href="/events" class="primary-btn" aria-label="Upcoming Events">UPCOMING EVENTS</a>
-              <a href="/join" class="primary-btn" aria-label="Get Involved">GET INVOLVED</a>
+              <a href="/contact" class="primary-btn" aria-label="Get Involved">GET INVOLVED</a>
             </div>
           </div>
           <div class="hero-bg-image">
@@ -808,11 +808,22 @@
     }
 
     /* No events state */
+    .event-slideshow:has(.no-events) {
+      background: #ffffff;
+    }
+
+    .event-slide-container:has(.no-events) {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
     .no-events {
+      width: 100%;
       padding: 40px 25px;
       text-align: center;
       color: #6c757d;
-      background: #f8f9fa;
+      background: #ffffff;
     }
 
     .no-events p {
