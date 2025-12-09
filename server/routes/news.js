@@ -86,7 +86,7 @@ router.get("/", async (req, res) => {
 router.get("/latest", async (req, res) => {
   try {
     const [news] = await db.query(
-      "SELECT id, title, published_date FROM news ORDER BY published_date DESC LIMIT 2"
+      "SELECT id, title, published_date FROM news ORDER BY published_date DESC LIMIT 5"
     );
     res.json({ success: true, news });
   } catch (error) {
