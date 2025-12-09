@@ -1,0 +1,82 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<urlset
+      xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"
+      xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+      xsi:schemaLocation="http://www.sitemaps.org/schemas/sitemap/0.9
+            http://www.sitemaps.org/schemas/sitemap/0.9/sitemap.xsd">
+<!-- created with Free Online Sitemap Generator www.xml-sitemaps.com -->
+
+
+<url>
+  <loc>https://ddrc.org.in/</loc>
+  <lastmod>2025-12-09T10:02:07+00:00</lastmod>
+  <priority>1.00</priority>
+</url>
+<url>
+  <loc>https://ddrc.org.in/registration/</loc>
+  <lastmod>2025-12-09T07:25:31+00:00</lastmod>
+  <priority>0.80</priority>
+</url>
+<url>
+  <loc>https://ddrc.org.in/track/</loc>
+  <lastmod>2025-12-06T21:44:27+00:00</lastmod>
+  <priority>0.80</priority>
+</url>
+<url>
+  <loc>https://ddrc.org.in/about-ddrc/</loc>
+  <lastmod>2025-12-09T10:02:07+00:00</lastmod>
+  <priority>0.80</priority>
+</url>
+<url>
+  <loc>https://ddrc.org.in/contact/</loc>
+  <lastmod>2025-12-09T10:02:07+00:00</lastmod>
+  <priority>0.80</priority>
+</url>
+<url>
+  <loc>https://ddrc.org.in/events/</loc>
+  <lastmod>2025-12-09T10:02:07+00:00</lastmod>
+  <priority>0.80</priority>
+</url>
+<url>
+  <loc>https://ddrc.org.in/schemes/</loc>
+  <lastmod>2025-12-09T10:02:07+00:00</lastmod>
+  <priority>0.80</priority>
+</url>
+<url>
+  <loc>https://ddrc.org.in/news/</loc>
+  <lastmod>2025-12-09T10:02:07+00:00</lastmod>
+  <priority>0.80</priority>
+</url>
+<url>
+  <loc>https://ddrc.org.in/faqs/</loc>
+  <lastmod>2025-12-09T10:02:07+00:00</lastmod>
+  <priority>0.80</priority>
+</url>
+<url>
+  <loc>https://ddrc.org.in/login/</loc>
+  <lastmod>2025-12-09T07:25:31+00:00</lastmod>
+  <priority>0.64</priority>
+</url>
+<url>
+  <loc>https://ddrc.org.in/terms/</loc>
+  <lastmod>2025-12-09T10:02:07+00:00</lastmod>
+  <priority>0.64</priority>
+</url>
+<url>
+  <loc>https://ddrc.org.in/privacy/</loc>
+  <lastmod>2025-12-09T10:02:07+00:00</lastmod>
+  <priority>0.64</priority>
+</url>
+<url>
+  <loc>https://ddrc.org.in/copyright/</loc>
+  <lastmod>2025-12-09T10:02:07+00:00</lastmod>
+  <priority>0.64</priority>
+</url>
+<url>
+  <loc>https://ddrc.org.in/accessibility/</loc>
+  <lastmod>2025-12-09T10:02:07+00:00</lastmod>
+  <priority>0.64</priority>
+</url>
+
+
+</urlset>
