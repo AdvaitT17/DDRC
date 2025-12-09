@@ -29,6 +29,7 @@ const {
   initReportEmailScheduler,
 } = require("./schedulers/reportEmailScheduler");
 const userRoutes = require("./routes/userRoutes");
+const contactRoutes = require("./routes/contactRoutes");
 
 const app = express();
 
@@ -248,6 +249,7 @@ app.use("/api/report-notifications", reportNotificationRoutes);
 app.use("/api/news", newsRoutes);
 app.use("/api/events", eventRoutes);
 app.use("/api/users", userRoutes);
+app.use("/api/contact", contactRoutes);
 
 // HTML Routes - make sure these come after API routes
 app.get(

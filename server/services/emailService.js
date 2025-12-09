@@ -120,31 +120,31 @@ async function sendReportEmail(
       const today = new Date();
       const firstDayPrevMonth = new Date(today.getFullYear(), today.getMonth() - 1, 1);
       const lastDayPrevMonth = new Date(today.getFullYear(), today.getMonth(), 0);
-      
+
       // Format dates as YYYY-MM-DD for database
       const startDate = formatDateForDatabase(firstDayPrevMonth);
       const endDate = formatDateForDatabase(lastDayPrevMonth);
-      
+
       // Format for display (DD-MM-YYYY)
       const displayStartDate = formatDateForDisplay(startDate);
       const displayEndDate = formatDateForDisplay(endDate);
-      
+
       console.log(
         "Applied previous month filter for scheduled send:",
         startDate,
         "to",
         endDate
       );
-      
+
       // If we already have filters, append to them
       if (!configToUse.filters) {
         configToUse.filters = [];
       }
-      
+
       // Add previous month date range filter
       configToUse.filters.push({
         fieldId: "completed_at",
-        operator: "between", 
+        operator: "between",
         value: [startDate, endDate],
         displayValue: `${displayStartDate} to ${displayEndDate}`,
         // Add rich metadata for date filtering
@@ -325,11 +325,10 @@ async function sendReportEmail(
                 <p><strong>Date Range:</strong> ${dateRangeDisplay}</p>
               </div>
               
-              <p>This report ${
-                isManualSend
-                  ? `was manually requested and contains data for the specified date range.`
-                  : `is automatically generated on the 1st of each month and contains data for the previous month.`
-              }</p>
+              <p>This report ${isManualSend
+        ? `was manually requested and contains data for the specified date range.`
+        : `is automatically generated on the 1st of each month and contains data for the previous month.`
+      }</p>
               
               <p>For detailed analytics and interactive reports, you can access the DDRC dashboard directly.</p>
               
@@ -358,11 +357,10 @@ async function sendReportEmail(
       },
       to: recipients.join(", "),
       subject: emailSubject,
-      text: `${reportTitle} Report for ${dateRangeDisplay} is attached. This report ${
-        isManualSend
-          ? `was manually requested and contains data for the specified date range.`
-          : `is automatically generated on the 1st of each month and contains data for the previous month.`
-      }`,
+      text: `${reportTitle} Report for ${dateRangeDisplay} is attached. This report ${isManualSend
+        ? `was manually requested and contains data for the specified date range.`
+        : `is automatically generated on the 1st of each month and contains data for the previous month.`
+        }`,
       html: emailHtml,
       attachments: [
         {
@@ -854,20 +852,20 @@ async function generateReportFile(reportName, config) {
  */
 function sanitizeWorksheetName(name) {
   if (!name) return "Report";
-  
+
   // Replace all invalid characters with underscores
   let sanitized = name.replace(/[\*\?\:\\/\[\]]/g, '_');
-  
+
   // Excel has a 31 character limit for worksheet names
   if (sanitized.length > 31) {
     sanitized = sanitized.substring(0, 31);
   }
-  
+
   // Ensure the name isn't empty after sanitization
   if (!sanitized.trim()) {
     sanitized = "Report";
   }
-  
+
   return sanitized;
 }
 
@@ -1381,7 +1379,7 @@ function formatDateForDatabase(date) {
     }
     date = new Date(date);
   }
-  
+
   const year = date.getFullYear();
   const month = (date.getMonth() + 1).toString().padStart(2, '0');
   const day = date.getDate().toString().padStart(2, '0');
@@ -1398,11 +1396,311 @@ function formatDateForDisplay(date) {
     }
     date = new Date(date);
   }
-  
+
   const day = date.getDate().toString().padStart(2, '0');
   const month = (date.getMonth() + 1).toString().padStart(2, '0');
   const year = date.getFullYear();
   return `${day}-${month}-${year}`;
+}
+
+/**
+ * Send a contact form email to the CONTACT_EMAIL address
+ * @param {Object} contactData - The contact form data
+ * @param {string} contactData.name - Sender's name
+ * @param {string} contactData.email - Sender's email
+ * @param {string} contactData.phone - Sender's phone (optional)
+ * @param {string} contactData.subject - Subject category
+ * @param {string} contactData.message - Message content
+ * @returns {boolean} - Whether the email was sent successfully
+ */
+async function sendContactEmail(contactData) {
+  const { name, email, phone, subject, message } = contactData;
+
+  const contactEmail = process.env.CONTACT_EMAIL;
+  if (!contactEmail) {
+    console.error("CONTACT_EMAIL not configured in environment variables");
+    return false;
+  }
+
+  try {
+    const emailHtml = `
+      <!DOCTYPE html>
+      <html lang="en">
+        <head>
+          <meta charset="UTF-8">
+          <meta name="viewport" content="width=device-width, initial-scale=1.0">
+          <title>New Contact Form Submission</title>
+          <style>
+            body, html {
+              margin: 0;
+              padding: 0;
+              font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+              color: #333;
+              line-height: 1.6;
+              background-color: #f5f7fa;
+            }
+            .container {
+              max-width: 600px;
+              margin: 0 auto;
+              background-color: #ffffff;
+              border-radius: 8px;
+              overflow: hidden;
+              box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            }
+            .header {
+              background-color: #0d6efd;
+              background-image: linear-gradient(135deg, #0d6efd 0%, #0a4bb3 100%);
+              color: white;
+              padding: 25px;
+              text-align: center;
+            }
+            .header h1 {
+              margin: 0;
+              font-size: 22px;
+              font-weight: 600;
+            }
+            .content {
+              padding: 25px;
+            }
+            .field {
+              margin-bottom: 15px;
+              border-bottom: 1px solid #eee;
+              padding-bottom: 15px;
+            }
+            .field:last-child {
+              border-bottom: none;
+            }
+            .field-label {
+              font-weight: 600;
+              color: #0a4bb3;
+              font-size: 14px;
+              text-transform: uppercase;
+              margin-bottom: 5px;
+            }
+            .field-value {
+              font-size: 16px;
+              color: #333;
+            }
+            .message-box {
+              background-color: #f8f9fa;
+              border-left: 4px solid #0d6efd;
+              padding: 15px;
+              border-radius: 4px;
+              margin-top: 20px;
+            }
+            .footer {
+              background-color: #f8f9fa;
+              padding: 15px 25px;
+              color: #6c757d;
+              font-size: 12px;
+              text-align: center;
+              border-top: 1px solid #e9ecef;
+            }
+          </style>
+        </head>
+        <body>
+          <div class="container">
+            <div class="header">
+              <h1>New Contact Form Submission</h1>
+            </div>
+            <div class="content">
+              <div class="field">
+                <div class="field-label">From</div>
+                <div class="field-value">${name}</div>
+              </div>
+              <div class="field">
+                <div class="field-label">Email</div>
+                <div class="field-value"><a href="mailto:${email}">${email}</a></div>
+              </div>
+              <div class="field">
+                <div class="field-label">Phone</div>
+                <div class="field-value">${phone}</div>
+              </div>
+              <div class="field">
+                <div class="field-label">Subject</div>
+                <div class="field-value">${subject}</div>
+              </div>
+              <div class="message-box">
+                <div class="field-label">Message</div>
+                <div class="field-value">${message.replace(/\n/g, '<br>')}</div>
+              </div>
+            </div>
+            <div class="footer">
+              <p>This message was sent via the DDRC Contact Form on ${new Date().toLocaleString('en-IN', { timeZone: 'Asia/Kolkata' })}</p>
+            </div>
+          </div>
+        </body>
+      </html>
+    `;
+
+    const info = await transporter.sendMail({
+      from: {
+        name: "DDRC Contact Form",
+        address: process.env.EMAIL_FROM || process.env.EMAIL_USER,
+      },
+      to: contactEmail,
+      replyTo: email,
+      subject: `[DDRC Contact] ${subject} - from ${name}`,
+      text: `New contact form submission:\n\nName: ${name}\nEmail: ${email}\nPhone: ${phone}\nSubject: ${subject}\n\nMessage:\n${message}`,
+      html: emailHtml,
+    });
+
+    console.log("Contact email sent:", info.messageId);
+    return true;
+  } catch (error) {
+    console.error("Error sending contact email:", error);
+    return false;
+  }
+}
+
+/**
+ * Send an acknowledgement email to the person who submitted the contact form
+ * @param {Object} contactData - The contact form data
+ * @param {string} contactData.name - Sender's name
+ * @param {string} contactData.email - Sender's email
+ * @param {string} contactData.subject - Subject category
+ * @param {string} contactData.message - Message content
+ * @returns {boolean} - Whether the email was sent successfully
+ */
+async function sendContactAcknowledgement(contactData) {
+  const { name, email, subject, message } = contactData;
+
+  try {
+    const emailHtml = `
+      <!DOCTYPE html>
+      <html lang="en">
+        <head>
+          <meta charset="UTF-8">
+          <meta name="viewport" content="width=device-width, initial-scale=1.0">
+          <title>Thank You for Contacting DDRC</title>
+          <style>
+            body, html {
+              margin: 0;
+              padding: 0;
+              font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+              color: #333;
+              line-height: 1.6;
+              background-color: #f5f7fa;
+            }
+            .container {
+              max-width: 600px;
+              margin: 0 auto;
+              background-color: #ffffff;
+              border-radius: 8px;
+              overflow: hidden;
+              box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            }
+            .header {
+              background-color: #0d6efd;
+              background-image: linear-gradient(135deg, #0d6efd 0%, #0a4bb3 100%);
+              color: white;
+              padding: 25px;
+              text-align: center;
+            }
+            .header h1 {
+              margin: 0;
+              font-size: 22px;
+              font-weight: 600;
+            }
+            .content {
+              padding: 25px;
+            }
+            .content p {
+              margin-bottom: 15px;
+            }
+            .message-copy {
+              background-color: #f8f9fa;
+              border-left: 4px solid #0d6efd;
+              padding: 15px;
+              border-radius: 4px;
+              margin: 20px 0;
+            }
+            .message-copy-label {
+              font-weight: 600;
+              color: #0a4bb3;
+              font-size: 14px;
+              text-transform: uppercase;
+              margin-bottom: 10px;
+            }
+            .message-copy-content {
+              font-size: 14px;
+              color: #555;
+            }
+            .contact-info {
+              background-color: #e7f3ff;
+              padding: 15px;
+              border-radius: 4px;
+              margin-top: 20px;
+            }
+            .contact-info h3 {
+              margin: 0 0 10px 0;
+              color: #0a4bb3;
+              font-size: 16px;
+            }
+            .contact-info p {
+              margin: 5px 0;
+              font-size: 14px;
+            }
+            .footer {
+              background-color: #f8f9fa;
+              padding: 15px 25px;
+              color: #6c757d;
+              font-size: 12px;
+              text-align: center;
+              border-top: 1px solid #e9ecef;
+            }
+          </style>
+        </head>
+        <body>
+          <div class="container">
+            <div class="header">
+              <h1>Thank You for Contacting Us</h1>
+            </div>
+            <div class="content">
+              <p>Dear ${name},</p>
+              <p>Thank you for reaching out to the District Disability Rehabilitation Centre (DDRC), Mumbai. We have received your message and our team will review it shortly.</p>
+              <p>We typically respond within <strong>2-3 business days</strong>. If your matter is urgent, please feel free to contact us directly by phone.</p>
+              
+              <div class="message-copy">
+                <div class="message-copy-label">Your Message (${subject})</div>
+                <div class="message-copy-content">${message.replace(/\n/g, '<br>')}</div>
+              </div>
+              
+              <div class="contact-info">
+                <h3>Contact Information</h3>
+                <p><strong>Phone:</strong> +91 22 2662 0691</p>
+                <p><strong>Address:</strong> Samaj Kalyan Mandir, Opposite Bank of India, Mandapeshwar Road, Navagaon, Dahisar West, Mumbai - 400068</p>
+                <p><strong>Working Hours:</strong> Mon-Fri: 10:00 AM - 5:30 PM, Sat: 10:00 AM - 1:00 PM</p>
+              </div>
+              
+              <p style="margin-top: 20px;">Best regards,<br><strong>DDRC Mumbai Team</strong></p>
+            </div>
+            <div class="footer">
+              <p>This is an automated acknowledgement from the District Disability Rehabilitation Centre (DDRC) Management System.</p>
+              <p>Please do not reply to this email.</p>
+            </div>
+          </div>
+        </body>
+      </html>
+    `;
+
+    const info = await transporter.sendMail({
+      from: {
+        name: "DDRC Mumbai",
+        address: process.env.EMAIL_FROM || process.env.EMAIL_USER,
+      },
+      to: email,
+      subject: `Thank you for contacting DDRC Mumbai - ${subject}`,
+      text: `Dear ${name},\n\nThank you for reaching out to the District Disability Rehabilitation Centre (DDRC), Mumbai. We have received your message and our team will review it shortly.\n\nWe typically respond within 2-3 business days.\n\nYour Message:\n${message}\n\nBest regards,\nDDRC Mumbai Team`,
+      html: emailHtml,
+    });
+
+    console.log("Acknowledgement email sent:", info.messageId);
+    return true;
+  } catch (error) {
+    console.error("Error sending acknowledgement email:", error);
+    return false;
+  }
 }
 
 // Export the functions
@@ -1411,4 +1709,6 @@ module.exports = {
   generateReportFile,
   processScheduledNotifications,
   updateNotificationStatus,
+  sendContactEmail,
+  sendContactAcknowledgement,
 };
