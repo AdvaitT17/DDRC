@@ -159,19 +159,50 @@
         document.getElementById('contactForm').addEventListener('submit', async (e) => {
             e.preventDefault();
             const btn = e.target.querySelector('.submit-btn');
+            const originalText = btn.textContent;
             btn.disabled = true;
             btn.textContent = 'Sending...';
 
-            // Simulate API call
-            await new Promise(resolve => setTimeout(resolve, 1500));
+            // Collect form data
+            const formData = {
+                name: document.getElementById('name').value.trim(),
+                email: document.getElementById('email').value.trim(),
+                phone: document.getElementById('phone').value.trim(),
+                subject: document.getElementById('subject').value,
+                message: document.getElementById('message').value.trim()
+            };
 
-            e.target.innerHTML = `
-                <div class="form-success">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 11.08V12a10 10 0 11-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
-                    <h4>Message Sent Successfully!</h4>
-                    <p>Thank you for contacting us. We'll respond within 2-3 business days.</p>
-                </div>
-            `;
+            try {
+                const response = await fetch('/api/contact', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(formData)
+                });
+
+                const result = await response.json();
+
+                if (result.success) {
+                    e.target.innerHTML = `
+                        <div class="form-success">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 11.08V12a10 10 0 11-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+                            <h4>Message Sent Successfully!</h4>
+                            <p>${result.message}</p>
+                        </div>
+                    `;
+                } else {
+                    // Show error but keep form
+                    btn.disabled = false;
+                    btn.textContent = originalText;
+                    alert(result.message || 'Failed to send message. Please try again.');
+                }
+            } catch (error) {
+                console.error('Contact form error:', error);
+                btn.disabled = false;
+                btn.textContent = originalText;
+                alert('An error occurred. Please try again later or contact us directly by phone.');
+            }
         });
     </script>
 </body>
