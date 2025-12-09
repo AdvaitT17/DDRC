@@ -1,1396 +1,1310 @@
 <!DOCTYPE html>
 <html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Event Details | DDRC Mumbai</title>
-    <link
-      href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css"
-      rel="stylesheet"
-    />
-    <link rel="stylesheet" href="/css/main.css" />
-    <link rel="stylesheet" href="/css/header.css" />
-    <link rel="stylesheet" href="/css/footer.css" />
-    <link rel="stylesheet" href="/css/accessibility.css" />
-    <style>
-      .event-header {
-        background: linear-gradient(135deg, #004a9f 0%, #003a7a 100%);
-        color: white;
-        padding: 3rem 0;
-        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-      }
 
-      .breadcrumb {
-        background: transparent;
-        margin-bottom: 1.5rem;
-      }
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Event Details | DDRC Mumbai</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet" />
+  <link rel="stylesheet" href="/css/main.css" />
+  <link rel="stylesheet" href="/css/header.css" />
+  <link rel="stylesheet" href="/css/footer.css" />
+  <link rel="stylesheet" href="/css/accessibility.css" />
+  <style>
+    .event-header {
+      background: linear-gradient(135deg, #004a9f 0%, #003a7a 100%);
+      color: white;
+      padding: 3rem 0;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    }
 
-      .breadcrumb-item a {
-        color: rgba(255, 255, 255, 0.8);
-        text-decoration: none;
-        transition: color 0.2s ease;
-      }
+    .breadcrumb {
+      background: transparent;
+      margin-bottom: 1.5rem;
+    }
 
-      .breadcrumb-item a:hover {
-        color: white;
-        text-decoration: underline;
-      }
+    .breadcrumb-item a {
+      color: rgba(255, 255, 255, 0.8);
+      text-decoration: none;
+      transition: color 0.2s ease;
+    }
 
-      .breadcrumb-item.active {
-        color: white;
-        font-weight: 500;
-      }
+    .breadcrumb-item a:hover {
+      color: white;
+      text-decoration: underline;
+    }
 
-      .breadcrumb-item + .breadcrumb-item::before {
-        color: rgba(255, 255, 255, 0.7);
-      }
+    .breadcrumb-item.active {
+      color: white;
+      font-weight: 500;
+    }
 
-      .event-date {
-        color: #f47920;
-        font-size: 1.1rem;
-        font-weight: 600;
-        margin-bottom: 1rem;
-        display: flex;
-        align-items: center;
-      }
+    .breadcrumb-item+.breadcrumb-item::before {
+      color: rgba(255, 255, 255, 0.7);
+    }
 
-      .event-date::before {
-        content: "";
-        display: inline-block;
-        width: 18px;
-        height: 18px;
-        background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%23f47920'%3E%3Cpath d='M19 4h-1V2h-2v2H8V2H6v2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 16H5V10h14v10zM5 8V6h14v2H5zm2 4h10v2H7v-2zm0 4h7v2H7v-2z'/%3E%3C/svg%3E");
-        background-size: contain;
-        margin-right: 8px;
+    .event-date {
+      color: #f47920;
+      font-size: 1.1rem;
+      font-weight: 600;
+      margin-bottom: 1rem;
+      display: flex;
+      align-items: center;
+    }
+
+    .event-date::before {
+      content: "";
+      display: inline-block;
+      width: 18px;
+      height: 18px;
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%23f47920'%3E%3Cpath d='M19 4h-1V2h-2v2H8V2H6v2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 16H5V10h14v10zM5 8V6h14v2H5zm2 4h10v2H7v-2zm0 4h7v2H7v-2z'/%3E%3C/svg%3E");
+      background-size: contain;
+      margin-right: 8px;
+    }
+
+    .event-title {
+      font-size: 2.5rem;
+      font-weight: 700;
+      margin-bottom: 1.5rem;
+      line-height: 1.2;
+      text-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+      word-wrap: break-word;
+      overflow-wrap: break-word;
+      max-width: 100%;
+    }
+
+    .event-description {
+      font-size: 1.2rem;
+      opacity: 0.9;
+      margin-bottom: 2rem;
+      line-height: 1.6;
+      max-width: 800px;
+      word-wrap: break-word;
+      overflow-wrap: break-word;
+    }
+
+    .event-content {
+      padding: 4rem 0;
+      background: #f8f9fa;
+      min-height: 400px;
+    }
+
+    .event-body {
+      background: white;
+      padding: 2.5rem;
+      border-radius: 12px;
+      box-shadow: 0 3px 15px rgba(0, 0, 0, 0.08);
+      margin-bottom: 3rem;
+      line-height: 1.8;
+      color: #2c3e50;
+      border: 1px solid rgba(0, 0, 0, 0.05);
+      word-wrap: break-word;
+      overflow-wrap: break-word;
+      overflow: hidden;
+      -ms-word-break: break-all;
+      word-break: break-word;
+      -ms-hyphens: auto;
+      -moz-hyphens: auto;
+      -webkit-hyphens: auto;
+      hyphens: auto;
+    }
+
+    .event-body h2 {
+      color: #004a9f;
+      margin-top: 2rem;
+      margin-bottom: 1rem;
+      font-weight: 600;
+      word-wrap: break-word;
+      overflow-wrap: break-word;
+    }
+
+    .event-body h3 {
+      color: #2c3e50;
+      margin-top: 1.5rem;
+      margin-bottom: 0.75rem;
+      font-weight: 600;
+      word-wrap: break-word;
+      overflow-wrap: break-word;
+    }
+
+    .event-body p {
+      margin-bottom: 1.25rem;
+      word-wrap: break-word;
+      overflow-wrap: break-word;
+      max-width: 100%;
+    }
+
+    .event-body ul,
+    .event-body ol {
+      margin-bottom: 1.5rem;
+      padding-left: 1.5rem;
+    }
+
+    .event-body li {
+      margin-bottom: 0.5rem;
+    }
+
+    .event-images {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+      gap: 1.5rem;
+      margin-top: 2rem;
+    }
+
+    .event-image {
+      border-radius: 12px;
+      overflow: hidden;
+      aspect-ratio: 16/9;
+      cursor: pointer;
+      box-shadow: 0 3px 10px rgba(0, 0, 0, 0.1);
+      transition: transform 0.3s ease, box-shadow 0.3s ease;
+      border: 1px solid rgba(0, 0, 0, 0.05);
+    }
+
+    .event-image:hover {
+      transform: translateY(-5px);
+      box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
+    }
+
+    .event-image img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      transition: transform 0.5s ease;
+    }
+
+    .event-image:hover img {
+      transform: scale(1.05);
+    }
+
+    .main-image {
+      grid-column: 1 / -1;
+      aspect-ratio: 21/9;
+    }
+
+    /* Image Modal */
+    .modal-image {
+      max-height: 85vh;
+      object-fit: contain;
+    }
+
+    .modal-dialog {
+      max-width: 90vw;
+    }
+
+    .modal-content {
+      background-color: rgba(0, 0, 0, 0.9);
+      border: none;
+      border-radius: 0;
+    }
+
+    .modal-body {
+      padding: 0;
+    }
+
+    .modal-close-btn {
+      position: absolute;
+      top: 15px;
+      right: 15px;
+      color: white;
+      background: rgba(0, 0, 0, 0.5);
+      border: none;
+      border-radius: 50%;
+      width: 40px;
+      height: 40px;
+      font-size: 1.5rem;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      z-index: 1050;
+      transition: background 0.2s ease;
+    }
+
+    .modal-close-btn:hover {
+      background: rgba(0, 0, 0, 0.8);
+    }
+
+    /* Back to events button */
+    .back-to-events {
+      display: inline-flex;
+      align-items: center;
+      margin-top: 2rem;
+      color: #004a9f;
+      text-decoration: none;
+      font-weight: 600;
+      transition: color 0.2s ease;
+    }
+
+    .back-to-events:hover {
+      color: #003a7a;
+      text-decoration: underline;
+    }
+
+    .back-to-events::before {
+      content: "←";
+      margin-right: 8px;
+      font-size: 1.2rem;
+    }
+
+    @media (max-width: 991px) {
+      .event-body {
+        padding: 2rem;
       }
 
       .event-title {
-        font-size: 2.5rem;
-        font-weight: 700;
-        margin-bottom: 1.5rem;
-        line-height: 1.2;
-        text-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-        word-wrap: break-word;
-        overflow-wrap: break-word;
-        max-width: 100%;
+        font-size: 2.2rem;
+      }
+    }
+
+    @media (max-width: 768px) {
+      .event-header {
+        padding: 2.5rem 0;
+      }
+
+      .event-title {
+        font-size: 2rem;
+        word-break: break-word;
       }
 
       .event-description {
-        font-size: 1.2rem;
-        opacity: 0.9;
-        margin-bottom: 2rem;
-        line-height: 1.6;
-        max-width: 800px;
-        word-wrap: break-word;
-        overflow-wrap: break-word;
+        font-size: 1.1rem;
+        word-break: break-word;
       }
 
       .event-content {
-        padding: 4rem 0;
-        background: #f8f9fa;
-        min-height: 400px;
+        padding: 3rem 0;
       }
 
       .event-body {
-        background: white;
-        padding: 2.5rem;
-        border-radius: 12px;
-        box-shadow: 0 3px 15px rgba(0, 0, 0, 0.08);
-        margin-bottom: 3rem;
-        line-height: 1.8;
-        color: #2c3e50;
-        border: 1px solid rgba(0, 0, 0, 0.05);
-        word-wrap: break-word;
-        overflow-wrap: break-word;
-        overflow: hidden;
-        -ms-word-break: break-all;
+        padding: 1.75rem;
+        margin-bottom: 2rem;
         word-break: break-word;
-        -ms-hyphens: auto;
-        -moz-hyphens: auto;
-        -webkit-hyphens: auto;
-        hyphens: auto;
-      }
-
-      .event-body h2 {
-        color: #004a9f;
-        margin-top: 2rem;
-        margin-bottom: 1rem;
-        font-weight: 600;
-        word-wrap: break-word;
-        overflow-wrap: break-word;
-      }
-
-      .event-body h3 {
-        color: #2c3e50;
-        margin-top: 1.5rem;
-        margin-bottom: 0.75rem;
-        font-weight: 600;
-        word-wrap: break-word;
-        overflow-wrap: break-word;
-      }
-
-      .event-body p {
-        margin-bottom: 1.25rem;
-        word-wrap: break-word;
-        overflow-wrap: break-word;
-        max-width: 100%;
-      }
-
-      .event-body ul,
-      .event-body ol {
-        margin-bottom: 1.5rem;
-        padding-left: 1.5rem;
-      }
-
-      .event-body li {
-        margin-bottom: 0.5rem;
       }
 
       .event-images {
-        display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-        gap: 1.5rem;
-        margin-top: 2rem;
+        gap: 1rem;
       }
 
-      .event-image {
-        border-radius: 12px;
-        overflow: hidden;
-        aspect-ratio: 16/9;
-        cursor: pointer;
-        box-shadow: 0 3px 10px rgba(0, 0, 0, 0.1);
-        transition: transform 0.3s ease, box-shadow 0.3s ease;
-        border: 1px solid rgba(0, 0, 0, 0.05);
-      }
-
-      .event-image:hover {
-        transform: translateY(-5px);
-        box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
-      }
-
-      .event-image img {
-        width: 100%;
-        height: 100%;
-        object-fit: cover;
-        transition: transform 0.5s ease;
-      }
-
-      .event-image:hover img {
-        transform: scale(1.05);
-      }
-
-      .main-image {
-        grid-column: 1 / -1;
-        aspect-ratio: 21/9;
-      }
-
-      /* Image Modal */
-      .modal-image {
-        max-height: 85vh;
-        object-fit: contain;
-      }
-
-      .modal-dialog {
-        max-width: 90vw;
-      }
-
-      .modal-content {
-        background-color: rgba(0, 0, 0, 0.9);
-        border: none;
-        border-radius: 0;
-      }
-
-      .modal-body {
-        padding: 0;
-      }
-
-      .modal-close-btn {
-        position: absolute;
-        top: 15px;
-        right: 15px;
-        color: white;
-        background: rgba(0, 0, 0, 0.5);
-        border: none;
-        border-radius: 50%;
-        width: 40px;
-        height: 40px;
-        font-size: 1.5rem;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        cursor: pointer;
-        z-index: 1050;
-        transition: background 0.2s ease;
-      }
-
-      .modal-close-btn:hover {
-        background: rgba(0, 0, 0, 0.8);
-      }
-
-      /* Back to events button */
-      .back-to-events {
-        display: inline-flex;
-        align-items: center;
-        margin-top: 2rem;
-        color: #004a9f;
-        text-decoration: none;
-        font-weight: 600;
-        transition: color 0.2s ease;
-      }
-
-      .back-to-events:hover {
-        color: #003a7a;
-        text-decoration: underline;
-      }
-
-      .back-to-events::before {
-        content: "←";
-        margin-right: 8px;
-        font-size: 1.2rem;
-      }
-
-      @media (max-width: 991px) {
-        .event-body {
-          padding: 2rem;
-        }
-
-        .event-title {
-          font-size: 2.2rem;
-        }
-      }
-
-      @media (max-width: 768px) {
-        .event-header {
-          padding: 2.5rem 0;
-        }
-
-        .event-title {
-          font-size: 2rem;
-          word-break: break-word;
-        }
-
-        .event-description {
-          font-size: 1.1rem;
-          word-break: break-word;
-        }
-
-        .event-content {
-          padding: 3rem 0;
-        }
-
-        .event-body {
-          padding: 1.75rem;
-          margin-bottom: 2rem;
-          word-break: break-word;
-        }
-
-        .event-images {
-          gap: 1rem;
-        }
-
-        /* Ensure images don't overflow */
-        .event-body img {
-          max-width: 100%;
-          height: auto;
-        }
-
-        /* Ensure tables don't overflow */
-        .event-body table {
-          max-width: 100%;
-          overflow-x: auto;
-          display: block;
-        }
-      }
-
-      @media (max-width: 576px) {
-        .event-header {
-          padding: 2rem 0;
-        }
-
-        .event-title {
-          font-size: 1.75rem;
-          margin-bottom: 1rem;
-        }
-
-        .event-description {
-          font-size: 1rem;
-          margin-bottom: 1.5rem;
-        }
-
-        .event-content {
-          padding: 2rem 0;
-        }
-
-        .event-body {
-          padding: 1.5rem;
-          word-break: break-word;
-        }
-
-        .event-body h2 {
-          font-size: 1.5rem;
-        }
-
-        .event-body h3 {
-          font-size: 1.3rem;
-        }
-
-        .event-image {
-          aspect-ratio: 4/3;
-        }
-
-        .main-image {
-          aspect-ratio: 16/9;
-        }
-
-        /* Ensure pre and code blocks don't overflow */
-        .event-body pre,
-        .event-body code {
-          white-space: pre-wrap;
-          word-break: break-word;
-          max-width: 100%;
-          overflow-x: auto;
-        }
-      }
-
-      /* Additional styles to prevent overflow */
-      .event-body {
-        /* Existing styles */
-        overflow-wrap: break-word;
-        word-wrap: break-word;
-        -ms-word-break: break-all;
-        word-break: break-word;
-        -ms-hyphens: auto;
-        -moz-hyphens: auto;
-        -webkit-hyphens: auto;
-        hyphens: auto;
-      }
-
-      /* Handle long URLs and text */
-      .event-body a {
-        word-break: break-all;
-        word-wrap: break-word;
-        overflow-wrap: break-word;
-      }
-
-      /* Ensure all content is contained */
-      .event-body * {
-        max-width: 100%;
-      }
-
-      /* Handle pre-formatted text */
-      .event-body pre {
-        white-space: pre-wrap;
-        word-wrap: break-word;
-        overflow-wrap: break-word;
-        max-width: 100%;
-        overflow-x: auto;
-      }
-
-      /* Handle code blocks */
-      .event-body code {
-        white-space: pre-wrap;
-        word-wrap: break-word;
-        overflow-wrap: break-word;
-      }
-
-      /* Handle tables */
-      .event-body table {
-        width: 100%;
-        max-width: 100%;
-        table-layout: fixed;
-        overflow-x: auto;
-        display: block;
-      }
-
-      .event-body td,
-      .event-body th {
-        word-break: break-word;
-        overflow-wrap: break-word;
-      }
-
-      /* Handle images */
+      /* Ensure images don't overflow */
       .event-body img {
         max-width: 100%;
         height: auto;
       }
 
-      /* Lightbox Styles */
-      .lightbox-overlay {
-        position: fixed;
-        top: 0;
-        left: 0;
-        width: 100%;
-        height: 100%;
-        background-color: rgba(0, 0, 0, 0.9);
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        z-index: 9999;
-        opacity: 0;
-        transition: opacity 0.3s ease;
-        backdrop-filter: blur(5px);
+      /* Ensure tables don't overflow */
+      .event-body table {
+        max-width: 100%;
+        overflow-x: auto;
+        display: block;
+      }
+    }
+
+    @media (max-width: 576px) {
+      .event-header {
+        padding: 2rem 0;
       }
 
-      .lightbox-overlay.active {
+      .event-title {
+        font-size: 1.75rem;
+        margin-bottom: 1rem;
+      }
+
+      .event-description {
+        font-size: 1rem;
+        margin-bottom: 1.5rem;
+      }
+
+      .event-content {
+        padding: 2rem 0;
+      }
+
+      .event-body {
+        padding: 1.5rem;
+        word-break: break-word;
+      }
+
+      .event-body h2 {
+        font-size: 1.5rem;
+      }
+
+      .event-body h3 {
+        font-size: 1.3rem;
+      }
+
+      .event-image {
+        aspect-ratio: 4/3;
+      }
+
+      .main-image {
+        aspect-ratio: 16/9;
+      }
+
+      /* Ensure pre and code blocks don't overflow */
+      .event-body pre,
+      .event-body code {
+        white-space: pre-wrap;
+        word-break: break-word;
+        max-width: 100%;
+        overflow-x: auto;
+      }
+    }
+
+    /* Additional styles to prevent overflow */
+    .event-body {
+      /* Existing styles */
+      overflow-wrap: break-word;
+      word-wrap: break-word;
+      -ms-word-break: break-all;
+      word-break: break-word;
+      -ms-hyphens: auto;
+      -moz-hyphens: auto;
+      -webkit-hyphens: auto;
+      hyphens: auto;
+    }
+
+    /* Handle long URLs and text */
+    .event-body a {
+      word-break: break-all;
+      word-wrap: break-word;
+      overflow-wrap: break-word;
+    }
+
+    /* Ensure all content is contained */
+    .event-body * {
+      max-width: 100%;
+    }
+
+    /* Handle pre-formatted text */
+    .event-body pre {
+      white-space: pre-wrap;
+      word-wrap: break-word;
+      overflow-wrap: break-word;
+      max-width: 100%;
+      overflow-x: auto;
+    }
+
+    /* Handle code blocks */
+    .event-body code {
+      white-space: pre-wrap;
+      word-wrap: break-word;
+      overflow-wrap: break-word;
+    }
+
+    /* Handle tables */
+    .event-body table {
+      width: 100%;
+      max-width: 100%;
+      table-layout: fixed;
+      overflow-x: auto;
+      display: block;
+    }
+
+    .event-body td,
+    .event-body th {
+      word-break: break-word;
+      overflow-wrap: break-word;
+    }
+
+    /* Handle images */
+    .event-body img {
+      max-width: 100%;
+      height: auto;
+    }
+
+    /* Lightbox Styles */
+    .lightbox-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background-color: rgba(0, 0, 0, 0.9);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 9999;
+      opacity: 0;
+      transition: opacity 0.3s ease;
+      backdrop-filter: blur(5px);
+    }
+
+    .lightbox-overlay.active {
+      opacity: 1;
+    }
+
+    .lightbox-container {
+      position: relative;
+      width: 100%;
+      height: 100%;
+      display: flex;
+      flex-direction: column;
+      max-width: 1200px;
+      margin: 0 auto;
+    }
+
+    .lightbox-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 15px 20px;
+      color: white;
+      z-index: 1;
+    }
+
+    .lightbox-counter {
+      font-size: 16px;
+      font-weight: 500;
+    }
+
+    .lightbox-controls {
+      display: flex;
+      gap: 15px;
+    }
+
+    .lightbox-btn {
+      background: rgba(255, 255, 255, 0.1);
+      border: none;
+      border-radius: 50%;
+      width: 40px;
+      height: 40px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      color: white;
+      transition: background 0.2s ease, transform 0.2s ease;
+    }
+
+    .lightbox-btn:hover {
+      background: rgba(255, 255, 255, 0.2);
+      transform: scale(1.1);
+    }
+
+    .lightbox-btn:active {
+      transform: scale(0.95);
+    }
+
+    .lightbox-content {
+      flex: 1;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .lightbox-image-container {
+      width: 100%;
+      height: 100%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: transform 0.3s ease;
+      overflow: hidden;
+    }
+
+    .lightbox-image {
+      max-width: 100%;
+      max-height: 80vh;
+      object-fit: contain;
+      transition: transform 0.3s ease;
+      transform-origin: center;
+      cursor: grab;
+    }
+
+    .lightbox-image.zoomed {
+      cursor: move;
+    }
+
+    .lightbox-image.grabbing {
+      cursor: grabbing;
+    }
+
+    .lightbox-nav {
+      position: absolute;
+      top: 50%;
+      transform: translateY(-50%);
+      background: rgba(255, 255, 255, 0.1);
+      border: none;
+      border-radius: 50%;
+      width: 50px;
+      height: 50px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      color: white;
+      transition: background 0.2s ease, transform 0.2s ease, opacity 0.2s ease;
+      z-index: 2;
+      opacity: 0.7;
+    }
+
+    .lightbox-nav:hover {
+      background: rgba(255, 255, 255, 0.2);
+      opacity: 1;
+      transform: translateY(-50%) scale(1.1);
+    }
+
+    .lightbox-nav:active {
+      transform: translateY(-50%) scale(0.95);
+    }
+
+    .lightbox-prev {
+      left: 20px;
+    }
+
+    .lightbox-next {
+      right: 20px;
+    }
+
+    .lightbox-caption {
+      color: white;
+      text-align: center;
+      padding: 15px;
+      font-size: 16px;
+      max-width: 80%;
+      margin: 0 auto;
+      opacity: 0.9;
+    }
+
+    /* Animation classes */
+    .slide-in-right {
+      animation: slideInRight 0.3s forwards;
+    }
+
+    .slide-in-left {
+      animation: slideInLeft 0.3s forwards;
+    }
+
+    .slide-out-right {
+      animation: slideOutRight 0.3s forwards;
+    }
+
+    .slide-out-left {
+      animation: slideOutLeft 0.3s forwards;
+    }
+
+    @keyframes slideInRight {
+      from {
+        transform: translateX(100%);
+        opacity: 0;
+      }
+
+      to {
+        transform: translateX(0);
+        opacity: 1;
+      }
+    }
+
+    @keyframes slideInLeft {
+      from {
+        transform: translateX(-100%);
+        opacity: 0;
+      }
+
+      to {
+        transform: translateX(0);
+        opacity: 1;
+      }
+    }
+
+    @keyframes slideOutRight {
+      from {
+        transform: translateX(0);
         opacity: 1;
       }
 
-      .lightbox-container {
-        position: relative;
-        width: 100%;
-        height: 100%;
-        display: flex;
-        flex-direction: column;
-        max-width: 1200px;
-        margin: 0 auto;
+      to {
+        transform: translateX(100%);
+        opacity: 0;
+      }
+    }
+
+    @keyframes slideOutLeft {
+      from {
+        transform: translateX(0);
+        opacity: 1;
       }
 
-      .lightbox-header {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        padding: 15px 20px;
-        color: white;
-        z-index: 1;
+      to {
+        transform: translateX(-100%);
+        opacity: 0;
       }
+    }
 
-      .lightbox-counter {
-        font-size: 16px;
-        font-weight: 500;
-      }
-
-      .lightbox-controls {
-        display: flex;
-        gap: 15px;
-      }
-
-      .lightbox-btn {
-        background: rgba(255, 255, 255, 0.1);
-        border: none;
-        border-radius: 50%;
+    /* Responsive adjustments */
+    @media (max-width: 768px) {
+      .lightbox-nav {
         width: 40px;
         height: 40px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        cursor: pointer;
-        color: white;
-        transition: background 0.2s ease, transform 0.2s ease;
-      }
-
-      .lightbox-btn:hover {
-        background: rgba(255, 255, 255, 0.2);
-        transform: scale(1.1);
-      }
-
-      .lightbox-btn:active {
-        transform: scale(0.95);
-      }
-
-      .lightbox-content {
-        flex: 1;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        position: relative;
-        overflow: hidden;
-      }
-
-      .lightbox-image-container {
-        width: 100%;
-        height: 100%;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        transition: transform 0.3s ease;
-        overflow: hidden;
-      }
-
-      .lightbox-image {
-        max-width: 100%;
-        max-height: 80vh;
-        object-fit: contain;
-        transition: transform 0.3s ease;
-        transform-origin: center;
-        cursor: grab;
-      }
-
-      .lightbox-image.zoomed {
-        cursor: move;
-      }
-
-      .lightbox-image.grabbing {
-        cursor: grabbing;
-      }
-
-      .lightbox-nav {
-        position: absolute;
-        top: 50%;
-        transform: translateY(-50%);
-        background: rgba(255, 255, 255, 0.1);
-        border: none;
-        border-radius: 50%;
-        width: 50px;
-        height: 50px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        cursor: pointer;
-        color: white;
-        transition: background 0.2s ease, transform 0.2s ease, opacity 0.2s ease;
-        z-index: 2;
-        opacity: 0.7;
-      }
-
-      .lightbox-nav:hover {
-        background: rgba(255, 255, 255, 0.2);
-        opacity: 1;
-        transform: translateY(-50%) scale(1.1);
-      }
-
-      .lightbox-nav:active {
-        transform: translateY(-50%) scale(0.95);
       }
 
       .lightbox-prev {
-        left: 20px;
+        left: 10px;
       }
 
       .lightbox-next {
-        right: 20px;
+        right: 10px;
+      }
+
+      .lightbox-btn {
+        width: 36px;
+        height: 36px;
+      }
+
+      .lightbox-controls {
+        gap: 10px;
+      }
+    }
+
+    @media (max-width: 576px) {
+      .lightbox-header {
+        padding: 10px;
+      }
+
+      .lightbox-nav {
+        width: 36px;
+        height: 36px;
+      }
+
+      .lightbox-btn {
+        width: 32px;
+        height: 32px;
+      }
+
+      .lightbox-controls {
+        gap: 8px;
+      }
+
+      .lightbox-counter {
+        font-size: 14px;
       }
 
       .lightbox-caption {
-        color: white;
-        text-align: center;
-        padding: 15px;
-        font-size: 16px;
-        max-width: 80%;
-        margin: 0 auto;
-        opacity: 0.9;
+        font-size: 14px;
+        padding: 10px;
       }
+    }
+  </style>
+</head>
 
-      /* Animation classes */
-      .slide-in-right {
-        animation: slideInRight 0.3s forwards;
-      }
+<body>
+  <!-- Accessibility Announcement for Screen Readers -->
+  <div id="screenReaderAnnouncer" class="sr-only" role="alert" aria-live="polite"></div>
 
-      .slide-in-left {
-        animation: slideInLeft 0.3s forwards;
-      }
-
-      .slide-out-right {
-        animation: slideOutRight 0.3s forwards;
-      }
-
-      .slide-out-left {
-        animation: slideOutLeft 0.3s forwards;
-      }
-
-      @keyframes slideInRight {
-        from {
-          transform: translateX(100%);
-          opacity: 0;
-        }
-        to {
-          transform: translateX(0);
-          opacity: 1;
-        }
-      }
-
-      @keyframes slideInLeft {
-        from {
-          transform: translateX(-100%);
-          opacity: 0;
-        }
-        to {
-          transform: translateX(0);
-          opacity: 1;
-        }
-      }
-
-      @keyframes slideOutRight {
-        from {
-          transform: translateX(0);
-          opacity: 1;
-        }
-        to {
-          transform: translateX(100%);
-          opacity: 0;
-        }
-      }
-
-      @keyframes slideOutLeft {
-        from {
-          transform: translateX(0);
-          opacity: 1;
-        }
-        to {
-          transform: translateX(-100%);
-          opacity: 0;
-        }
-      }
-
-      /* Responsive adjustments */
-      @media (max-width: 768px) {
-        .lightbox-nav {
-          width: 40px;
-          height: 40px;
-        }
-
-        .lightbox-prev {
-          left: 10px;
-        }
-
-        .lightbox-next {
-          right: 10px;
-        }
-
-        .lightbox-btn {
-          width: 36px;
-          height: 36px;
-        }
-
-        .lightbox-controls {
-          gap: 10px;
-        }
-      }
-
-      @media (max-width: 576px) {
-        .lightbox-header {
-          padding: 10px;
-        }
-
-        .lightbox-nav {
-          width: 36px;
-          height: 36px;
-        }
-
-        .lightbox-btn {
-          width: 32px;
-          height: 32px;
-        }
-
-        .lightbox-controls {
-          gap: 8px;
-        }
-
-        .lightbox-counter {
-          font-size: 14px;
-        }
-
-        .lightbox-caption {
-          font-size: 14px;
-          padding: 10px;
-        }
-      }
-    </style>
-  </head>
-  <body>
-    <!-- Accessibility Announcement for Screen Readers -->
-    <div
-      id="screenReaderAnnouncer"
-      class="sr-only"
-      role="alert"
-      aria-live="polite"
-    ></div>
-
-    <!-- Top Bar -->
-    <div class="top-bar" role="navigation" aria-label="Top Navigation">
-      <div class="left-links">
-        <a href="/" aria-label="Home">Home</a>
-        <a href="/sitemap" aria-label="Sitemap">Sitemap</a>
-      </div>
-      <div class="right-links">
-        <a
-          href="#main-content"
-          class="skip-main"
-          aria-label="Skip to main content"
-          >Skip to Main Content</a
-        >
-        <a
-          href="#"
-          class="screen-reader"
-          aria-label="Toggle screen reader optimized view"
-          >Screen Reader Access</a
-        >
-        <select
-          class="language-select"
-          id="languageSelect"
-          aria-label="Select language"
-        >
-          <option value="en">English</option>
-          <option value="hi">हिंदी</option>
-        </select>
-      </div>
+  <!-- Top Bar -->
+  <div class="top-bar" role="navigation" aria-label="Top Navigation">
+    <div class="left-links">
+      <a href="/" aria-label="Home">Home</a>
+      <a href="/sitemap" aria-label="Sitemap">Sitemap</a>
     </div>
-
-    <!-- Main Header -->
-    <header class="main-header" role="banner" aria-label="Site header">
-      <div class="logo-section">
-        <img
-          src="/images/emblem.png"
-          alt="Government of India Emblem"
-          class="emblem-logo"
-        />
-        <div class="header-text">
-          <h1>District Disability Rehabilitation Centre, Mumbai</h1>
-          <p>Department of Empowerment of Persons with Disabilities,</p>
-          <p>Ministry of Social Justice and Empowerment, Govt. of India</p>
-        </div>
-        <img src="/images/ddrc-logo.png" alt="DDRC Logo" class="ddrc-logo" />
-      </div>
-    </header>
-
-    <!-- Navigation Menu -->
-    <nav class="main-nav" role="navigation" aria-label="Main Navigation">
-      <a href="/" class="nav-icon" aria-label="Home">
-        <img src="/images/home-icons.png" alt="Home" />
-      </a>
-      <a href="/apply" aria-label="Apply For UDID">Apply For UDID</a>
-      <a href="/track" aria-label="Track Your Application"
-        >Track Your Application</a
-      >
-      <a href="/data" aria-label="View Aggregated Data">Aggregated-Data</a>
-      <a href="/reports" aria-label="View Pendency Reports">Pendency-Report</a>
-      <a href="/media" aria-label="Media">Media</a>
-      <a href="/faqs" aria-label="FAQs">FAQs</a>
-      <a href="/contact" aria-label="Contact Us">Contact Us</a>
-
-      <!-- Add spacer to push login buttons to the right -->
-      <div class="nav-spacer"></div>
-
-      <!-- Add login buttons -->
-      <a href="/login" class="nav-login-btn" aria-label="Divyangjan Login">
-        <img src="/images/login.svg" alt="Login Icon" />
-        Divyangjan Login
-      </a>
-      <a
-        href="/department-login"
-        class="nav-login-btn"
-        aria-label="Department User Login"
-      >
-        <img src="/images/user-plus.svg" alt="User Icon" />
-        Department User Login
-      </a>
-    </nav>
-
-    <!-- Event Header -->
-    <div class="event-header" role="region" aria-label="Event header">
-      <div class="container">
-        <nav aria-label="breadcrumb">
-          <ol class="breadcrumb">
-            <li class="breadcrumb-item">
-              <a href="/" aria-label="Home">Home</a>
-            </li>
-            <li class="breadcrumb-item">
-              <a href="/events" aria-label="Events page">Events</a>
-            </li>
-            <li class="breadcrumb-item active" aria-current="page">
-              Event Details
-            </li>
-          </ol>
-        </nav>
-        <div class="event-date" id="eventDate"></div>
-        <h1 class="event-title" id="eventTitle"></h1>
-        <div class="event-description" id="eventDescription"></div>
-      </div>
+    <div class="right-links">
+      <a href="#main-content" class="skip-main" aria-label="Skip to main content">Skip to Main Content</a>
+      <a href="#" class="screen-reader" aria-label="Toggle screen reader optimized view">Screen Reader Access</a>
+      <select class="language-select" id="languageSelect" aria-label="Select language">
+        <option value="en">English</option>
+        <option value="hi">हिंदी</option>
+      </select>
     </div>
+  </div>
 
-    <!-- Event Content -->
-    <main class="event-content" id="main-content" role="main" tabindex="-1">
-      <div class="container">
-        <div class="event-body" id="eventBody"></div>
-        <div
-          class="event-images"
-          id="eventImages"
-          aria-label="Event images gallery"
-        >
-          <!-- Images will be loaded here -->
-        </div>
-        <a href="/events" class="back-to-events" aria-label="Back to all events"
-          >Back to all events</a
-        >
+  <!-- Main Header -->
+  <header class="main-header" role="banner" aria-label="Site header">
+    <div class="logo-section">
+      <img src="/images/emblem.png" alt="Government of India Emblem" class="emblem-logo" />
+      <div class="header-text">
+        <h1>District Disability Rehabilitation Centre, Mumbai</h1>
+        <p>Department of Empowerment of Persons with Disabilities,</p>
+        <p>Ministry of Social Justice and Empowerment, Govt. of India</p>
       </div>
-    </main>
+      <img src="/images/ddrc-logo.png" alt="DDRC Logo" class="ddrc-logo" />
+    </div>
+  </header>
 
-    <!-- Image Modal/Lightbox -->
-    <div class="lightbox-overlay" id="lightbox" style="display: none">
-      <div class="lightbox-container">
-        <div class="lightbox-header">
-          <div class="lightbox-counter" id="lightboxCounter">1 / 5</div>
-          <div class="lightbox-controls">
-            <button class="lightbox-btn" id="lightboxZoom" aria-label="Zoom">
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                viewBox="0 0 24 24"
-                width="24"
-                height="24"
-                fill="none"
-                stroke="currentColor"
-                stroke-width="2"
-              >
-                <path d="M15 3h6v6M9 21H3v-6M21 3l-7 7M3 21l7-7"></path>
-              </svg>
-            </button>
-            <button
-              class="lightbox-btn"
-              id="lightboxFullscreen"
-              aria-label="Fullscreen"
-            >
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                viewBox="0 0 24 24"
-                width="24"
-                height="24"
-                fill="none"
-                stroke="currentColor"
-                stroke-width="2"
-              >
-                <path
-                  d="M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3m0 18h3a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3"
-                ></path>
-              </svg>
-            </button>
-            <button class="lightbox-btn" id="lightboxClose" aria-label="Close">
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                viewBox="0 0 24 24"
-                width="24"
-                height="24"
-                fill="none"
-                stroke="currentColor"
-                stroke-width="2"
-              >
-                <line x1="18" y1="6" x2="6" y2="18"></line>
-                <line x1="6" y1="6" x2="18" y2="18"></line>
-              </svg>
-            </button>
-          </div>
-        </div>
-        <div class="lightbox-content">
-          <button
-            class="lightbox-nav lightbox-prev"
-            id="lightboxPrev"
-            aria-label="Previous image"
-          >
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              viewBox="0 0 24 24"
-              width="24"
-              height="24"
-              fill="none"
-              stroke="currentColor"
-              stroke-width="2"
-            >
-              <polyline points="15 18 9 12 15 6"></polyline>
+  <!-- Navigation Menu -->
+  <nav class="main-nav" role="navigation" aria-label="Main Navigation">
+    <a href="/" class="nav-icon" aria-label="Home">
+      <img src="/images/home-icons.png" alt="Home" />
+    </a>
+    <a href="/apply" aria-label="Apply For UDID">Apply For UDID</a>
+    <a href="/track" aria-label="Track Your Application">Track Your Application</a>
+    <a href="/data" aria-label="View Aggregated Data">Aggregated-Data</a>
+    <a href="/reports" aria-label="View Pendency Reports">Pendency-Report</a>
+    <a href="/media" aria-label="Media">Media</a>
+    <a href="/faqs" aria-label="FAQs">FAQs</a>
+    <a href="/contact" aria-label="Contact Us">Contact Us</a>
+
+    <!-- Add spacer to push login buttons to the right -->
+    <div class="nav-spacer"></div>
+
+    <!-- Add login buttons -->
+    <a href="/login" class="nav-login-btn" aria-label="Divyangjan Login">
+      <img src="/images/login.svg" alt="Login Icon" />
+      Divyangjan Login
+    </a>
+    <a href="/department-login" class="nav-login-btn" aria-label="Department User Login">
+      <img src="/images/user-plus.svg" alt="User Icon" />
+      Department User Login
+    </a>
+  </nav>
+
+  <!-- Event Header -->
+  <div class="event-header" role="region" aria-label="Event header">
+    <div class="container">
+      <nav aria-label="breadcrumb">
+        <ol class="breadcrumb">
+          <li class="breadcrumb-item">
+            <a href="/" aria-label="Home">Home</a>
+          </li>
+          <li class="breadcrumb-item">
+            <a href="/events" aria-label="Events page">Events</a>
+          </li>
+          <li class="breadcrumb-item active" aria-current="page">
+            Event Details
+          </li>
+        </ol>
+      </nav>
+      <div class="event-date" id="eventDate"></div>
+      <h1 class="event-title" id="eventTitle"></h1>
+      <div class="event-description" id="eventDescription"></div>
+    </div>
+  </div>
+
+  <!-- Event Content -->
+  <main class="event-content" id="main-content" role="main" tabindex="-1">
+    <div class="container">
+      <div class="event-body" id="eventBody"></div>
+      <div class="event-images" id="eventImages" aria-label="Event images gallery">
+        <!-- Images will be loaded here -->
+      </div>
+      <a href="/events" class="back-to-events" aria-label="Back to all events">Back to all events</a>
+    </div>
+  </main>
+
+  <!-- Image Modal/Lightbox -->
+  <div class="lightbox-overlay" id="lightbox" style="display: none">
+    <div class="lightbox-container">
+      <div class="lightbox-header">
+        <div class="lightbox-counter" id="lightboxCounter">1 / 5</div>
+        <div class="lightbox-controls">
+          <button class="lightbox-btn" id="lightboxZoom" aria-label="Zoom">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="24" height="24" fill="none"
+              stroke="currentColor" stroke-width="2">
+              <path d="M15 3h6v6M9 21H3v-6M21 3l-7 7M3 21l7-7"></path>
             </svg>
           </button>
-          <div class="lightbox-image-container" id="lightboxImageContainer">
-            <img
-              src=""
-              id="lightboxImage"
-              alt="Event image"
-              class="lightbox-image"
-            />
-          </div>
-          <button
-            class="lightbox-nav lightbox-next"
-            id="lightboxNext"
-            aria-label="Next image"
-          >
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              viewBox="0 0 24 24"
-              width="24"
-              height="24"
-              fill="none"
-              stroke="currentColor"
-              stroke-width="2"
-            >
-              <polyline points="9 18 15 12 9 6"></polyline>
+          <button class="lightbox-btn" id="lightboxFullscreen" aria-label="Fullscreen">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="24" height="24" fill="none"
+              stroke="currentColor" stroke-width="2">
+              <path d="M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3m0 18h3a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3">
+              </path>
+            </svg>
+          </button>
+          <button class="lightbox-btn" id="lightboxClose" aria-label="Close">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="24" height="24" fill="none"
+              stroke="currentColor" stroke-width="2">
+              <line x1="18" y1="6" x2="6" y2="18"></line>
+              <line x1="6" y1="6" x2="18" y2="18"></line>
             </svg>
           </button>
         </div>
-        <div class="lightbox-caption" id="lightboxCaption"></div>
+      </div>
+      <div class="lightbox-content">
+        <button class="lightbox-nav lightbox-prev" id="lightboxPrev" aria-label="Previous image">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="24" height="24" fill="none"
+            stroke="currentColor" stroke-width="2">
+            <polyline points="15 18 9 12 15 6"></polyline>
+          </svg>
+        </button>
+        <div class="lightbox-image-container" id="lightboxImageContainer">
+          <img src="" id="lightboxImage" alt="Event image" class="lightbox-image" />
+        </div>
+        <button class="lightbox-nav lightbox-next" id="lightboxNext" aria-label="Next image">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="24" height="24" fill="none"
+            stroke="currentColor" stroke-width="2">
+            <polyline points="9 18 15 12 9 6"></polyline>
+          </svg>
+        </button>
+      </div>
+      <div class="lightbox-caption" id="lightboxCaption"></div>
+    </div>
+  </div>
+
+  <!-- Footer -->
+  <footer>
+    <div class="footer-content">
+      <div class="footer-section">
+        <h3>About</h3>
+        <ul>
+          <li><a href="/about-ddrc">Know more about DDRC</a></li>
+          <li>
+            <a href="/schemes">Schemes for Persons with Disabilities</a>
+          </li>
+          <li><a href="/about-department">About Department</a></li>
+          <li><a href="/medical-camps">Medical Camps / Hospitals</a></li>
+        </ul>
+      </div>
+      <div class="footer-section">
+        <h3>Quick Access Key</h3>
+        <ul>
+          <li>H = Go to Home Page</li>
+          <li>S = Skip to main content</li>
+          <li>F = Site Search</li>
+          <li>T = Back to Top</li>
+        </ul>
+      </div>
+      <div class="footer-section">
+        <h3>Use keyboard for quick access</h3>
+        <ul>
+          <li>Internet Explorer - [Alt] + accesskey</li>
+          <li>Chrome - [Alt] + accesskey</li>
+          <li>Firefox - [Alt] [Shift] + accesskey</li>
+          <li>Safari - [Alt] + accesskey</li>
+        </ul>
       </div>
     </div>
+    <div class="footer-bottom">
+      <p>
+        &copy; Copyright
+        <script>
+          document.write(new Date().getFullYear());
+        </script>
+        District Disability Rehabilitation Centre, Mumbai. All Rights
+        Reserved.
+      </p>
+    </div>
+    <div class="footer-links">
+      <a href="/terms">Terms & Conditions</a>
+      <a href="/privacy">Privacy Policy</a>
+      <a href="/copyright">Copyright Policy</a>
+      <a href="/accessibility">Accessibility Statement</a>
+    </div>
+  </footer>
 
-    <!-- Footer -->
-    <footer>
-      <div class="footer-content">
-        <div class="footer-section">
-          <h3>About</h3>
-          <ul>
-            <li><a href="/about-udid">Know more about DDRC</a></li>
-            <li>
-              <a href="/schemes">Schemes for Persons with Disabilities</a>
-            </li>
-            <li><a href="/about-department">About Department</a></li>
-            <li><a href="/medical-camps">Medical Camps / Hospitals</a></li>
-          </ul>
-        </div>
-        <div class="footer-section">
-          <h3>Quick Access Key</h3>
-          <ul>
-            <li>H = Go to Home Page</li>
-            <li>S = Skip to main content</li>
-            <li>F = Site Search</li>
-            <li>T = Back to Top</li>
-          </ul>
-        </div>
-        <div class="footer-section">
-          <h3>Use keyboard for quick access</h3>
-          <ul>
-            <li>Internet Explorer - [Alt] + accesskey</li>
-            <li>Chrome - [Alt] + accesskey</li>
-            <li>Firefox - [Alt] [Shift] + accesskey</li>
-            <li>Safari - [Alt] + accesskey</li>
-          </ul>
-        </div>
-      </div>
-      <div class="footer-bottom">
-        <p>
-          &copy; Copyright
-          <script>
-            document.write(new Date().getFullYear());
-          </script>
-          District Disability Rehabilitation Centre, Mumbai. All Rights
-          Reserved.
-        </p>
-      </div>
-      <div class="footer-links">
-        <a href="/terms">Terms & Conditions</a>
-        <a href="/privacy">Privacy Policy</a>
-        <a href="/copyright">Copyright Policy</a>
-        <a href="/accessibility">Accessibility Statement</a>
-      </div>
-    </footer>
+  <!-- Scripts -->
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+  <script src="/js/accessibility.js"></script>
+  <script>
+    // Get event ID from URL
+    const eventId = new URLSearchParams(window.location.search).get("id");
 
-    <!-- Scripts -->
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
-    <script src="/js/accessibility.js"></script>
-    <script>
-      // Get event ID from URL
-      const eventId = new URLSearchParams(window.location.search).get("id");
+    // Lightbox variables
+    let lightbox;
+    let lightboxImage;
+    let lightboxCaption;
+    let lightboxCounter;
+    let lightboxPrev;
+    let lightboxNext;
+    let lightboxClose;
+    let lightboxZoom;
+    let lightboxFullscreen;
+    let currentImageIndex = 0;
+    let allImages = [];
+    let isZoomed = false;
+    let dragStartX = 0;
+    let dragStartY = 0;
+    let currentTranslateX = 0;
+    let currentTranslateY = 0;
+    let isDragging = false;
 
-      // Lightbox variables
-      let lightbox;
-      let lightboxImage;
-      let lightboxCaption;
-      let lightboxCounter;
-      let lightboxPrev;
-      let lightboxNext;
-      let lightboxClose;
-      let lightboxZoom;
-      let lightboxFullscreen;
-      let currentImageIndex = 0;
-      let allImages = [];
-      let isZoomed = false;
-      let dragStartX = 0;
-      let dragStartY = 0;
-      let currentTranslateX = 0;
-      let currentTranslateY = 0;
-      let isDragging = false;
-
-      // Load event details
-      document.addEventListener("DOMContentLoaded", async () => {
-        if (!eventId) {
-          window.location.href = "/events";
-          return;
-        }
-
-        // Initialize lightbox elements
-        initLightbox();
-
-        try {
-          const response = await fetch(`/api/events/${eventId}`);
-          const data = await response.json();
-
-          if (data.success) {
-            const event = data.event;
-
-            // Update page title
-            document.title = `${event.title} | DDRC Mumbai`;
-
-            // Format date nicely
-            const eventDate = new Date(event.event_date);
-            const formattedDate = eventDate.toLocaleDateString("en-US", {
-              year: "numeric",
-              month: "long",
-              day: "numeric",
-            });
-
-            // Set event details
-            document.getElementById("eventDate").textContent = formattedDate;
-            document.getElementById("eventTitle").textContent = event.title;
-            document.getElementById("eventDescription").textContent =
-              event.description;
-
-            // Announce to screen readers that the event details have loaded
-            if (typeof window.announceScreenReaderMessage === "function") {
-              window.announceScreenReaderMessage(
-                `Event details for ${event.title} loaded`
-              );
-            }
-
-            // Set event body if exists
-            if (event.body) {
-              // Create a container to safely parse the HTML content
-              const tempDiv = document.createElement("div");
-              tempDiv.innerHTML = event.body;
-
-              // Process any text nodes to ensure they don't overflow
-              const processTextNodes = (element) => {
-                if (element.nodeType === Node.TEXT_NODE) {
-                  // No need to modify text nodes directly as CSS will handle wrapping
-                  return;
-                }
-
-                // Process child nodes
-                element.childNodes.forEach((child) => {
-                  processTextNodes(child);
-                });
-              };
-
-              processTextNodes(tempDiv);
-
-              // Set the processed content
-              document.getElementById("eventBody").innerHTML =
-                tempDiv.innerHTML;
-            } else {
-              document.getElementById("eventBody").style.display = "none";
-            }
-
-            // Load images
-            const imagesContainer = document.getElementById("eventImages");
-            imagesContainer.innerHTML = "";
-
-            // Reset allImages array
-            allImages = [];
-
-            // Add main image
-            if (event.image_path) {
-              allImages.push({
-                src: event.image_path,
-                alt: event.title,
-                caption: event.title,
-              });
-
-              const mainImageDiv = document.createElement("div");
-              mainImageDiv.className = "event-image main-image";
-              mainImageDiv.innerHTML = `<img src="${event.image_path}" alt="${event.title}" data-index="0">`;
-              mainImageDiv.addEventListener("click", function () {
-                openLightbox(0);
-              });
-              imagesContainer.appendChild(mainImageDiv);
-            }
-
-            // Add additional images
-            [
-              "additional_image1",
-              "additional_image2",
-              "additional_image3",
-              "additional_image4",
-              "additional_image5",
-            ].forEach((field, index) => {
-              if (event[field]) {
-                const imageIndex = allImages.length;
-                allImages.push({
-                  src: event[field],
-                  alt: `${event.title} - Image ${index + 1}`,
-                  caption: `${event.title} - Image ${index + 1}`,
-                });
-
-                const imageDiv = document.createElement("div");
-                imageDiv.className = "event-image";
-                imageDiv.innerHTML = `<img src="${event[field]}" alt="${
-                  event.title
-                } - Image ${index + 1}" data-index="${imageIndex}">`;
-                imageDiv.addEventListener("click", function () {
-                  openLightbox(imageIndex);
-                });
-                imagesContainer.appendChild(imageDiv);
-              }
-            });
-          } else {
-            window.location.href = "/events";
-          }
-        } catch (error) {
-          console.error("Error loading event:", error);
-          window.location.href = "/events";
-        }
-      });
-
-      // Initialize lightbox
-      function initLightbox() {
-        lightbox = document.getElementById("lightbox");
-        lightboxImage = document.getElementById("lightboxImage");
-        lightboxCaption = document.getElementById("lightboxCaption");
-        lightboxCounter = document.getElementById("lightboxCounter");
-        lightboxPrev = document.getElementById("lightboxPrev");
-        lightboxNext = document.getElementById("lightboxNext");
-        lightboxClose = document.getElementById("lightboxClose");
-        lightboxZoom = document.getElementById("lightboxZoom");
-        lightboxFullscreen = document.getElementById("lightboxFullscreen");
-
-        // Set up event listeners
-        lightboxClose.addEventListener("click", closeLightbox);
-        lightboxPrev.addEventListener("click", showPreviousImage);
-        lightboxNext.addEventListener("click", showNextImage);
-        lightboxZoom.addEventListener("click", toggleZoom);
-        lightboxFullscreen.addEventListener("click", toggleFullscreen);
-
-        // Keyboard navigation
-        document.addEventListener("keydown", handleKeyDown);
-
-        // Touch events for mobile swipe
-        lightboxImage.addEventListener("touchstart", handleTouchStart, {
-          passive: true,
-        });
-        lightboxImage.addEventListener("touchmove", handleTouchMove, {
-          passive: false,
-        });
-        lightboxImage.addEventListener("touchend", handleTouchEnd, {
-          passive: true,
-        });
-
-        // Drag events for zoomed image
-        lightboxImage.addEventListener("mousedown", handleDragStart);
-        document.addEventListener("mousemove", handleDragMove);
-        document.addEventListener("mouseup", handleDragEnd);
-
-        // Prevent scrolling when lightbox is open
-        lightbox.addEventListener(
-          "wheel",
-          function (e) {
-            if (lightbox.style.display !== "none") {
-              e.preventDefault();
-            }
-          },
-          { passive: false }
-        );
+    // Load event details
+    document.addEventListener("DOMContentLoaded", async () => {
+      if (!eventId) {
+        window.location.href = "/events";
+        return;
       }
 
-      // Open lightbox
-      function openLightbox(index) {
-        if (!allImages.length) return;
+      // Initialize lightbox elements
+      initLightbox();
 
-        currentImageIndex = index;
-        updateLightboxContent();
+      try {
+        const response = await fetch(`/api/events/${eventId}`);
+        const data = await response.json();
 
-        lightbox.style.display = "flex";
-        setTimeout(() => {
-          lightbox.classList.add("active");
-        }, 10);
+        if (data.success) {
+          const event = data.event;
 
-        // Prevent body scrolling
-        document.body.style.overflow = "hidden";
-      }
+          // Update page title
+          document.title = `${event.title} | DDRC Mumbai`;
 
-      // Close lightbox
-      function closeLightbox() {
-        lightbox.classList.remove("active");
-        setTimeout(() => {
-          lightbox.style.display = "none";
-          // Reset zoom
-          isZoomed = false;
-          lightboxImage.classList.remove("zoomed");
-          lightboxImage.style.transform = "scale(1)";
-          currentTranslateX = 0;
-          currentTranslateY = 0;
-        }, 300);
+          // Format date nicely
+          const eventDate = new Date(event.event_date);
+          const formattedDate = eventDate.toLocaleDateString("en-US", {
+            year: "numeric",
+            month: "long",
+            day: "numeric",
+          });
 
-        // Re-enable body scrolling
-        document.body.style.overflow = "";
-      }
+          // Set event details
+          document.getElementById("eventDate").textContent = formattedDate;
+          document.getElementById("eventTitle").textContent = event.title;
+          document.getElementById("eventDescription").textContent =
+            event.description;
 
-      // Update lightbox content
-      function updateLightboxContent(direction) {
-        const image = allImages[currentImageIndex];
-
-        // Create new image element to handle animation
-        const newImg = document.createElement("img");
-        newImg.src = image.src;
-        newImg.alt = image.alt;
-        newImg.className = "lightbox-image";
-
-        if (direction) {
-          newImg.classList.add(
-            direction === "next" ? "slide-in-right" : "slide-in-left"
-          );
-          lightboxImage.classList.add(
-            direction === "next" ? "slide-out-left" : "slide-out-right"
-          );
-
-          setTimeout(() => {
-            lightboxImage.src = image.src;
-            lightboxImage.alt = image.alt;
-            lightboxImage.className = "lightbox-image";
-          }, 300);
-        } else {
-          lightboxImage.src = image.src;
-          lightboxImage.alt = image.alt;
-        }
-
-        lightboxCaption.textContent = image.caption || "";
-        lightboxCounter.textContent = `${currentImageIndex + 1} / ${
-          allImages.length
-        }`;
-
-        // Update navigation visibility
-        lightboxPrev.style.visibility =
-          currentImageIndex > 0 ? "visible" : "hidden";
-        lightboxNext.style.visibility =
-          currentImageIndex < allImages.length - 1 ? "visible" : "hidden";
-      }
-
-      // Show previous image
-      function showPreviousImage() {
-        if (currentImageIndex > 0) {
-          currentImageIndex--;
-          updateLightboxContent("prev");
-        }
-      }
-
-      // Show next image
-      function showNextImage() {
-        if (currentImageIndex < allImages.length - 1) {
-          currentImageIndex++;
-          updateLightboxContent("next");
-        }
-      }
-
-      // Toggle zoom
-      function toggleZoom() {
-        isZoomed = !isZoomed;
-
-        if (isZoomed) {
-          lightboxImage.classList.add("zoomed");
-          lightboxImage.style.transform = "scale(2)";
-        } else {
-          lightboxImage.classList.remove("zoomed");
-          lightboxImage.style.transform = "scale(1)";
-          currentTranslateX = 0;
-          currentTranslateY = 0;
-          lightboxImage.style.translate = "0px 0px";
-        }
-      }
-
-      // Toggle fullscreen
-      function toggleFullscreen() {
-        if (!document.fullscreenElement) {
-          lightbox.requestFullscreen().catch((err) => {
-            console.error(
-              `Error attempting to enable fullscreen: ${err.message}`
+          // Announce to screen readers that the event details have loaded
+          if (typeof window.announceScreenReaderMessage === "function") {
+            window.announceScreenReaderMessage(
+              `Event details for ${event.title} loaded`
             );
+          }
+
+          // Set event body if exists
+          if (event.body) {
+            // Create a container to safely parse the HTML content
+            const tempDiv = document.createElement("div");
+            tempDiv.innerHTML = event.body;
+
+            // Process any text nodes to ensure they don't overflow
+            const processTextNodes = (element) => {
+              if (element.nodeType === Node.TEXT_NODE) {
+                // No need to modify text nodes directly as CSS will handle wrapping
+                return;
+              }
+
+              // Process child nodes
+              element.childNodes.forEach((child) => {
+                processTextNodes(child);
+              });
+            };
+
+            processTextNodes(tempDiv);
+
+            // Set the processed content
+            document.getElementById("eventBody").innerHTML =
+              tempDiv.innerHTML;
+          } else {
+            document.getElementById("eventBody").style.display = "none";
+          }
+
+          // Load images
+          const imagesContainer = document.getElementById("eventImages");
+          imagesContainer.innerHTML = "";
+
+          // Reset allImages array
+          allImages = [];
+
+          // Add main image
+          if (event.image_path) {
+            allImages.push({
+              src: event.image_path,
+              alt: event.title,
+              caption: event.title,
+            });
+
+            const mainImageDiv = document.createElement("div");
+            mainImageDiv.className = "event-image main-image";
+            mainImageDiv.innerHTML = `<img src="${event.image_path}" alt="${event.title}" data-index="0">`;
+            mainImageDiv.addEventListener("click", function () {
+              openLightbox(0);
+            });
+            imagesContainer.appendChild(mainImageDiv);
+          }
+
+          // Add additional images
+          [
+            "additional_image1",
+            "additional_image2",
+            "additional_image3",
+            "additional_image4",
+            "additional_image5",
+          ].forEach((field, index) => {
+            if (event[field]) {
+              const imageIndex = allImages.length;
+              allImages.push({
+                src: event[field],
+                alt: `${event.title} - Image ${index + 1}`,
+                caption: `${event.title} - Image ${index + 1}`,
+              });
+
+              const imageDiv = document.createElement("div");
+              imageDiv.className = "event-image";
+              imageDiv.innerHTML = `<img src="${event[field]}" alt="${event.title
+                } - Image ${index + 1}" data-index="${imageIndex}">`;
+              imageDiv.addEventListener("click", function () {
+                openLightbox(imageIndex);
+              });
+              imagesContainer.appendChild(imageDiv);
+            }
           });
         } else {
-          document.exitFullscreen();
+          window.location.href = "/events";
         }
+      } catch (error) {
+        console.error("Error loading event:", error);
+        window.location.href = "/events";
       }
+    });
 
-      // Handle keyboard navigation
-      function handleKeyDown(e) {
-        if (lightbox.style.display === "none") return;
+    // Initialize lightbox
+    function initLightbox() {
+      lightbox = document.getElementById("lightbox");
+      lightboxImage = document.getElementById("lightboxImage");
+      lightboxCaption = document.getElementById("lightboxCaption");
+      lightboxCounter = document.getElementById("lightboxCounter");
+      lightboxPrev = document.getElementById("lightboxPrev");
+      lightboxNext = document.getElementById("lightboxNext");
+      lightboxClose = document.getElementById("lightboxClose");
+      lightboxZoom = document.getElementById("lightboxZoom");
+      lightboxFullscreen = document.getElementById("lightboxFullscreen");
 
-        switch (e.key) {
-          case "Escape":
-            closeLightbox();
-            break;
-          case "ArrowLeft":
-            showPreviousImage();
-            break;
-          case "ArrowRight":
-            showNextImage();
-            break;
-          case "ArrowUp":
-            if (!isZoomed) toggleZoom();
-            break;
-          case "ArrowDown":
-            if (isZoomed) toggleZoom();
-            break;
-          case "f":
-            toggleFullscreen();
-            break;
-        }
-      }
+      // Set up event listeners
+      lightboxClose.addEventListener("click", closeLightbox);
+      lightboxPrev.addEventListener("click", showPreviousImage);
+      lightboxNext.addEventListener("click", showNextImage);
+      lightboxZoom.addEventListener("click", toggleZoom);
+      lightboxFullscreen.addEventListener("click", toggleFullscreen);
+
+      // Keyboard navigation
+      document.addEventListener("keydown", handleKeyDown);
 
       // Touch events for mobile swipe
-      let touchStartX = 0;
-      let touchEndX = 0;
-
-      function handleTouchStart(e) {
-        touchStartX = e.changedTouches[0].screenX;
-      }
-
-      function handleTouchMove(e) {
-        if (isZoomed) {
-          e.preventDefault();
-          const touch = e.changedTouches[0];
-          const moveX = touch.screenX - touchStartX;
-
-          // Move the image with touch
-          const translateX = currentTranslateX + moveX;
-          lightboxImage.style.translate = `${translateX}px ${currentTranslateY}px`;
-        }
-      }
-
-      function handleTouchEnd(e) {
-        touchEndX = e.changedTouches[0].screenX;
-
-        if (isZoomed) {
-          currentTranslateX += touchEndX - touchStartX;
-          return;
-        }
-
-        const swipeThreshold = 100;
-        if (touchEndX < touchStartX - swipeThreshold) {
-          // Swipe left, show next image
-          showNextImage();
-        } else if (touchEndX > touchStartX + swipeThreshold) {
-          // Swipe right, show previous image
-          showPreviousImage();
-        }
-      }
+      lightboxImage.addEventListener("touchstart", handleTouchStart, {
+        passive: true,
+      });
+      lightboxImage.addEventListener("touchmove", handleTouchMove, {
+        passive: false,
+      });
+      lightboxImage.addEventListener("touchend", handleTouchEnd, {
+        passive: true,
+      });
 
       // Drag events for zoomed image
-      function handleDragStart(e) {
-        if (!isZoomed) return;
+      lightboxImage.addEventListener("mousedown", handleDragStart);
+      document.addEventListener("mousemove", handleDragMove);
+      document.addEventListener("mouseup", handleDragEnd);
 
-        isDragging = true;
-        dragStartX = e.clientX;
-        dragStartY = e.clientY;
-        lightboxImage.classList.add("grabbing");
+      // Prevent scrolling when lightbox is open
+      lightbox.addEventListener(
+        "wheel",
+        function (e) {
+          if (lightbox.style.display !== "none") {
+            e.preventDefault();
+          }
+        },
+        { passive: false }
+      );
+    }
+
+    // Open lightbox
+    function openLightbox(index) {
+      if (!allImages.length) return;
+
+      currentImageIndex = index;
+      updateLightboxContent();
+
+      lightbox.style.display = "flex";
+      setTimeout(() => {
+        lightbox.classList.add("active");
+      }, 10);
+
+      // Prevent body scrolling
+      document.body.style.overflow = "hidden";
+    }
+
+    // Close lightbox
+    function closeLightbox() {
+      lightbox.classList.remove("active");
+      setTimeout(() => {
+        lightbox.style.display = "none";
+        // Reset zoom
+        isZoomed = false;
+        lightboxImage.classList.remove("zoomed");
+        lightboxImage.style.transform = "scale(1)";
+        currentTranslateX = 0;
+        currentTranslateY = 0;
+      }, 300);
+
+      // Re-enable body scrolling
+      document.body.style.overflow = "";
+    }
+
+    // Update lightbox content
+    function updateLightboxContent(direction) {
+      const image = allImages[currentImageIndex];
+
+      // Create new image element to handle animation
+      const newImg = document.createElement("img");
+      newImg.src = image.src;
+      newImg.alt = image.alt;
+      newImg.className = "lightbox-image";
+
+      if (direction) {
+        newImg.classList.add(
+          direction === "next" ? "slide-in-right" : "slide-in-left"
+        );
+        lightboxImage.classList.add(
+          direction === "next" ? "slide-out-left" : "slide-out-right"
+        );
+
+        setTimeout(() => {
+          lightboxImage.src = image.src;
+          lightboxImage.alt = image.alt;
+          lightboxImage.className = "lightbox-image";
+        }, 300);
+      } else {
+        lightboxImage.src = image.src;
+        lightboxImage.alt = image.alt;
+      }
+
+      lightboxCaption.textContent = image.caption || "";
+      lightboxCounter.textContent = `${currentImageIndex + 1} / ${allImages.length
+        }`;
+
+      // Update navigation visibility
+      lightboxPrev.style.visibility =
+        currentImageIndex > 0 ? "visible" : "hidden";
+      lightboxNext.style.visibility =
+        currentImageIndex < allImages.length - 1 ? "visible" : "hidden";
+    }
+
+    // Show previous image
+    function showPreviousImage() {
+      if (currentImageIndex > 0) {
+        currentImageIndex--;
+        updateLightboxContent("prev");
+      }
+    }
+
+    // Show next image
+    function showNextImage() {
+      if (currentImageIndex < allImages.length - 1) {
+        currentImageIndex++;
+        updateLightboxContent("next");
+      }
+    }
+
+    // Toggle zoom
+    function toggleZoom() {
+      isZoomed = !isZoomed;
+
+      if (isZoomed) {
+        lightboxImage.classList.add("zoomed");
+        lightboxImage.style.transform = "scale(2)";
+      } else {
+        lightboxImage.classList.remove("zoomed");
+        lightboxImage.style.transform = "scale(1)";
+        currentTranslateX = 0;
+        currentTranslateY = 0;
+        lightboxImage.style.translate = "0px 0px";
+      }
+    }
+
+    // Toggle fullscreen
+    function toggleFullscreen() {
+      if (!document.fullscreenElement) {
+        lightbox.requestFullscreen().catch((err) => {
+          console.error(
+            `Error attempting to enable fullscreen: ${err.message}`
+          );
+        });
+      } else {
+        document.exitFullscreen();
+      }
+    }
+
+    // Handle keyboard navigation
+    function handleKeyDown(e) {
+      if (lightbox.style.display === "none") return;
+
+      switch (e.key) {
+        case "Escape":
+          closeLightbox();
+          break;
+        case "ArrowLeft":
+          showPreviousImage();
+          break;
+        case "ArrowRight":
+          showNextImage();
+          break;
+        case "ArrowUp":
+          if (!isZoomed) toggleZoom();
+          break;
+        case "ArrowDown":
+          if (isZoomed) toggleZoom();
+          break;
+        case "f":
+          toggleFullscreen();
+          break;
+      }
+    }
+
+    // Touch events for mobile swipe
+    let touchStartX = 0;
+    let touchEndX = 0;
+
+    function handleTouchStart(e) {
+      touchStartX = e.changedTouches[0].screenX;
+    }
+
+    function handleTouchMove(e) {
+      if (isZoomed) {
         e.preventDefault();
-      }
+        const touch = e.changedTouches[0];
+        const moveX = touch.screenX - touchStartX;
 
-      function handleDragMove(e) {
-        if (!isDragging) return;
-
-        const moveX = e.clientX - dragStartX;
-        const moveY = e.clientY - dragStartY;
-
+        // Move the image with touch
         const translateX = currentTranslateX + moveX;
-        const translateY = currentTranslateY + moveY;
+        lightboxImage.style.translate = `${translateX}px ${currentTranslateY}px`;
+      }
+    }
 
-        lightboxImage.style.translate = `${translateX}px ${translateY}px`;
+    function handleTouchEnd(e) {
+      touchEndX = e.changedTouches[0].screenX;
+
+      if (isZoomed) {
+        currentTranslateX += touchEndX - touchStartX;
+        return;
       }
 
-      function handleDragEnd() {
-        if (!isDragging) return;
-
-        isDragging = false;
-        lightboxImage.classList.remove("grabbing");
-
-        // Update current position
-        const matrix = window.getComputedStyle(lightboxImage).transform;
-        if (matrix && matrix !== "none") {
-          const values = matrix.match(/matrix.*\((.+)\)/)[1].split(", ");
-          currentTranslateX = parseInt(values[4]) || 0;
-          currentTranslateY = parseInt(values[5]) || 0;
-        }
+      const swipeThreshold = 100;
+      if (touchEndX < touchStartX - swipeThreshold) {
+        // Swipe left, show next image
+        showNextImage();
+      } else if (touchEndX > touchStartX + swipeThreshold) {
+        // Swipe right, show previous image
+        showPreviousImage();
       }
-    </script>
-  </body>
+    }
+
+    // Drag events for zoomed image
+    function handleDragStart(e) {
+      if (!isZoomed) return;
+
+      isDragging = true;
+      dragStartX = e.clientX;
+      dragStartY = e.clientY;
+      lightboxImage.classList.add("grabbing");
+      e.preventDefault();
+    }
+
+    function handleDragMove(e) {
+      if (!isDragging) return;
+
+      const moveX = e.clientX - dragStartX;
+      const moveY = e.clientY - dragStartY;
+
+      const translateX = currentTranslateX + moveX;
+      const translateY = currentTranslateY + moveY;
+
+      lightboxImage.style.translate = `${translateX}px ${translateY}px`;
+    }
+
+    function handleDragEnd() {
+      if (!isDragging) return;
+
+      isDragging = false;
+      lightboxImage.classList.remove("grabbing");
+
+      // Update current position
+      const matrix = window.getComputedStyle(lightboxImage).transform;
+      if (matrix && matrix !== "none") {
+        const values = matrix.match(/matrix.*\((.+)\)/)[1].split(", ");
+        currentTranslateX = parseInt(values[4]) || 0;
+        currentTranslateY = parseInt(values[5]) || 0;
+      }
+    }
+  </script>
+</body>
+
 </html>

@@ -8,7 +8,7 @@ function renderFooter() {
             <div class="footer-section">
                 <h3>About</h3>
                 <ul>
-                    <li><a href="/about-udid" aria-label="Know more about DDRC">Know more about DDRC</a></li>
+                    <li><a href="/about-ddrc" aria-label="Know more about DDRC">Know more about DDRC</a></li>
                     <li><a href="/schemes" aria-label="Schemes for Persons with Disabilities">Schemes for Persons with Disabilities</a></li>
                     <li><a href="/news" aria-label="News & Updates">News & Updates</a></li>
                     <li><a href="/events" aria-label="Latest Events">Latest Events</a></li>
