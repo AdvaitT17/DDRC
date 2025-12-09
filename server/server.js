@@ -80,6 +80,11 @@ app.use(cors());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
+// Serve sitemap.xml
+app.get("/sitemap.xml", (req, res) => {
+  res.sendFile(path.join(__dirname, "../public/sitemap.xml"));
+});
+
 // Serve news files publicly without authentication
 app.use("/uploads/news", express.static(path.join(__dirname, "uploads/news")));
 
@@ -400,11 +405,11 @@ app.use((err, req, res, next) => {
 app.get("/api/health", async (req, res) => {
   try {
     const { testConnection, getPoolStats } = require('./config/database');
-    
+
     // Test database connection
     const dbHealthy = await testConnection();
     const poolStats = getPoolStats();
-    
+
     const health = {
       status: dbHealthy ? "OK" : "DEGRADED",
       timestamp: new Date().toISOString(),
@@ -418,15 +423,15 @@ app.get("/api/health", async (req, res) => {
         pool: poolStats
       }
     };
-    
+
     const statusCode = dbHealthy ? 200 : 503;
     res.status(statusCode).json(health);
   } catch (error) {
     console.error('Health check error:', error);
-    res.status(503).json({ 
-      status: "ERROR", 
+    res.status(503).json({
+      status: "ERROR",
       message: "Health check failed",
-      error: error.message 
+      error: error.message
     });
   }
 });
@@ -458,13 +463,13 @@ async function startServer() {
     console.log('🔍 Testing database connection...');
     const { testConnection } = require('./config/database');
     const dbConnected = await testConnection();
-    
+
     if (!dbConnected) {
       console.error('⚠️  Server starting WITHOUT database connection');
       console.error('   The application will continue but database operations will fail');
       console.error('   Please check your database configuration and restart the server');
     }
-    
+
     // Start the HTTP server
     app.listen(PORT, () => {
       console.log(`Server is running on port ${PORT}`);
