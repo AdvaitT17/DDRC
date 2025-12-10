@@ -5,12 +5,14 @@ const pool = require("../config/database");
 const ExcelJS = require("exceljs");
 const puppeteer = require("puppeteer");
 
-// Create a transporter
+// Create a transporter using SMTP settings (Zoho or other provider)
 const transporter = nodemailer.createTransport({
-  service: "gmail",
+  host: process.env.EMAIL_HOST || "smtp.zoho.com",
+  port: parseInt(process.env.EMAIL_PORT) || 465,
+  secure: process.env.EMAIL_SECURE === "true" || process.env.EMAIL_SECURE === undefined, // true for 465, false for other ports
   auth: {
-    user: process.env.EMAIL_USER || "your-email@gmail.com",
-    pass: process.env.EMAIL_PASSWORD || "your-app-password",
+    user: process.env.EMAIL_USER,
+    pass: process.env.EMAIL_PASSWORD,
   },
 });
 
@@ -352,7 +354,7 @@ async function sendReportEmail(
     // Send email
     const info = await transporter.sendMail({
       from: {
-        name: "DDRC Reports",
+        name: "DDRC Report Delivery",
         address: process.env.EMAIL_FROM
       },
       to: recipients.join(", "),
@@ -1535,7 +1537,7 @@ async function sendContactEmail(contactData) {
 
     const info = await transporter.sendMail({
       from: {
-        name: "DDRC Contact Form",
+        name: "DDRC Contact Form Alerts",
         address: process.env.EMAIL_FROM || process.env.EMAIL_USER,
       },
       to: contactEmail,
@@ -1668,7 +1670,7 @@ async function sendContactAcknowledgement(contactData) {
               
               <div class="contact-info">
                 <h3>Contact Information</h3>
-                <p><strong>Phone:</strong> +91 22 2662 0691</p>
+                <p><strong>Phone:</strong> +91 7262-036726</p>
                 <p><strong>Address:</strong> Samaj Kalyan Mandir, Opposite Bank of India, Mandapeshwar Road, Navagaon, Dahisar West, Mumbai - 400068</p>
                 <p><strong>Working Hours:</strong> Mon-Fri: 10:00 AM - 5:30 PM, Sat: 10:00 AM - 1:00 PM</p>
               </div>
@@ -1686,7 +1688,7 @@ async function sendContactAcknowledgement(contactData) {
 
     const info = await transporter.sendMail({
       from: {
-        name: "DDRC Mumbai",
+        name: "DDRC Confirmation System",
         address: process.env.EMAIL_FROM || process.env.EMAIL_USER,
       },
       to: email,
