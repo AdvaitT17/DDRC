@@ -1,12 +1,41 @@
 const express = require("express");
 const router = express.Router();
+const rateLimit = require("express-rate-limit");
 const authService = require("../services/authService");
 const { authenticateToken } = require("../middleware/authMiddleware");
 const pool = require("../config/database");
 const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
 
-router.post("/login", async (req, res) => {
+// Rate limiter for applicant login - 5 attempts per 15 minutes
+const applicantLoginLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000, // 15 minutes
+  max: 5, // 5 attempts per window
+  message: {
+    message: "Too many login attempts. Please try again after 15 minutes.",
+    code: "RATE_LIMIT_EXCEEDED",
+    retryAfter: 15,
+  },
+  standardHeaders: true,
+  legacyHeaders: false,
+  skipSuccessfulRequests: true, // Don't count successful logins
+});
+
+// Rate limiter for department login - stricter (5 attempts per 30 minutes)
+const departmentLoginLimiter = rateLimit({
+  windowMs: 30 * 60 * 1000, // 30 minutes
+  max: 5, // 5 attempts per window
+  message: {
+    message: "Too many login attempts. Please try again after 30 minutes.",
+    code: "RATE_LIMIT_EXCEEDED",
+    retryAfter: 30,
+  },
+  standardHeaders: true,
+  legacyHeaders: false,
+  skipSuccessfulRequests: true,
+});
+
+router.post("/login", applicantLoginLimiter, async (req, res) => {
   try {
     const { email, password } = req.body;
 
@@ -63,7 +92,7 @@ router.get("/verify", authenticateToken, (req, res) => {
 });
 
 // Add department login endpoint
-router.post("/department/login", async (req, res) => {
+router.post("/department/login", departmentLoginLimiter, async (req, res) => {
   try {
     const { username, password } = req.body;
 
