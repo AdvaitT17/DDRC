@@ -1,5 +1,7 @@
 const jwt = require("jsonwebtoken");
 const pool = require("../config/database");
+const { validateFingerprint } = require("../utils/tokenFingerprint");
+const tokenBlacklist = require("../services/tokenBlacklistService");
 
 const authenticateToken = async (req, res, next) => {
   try {
@@ -13,7 +15,24 @@ const authenticateToken = async (req, res, next) => {
       });
     }
 
+    // Check if token is blacklisted (logged out)
+    if (tokenBlacklist.isBlacklisted(token)) {
+      return res.status(401).json({
+        message: "Session has been logged out. Please login again.",
+        code: "TOKEN_REVOKED",
+      });
+    }
+
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
+
+    // Validate token fingerprint (if present)
+    if (!validateFingerprint(decoded.fp, req)) {
+      console.warn(`🚨 Token fingerprint mismatch for user ${decoded.id} (${decoded.type})`);
+      return res.status(401).json({
+        message: "Session invalid. Please login again.",
+        code: "FINGERPRINT_MISMATCH",
+      });
+    }
 
     // OPTIMIZATION: Use pool.query() directly instead of getConnection()
     // This handles connection pooling more efficiently and auto-releases connections

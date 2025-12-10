@@ -1,9 +1,45 @@
 const express = require("express");
 const router = express.Router();
+const rateLimit = require("express-rate-limit");
 const userAuthService = require("../services/userAuthService");
 
+// Rate limiter for signup - prevent mass account creation
+const signupLimiter = rateLimit({
+  windowMs: 60 * 60 * 1000, // 1 hour
+  max: 5, // 5 signups per hour per IP
+  message: {
+    message: "Too many accounts created. Please try again after an hour.",
+    code: "RATE_LIMIT_EXCEEDED",
+  },
+  standardHeaders: true,
+  legacyHeaders: false,
+});
+
+// Password policy validation
+const validatePassword = (password) => {
+  const errors = [];
+
+  if (password.length < 8) {
+    errors.push("Password must be at least 8 characters long");
+  }
+  if (!/[A-Z]/.test(password)) {
+    errors.push("Password must contain at least one uppercase letter");
+  }
+  if (!/[a-z]/.test(password)) {
+    errors.push("Password must contain at least one lowercase letter");
+  }
+  if (!/[0-9]/.test(password)) {
+    errors.push("Password must contain at least one number");
+  }
+  if (!/[!@#$%^&*(),.?":{}|<>]/.test(password)) {
+    errors.push("Password must contain at least one special character (!@#$%^&*(),.?\":{}|<>)");
+  }
+
+  return errors;
+};
+
 // User signup
-router.post("/signup", async (req, res) => {
+router.post("/signup", signupLimiter, async (req, res) => {
   try {
     const { email, phone, password } = req.body;
 
@@ -15,6 +51,23 @@ router.post("/signup", async (req, res) => {
     // Email format validation
     if (!email.match(/^[^\s@]+@[^\s@]+\.[^\s@]+$/)) {
       return res.status(400).json({ message: "Invalid email format" });
+    }
+
+    // Phone validation (Indian phone number - 10 digits)
+    const cleanPhone = phone.replace(/[\s-]/g, "");
+    if (!/^[6-9]\d{9}$/.test(cleanPhone)) {
+      return res.status(400).json({
+        message: "Invalid phone number. Please enter a valid 10-digit Indian mobile number."
+      });
+    }
+
+    // Password policy validation
+    const passwordErrors = validatePassword(password);
+    if (passwordErrors.length > 0) {
+      return res.status(400).json({
+        message: "Password does not meet security requirements",
+        errors: passwordErrors
+      });
     }
 
     // Register user

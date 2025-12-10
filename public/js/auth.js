@@ -115,9 +115,28 @@ class AuthManager {
     window.location.href = wasDepartment ? "/department-login" : "/login";
   }
 
-  static logout() {
+  static async logout() {
     // Detect actual logged-in user type BEFORE clearing
     const wasDepartment = !!localStorage.getItem('departmentAuthToken');
+    const token = this.getAuthToken();
+
+    // Call server to blacklist the token (non-blocking)
+    if (token) {
+      try {
+        await fetch('/api/auth/logout', {
+          method: 'POST',
+          headers: {
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'application/json'
+          }
+        });
+      } catch (error) {
+        // Ignore errors - still proceed with local logout
+        console.warn('Logout API call failed:', error);
+      }
+    }
+
+    // Clear local storage
     this.clearAuth();
     // Redirect to appropriate login page
     window.location.href = wasDepartment ? "/department-login" : "/login";

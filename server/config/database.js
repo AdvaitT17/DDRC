@@ -1,6 +1,55 @@
 const mysql = require("mysql2/promise");
 require("dotenv").config();
 
+// Determine if SSL should be enabled
+// In production: SSL is REQUIRED by default (can be disabled with DB_SSL=false for local/internal DBs)
+// In development: SSL is optional (can be enabled with DB_SSL=true)
+const isProduction = process.env.NODE_ENV === 'production';
+const sslExplicitlySet = process.env.DB_SSL !== undefined;
+const shouldUseSSL = sslExplicitlySet
+  ? process.env.DB_SSL === 'true'
+  : isProduction; // Default: true in production, false in development
+
+// SSL configuration
+let sslConfig = false;
+if (shouldUseSSL) {
+  // Check if rejectUnauthorized should be false (handle various formats)
+  const rejectUnauthorizedEnv = process.env.DB_SSL_REJECT_UNAUTHORIZED;
+  const shouldRejectUnauthorized = !(
+    rejectUnauthorizedEnv === 'false' ||
+    rejectUnauthorizedEnv === '0' ||
+    rejectUnauthorizedEnv === false
+  );
+
+  sslConfig = {
+    // For self-signed certs, set DB_SSL_REJECT_UNAUTHORIZED=false
+    rejectUnauthorized: shouldRejectUnauthorized
+  };
+
+  console.log(`🔒 Database SSL: rejectUnauthorized=${shouldRejectUnauthorized}`);
+
+  // If a CA certificate is provided, use it
+  if (process.env.DB_SSL_CA) {
+    const fs = require('fs');
+    try {
+      sslConfig.ca = fs.readFileSync(process.env.DB_SSL_CA);
+      console.log('✅ Database SSL: Using custom CA certificate');
+    } catch (error) {
+      console.error('❌ Failed to read DB_SSL_CA certificate:', error.message);
+    }
+  }
+}
+
+// Log SSL status for visibility
+if (isProduction && !shouldUseSSL) {
+  console.warn('⚠️  WARNING: Database SSL is DISABLED in production!');
+  console.warn('   This is a security risk. Set DB_SSL=true to enable SSL.');
+} else if (shouldUseSSL) {
+  console.log('🔒 Database SSL: Enabled');
+} else {
+  console.log('ℹ️  Database SSL: Disabled (development mode)');
+}
+
 // Database configuration
 const dbConfig = {
   host: process.env.DB_HOST,
@@ -31,10 +80,8 @@ const dbConfig = {
   enableKeepAlive: false, // Disabled to prevent issues with load balancers dropping silent connections
   keepAliveInitialDelay: 0,
 
-  // Security (for government compliance)
-  ssl: process.env.DB_SSL === 'true' ? {
-    rejectUnauthorized: process.env.DB_SSL_REJECT_UNAUTHORIZED !== 'false'
-  } : false,
+  // Security - SSL configuration
+  ssl: sslConfig,
 };
 
 // Validate required environment variables
