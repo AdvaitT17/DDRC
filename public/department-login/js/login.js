@@ -7,35 +7,45 @@ class LoginManager {
     this.refreshBtn = document.getElementById("refreshCaptcha");
     this.togglePasswordBtn = document.querySelector(".toggle-password");
     this.passwordInput = document.getElementById("password");
+    this.captchaId = null; // Store server-generated captcha ID
 
     this.initializeEventListeners();
-    this.generateCaptcha();
+    this.fetchCaptcha(); // Fetch from server instead of generating locally
   }
 
   initializeEventListeners() {
     this.form.addEventListener("submit", (e) => this.handleSubmit(e));
-    this.refreshBtn.addEventListener("click", () => this.generateCaptcha());
+    this.refreshBtn.addEventListener("click", () => this.fetchCaptcha());
     this.togglePasswordBtn.addEventListener("click", () =>
       this.togglePassword()
     );
   }
 
-  generateCaptcha() {
-    const chars =
-      "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz";
-    let captcha = "";
-    for (let i = 0; i < 6; i++) {
-      captcha += chars.charAt(Math.floor(Math.random() * chars.length));
+  async fetchCaptcha() {
+    try {
+      const response = await fetch("/api/auth/captcha");
+      const data = await response.json();
+
+      if (response.ok) {
+        this.captchaId = data.captchaId;
+        this.captchaText.textContent = data.captchaText;
+        this.captchaInput.value = "";
+      } else {
+        console.error("Failed to fetch CAPTCHA");
+        // Fallback to show error
+        this.captchaText.textContent = "Error";
+      }
+    } catch (error) {
+      console.error("CAPTCHA fetch error:", error);
+      this.captchaText.textContent = "Error";
     }
-    this.captchaText.textContent = captcha;
   }
 
   togglePassword() {
     const type = this.passwordInput.type === "password" ? "text" : "password";
     this.passwordInput.type = type;
-    this.togglePasswordBtn.querySelector("img").src = `/images/${
-      type === "password" ? "eye" : "eye-slash"
-    }.svg`;
+    this.togglePasswordBtn.querySelector("img").src = `/images/${type === "password" ? "eye" : "eye-slash"
+      }.svg`;
   }
 
   showError(message) {
@@ -57,13 +67,11 @@ class LoginManager {
     const username = this.form.username.value.trim();
     const password = this.form.password.value;
     const captchaInput = this.form.captchaInput.value.trim();
-    const captchaText = document.getElementById("captcha").textContent;
 
-    // Validate captcha first
-    if (captchaInput !== captchaText) {
-      this.showError("Invalid captcha code");
-      this.generateCaptcha();
-      this.captchaInput.value = "";
+    // Check if we have a valid captcha ID
+    if (!this.captchaId) {
+      this.showError("CAPTCHA not loaded. Please refresh.");
+      this.fetchCaptcha();
       return;
     }
 
@@ -76,7 +84,12 @@ class LoginManager {
       const response = await fetch("/api/auth/department/login", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ username, password }),
+        body: JSON.stringify({
+          username,
+          password,
+          captchaId: this.captchaId,  // Send server CAPTCHA ID
+          captchaInput                 // Send user's answer
+        }),
       });
 
       const data = await response.json();
@@ -109,15 +122,18 @@ class LoginManager {
         }, 100);
       } else {
         this.showError(data.message || "Login failed");
-        this.generateCaptcha();
-        this.captchaInput.value = "";
+        // Always refresh CAPTCHA on failed login or if server indicates
+        if (data.refreshCaptcha || data.code === "CAPTCHA_INVALID") {
+          this.fetchCaptcha();
+        } else {
+          this.fetchCaptcha(); // Refresh anyway for security
+        }
         submitButton.disabled = false;
         submitButton.innerHTML = originalText;
       }
     } catch (error) {
       this.showError("An error occurred. Please try again later.");
-      this.generateCaptcha();
-      this.captchaInput.value = "";
+      this.fetchCaptcha();
       submitButton.disabled = false;
       submitButton.innerHTML = originalText;
     }
@@ -128,3 +144,4 @@ class LoginManager {
 document.addEventListener("DOMContentLoaded", () => {
   new LoginManager();
 });
+

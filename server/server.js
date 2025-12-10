@@ -1,5 +1,6 @@
 const express = require("express");
 const cors = require("cors");
+const helmet = require("helmet");
 const path = require("path");
 require("dotenv").config();
 const formRoutes = require("./routes/formRoutes");
@@ -33,13 +34,19 @@ const contactRoutes = require("./routes/contactRoutes");
 
 const app = express();
 
+// Trust proxy for Azure/load balancer (required for rate limiting to work correctly)
+// Azure App Service uses a load balancer that sets X-Forwarded-For
+if (process.env.NODE_ENV === 'production' || process.env.TRUST_PROXY === 'true') {
+  app.set('trust proxy', 1); // Trust first proxy
+  console.log('✅ Trust proxy enabled for load balancer/Azure');
+}
+
 // Create uploads directories if they don't exist
 const uploadDirs = [
   path.join(__dirname, "uploads"),
   path.join(__dirname, "uploads/news"),
   path.join(__dirname, "uploads/forms"),
-  path.join(__dirname, "uploads/documents"),
-];
+  path.join(__dirname, "uploads/documents"),];
 
 uploadDirs.forEach((dir) => {
   if (!fs.existsSync(dir)) {
@@ -76,8 +83,105 @@ const getDefaultErrorMessage = (status) => {
   }
 };
 
-// Middleware
-app.use(cors());
+// =============================================================================
+// SECURITY MIDDLEWARE
+// =============================================================================
+
+// Helmet - Security headers (XSS, clickjacking, MIME sniffing protection)
+// CSP sources can be extended via environment variables for future additions
+const defaultScriptSources = [
+  "'self'",
+  "'unsafe-inline'",
+  "'unsafe-eval'",
+  "cdn.jsdelivr.net",
+  "cdnjs.cloudflare.com",
+  "code.jquery.com",
+];
+const defaultStyleSources = [
+  "'self'",
+  "'unsafe-inline'",
+  "fonts.googleapis.com",
+  "cdn.jsdelivr.net",
+  "cdnjs.cloudflare.com",
+];
+const defaultFrameSources = [
+  "'self'",
+  "www.google.com",
+  "maps.google.com",
+];
+
+// Allow extending CSP via environment variables (comma-separated)
+const extraScriptSources = process.env.CSP_SCRIPT_SOURCES?.split(",").map(s => s.trim()) || [];
+const extraStyleSources = process.env.CSP_STYLE_SOURCES?.split(",").map(s => s.trim()) || [];
+const extraFrameSources = process.env.CSP_FRAME_SOURCES?.split(",").map(s => s.trim()) || [];
+
+app.use(
+  helmet({
+    contentSecurityPolicy: {
+      directives: {
+        defaultSrc: ["'self'"],
+        scriptSrc: [...defaultScriptSources, ...extraScriptSources],
+        scriptSrcAttr: ["'unsafe-inline'"], // Allow inline event handlers like onclick
+        styleSrc: [...defaultStyleSources, ...extraStyleSources],
+        fontSrc: ["'self'", "fonts.gstatic.com", "cdn.jsdelivr.net", "data:"],
+        imgSrc: ["'self'", "data:", "https:", "blob:"],
+        connectSrc: ["'self'", "cdn.jsdelivr.net", "cdnjs.cloudflare.com"],
+        frameSrc: [...defaultFrameSources, ...extraFrameSources],
+        objectSrc: ["'none'"],
+        upgradeInsecureRequests: process.env.NODE_ENV === "production" ? [] : null,
+      },
+    },
+    crossOriginEmbedderPolicy: false, // Allow embedding resources
+    hsts: {
+      maxAge: 31536000, // 1 year
+      includeSubDomains: true,
+      preload: true,
+    },
+  })
+);
+
+// CORS - Restrict to allowed origins only
+const allowedOrigins = process.env.ALLOWED_ORIGINS
+  ? process.env.ALLOWED_ORIGINS.split(",").map((origin) => origin.trim())
+  : [];
+
+// In production, always allow the main domain
+if (process.env.NODE_ENV === "production") {
+  const productionDomains = [
+    "https://ddrc.org.in",
+    "https://www.ddrc.org.in",
+  ];
+  productionDomains.forEach((domain) => {
+    if (!allowedOrigins.includes(domain)) {
+      allowedOrigins.push(domain);
+    }
+  });
+}
+
+// In development, allow localhost
+if (process.env.NODE_ENV !== "production") {
+  allowedOrigins.push("http://localhost:3000", "http://127.0.0.1:3000");
+}
+
+app.use(
+  cors({
+    origin: (origin, callback) => {
+      // Allow requests with no origin (mobile apps, Postman, same-origin)
+      if (!origin) return callback(null, true);
+
+      if (allowedOrigins.length === 0 || allowedOrigins.includes(origin)) {
+        callback(null, true);
+      } else {
+        console.warn(`⚠️ CORS blocked request from origin: ${origin}`);
+        callback(new Error("Not allowed by CORS"));
+      }
+    },
+    credentials: true,
+    methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+    allowedHeaders: ["Content-Type", "Authorization"],
+  })
+);
+
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
