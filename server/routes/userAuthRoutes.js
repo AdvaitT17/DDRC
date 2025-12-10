@@ -3,6 +3,20 @@ const router = express.Router();
 const rateLimit = require("express-rate-limit");
 const userAuthService = require("../services/userAuthService");
 
+// Helper to extract clean IP from potentially port-suffixed IP addresses (Azure load balancer)
+const getCleanIP = (req) => {
+  let ip = req.ip || req.connection?.remoteAddress || 'unknown';
+  if (ip.includes(':') && !ip.includes('::')) {
+    ip = ip.split(':')[0];
+  } else if (ip.includes('::ffff:')) {
+    ip = ip.replace('::ffff:', '');
+    if (ip.includes(':')) {
+      ip = ip.split(':')[0];
+    }
+  }
+  return ip;
+};
+
 // Rate limiter for signup - prevent mass account creation
 const signupLimiter = rateLimit({
   windowMs: 60 * 60 * 1000, // 1 hour
@@ -13,6 +27,8 @@ const signupLimiter = rateLimit({
   },
   standardHeaders: true,
   legacyHeaders: false,
+  keyGenerator: getCleanIP,
+  validate: { ip: false },
 });
 
 // Password policy validation
