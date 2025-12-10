@@ -40,7 +40,7 @@ const applicantLoginLimiter = rateLimit({
   legacyHeaders: false,
   skipSuccessfulRequests: true, // Don't count successful logins
   keyGenerator: getCleanIP, // Use clean IP without port
-  validate: { ip: false }, // Disable built-in IP validation
+  validate: { ip: false, xForwardedForHeader: false, keyGeneratorIpFallback: false },
 });
 
 // Rate limiter for department login - stricter (5 attempts per 30 minutes)
@@ -56,7 +56,7 @@ const departmentLoginLimiter = rateLimit({
   legacyHeaders: false,
   skipSuccessfulRequests: true,
   keyGenerator: getCleanIP,
-  validate: { ip: false },
+  validate: { ip: false, xForwardedForHeader: false, keyGeneratorIpFallback: false },
 });
 
 router.post("/login", applicantLoginLimiter, async (req, res) => {

@@ -28,7 +28,7 @@ const signupLimiter = rateLimit({
   standardHeaders: true,
   legacyHeaders: false,
   keyGenerator: getCleanIP,
-  validate: { ip: false },
+  validate: { ip: false, xForwardedForHeader: false, keyGeneratorIpFallback: false },
 });
 
 // Password policy validation
