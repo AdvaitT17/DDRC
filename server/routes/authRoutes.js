@@ -10,6 +10,23 @@ const { generateFingerprint } = require("../utils/tokenFingerprint");
 const captchaService = require("../services/captchaService");
 const tokenBlacklist = require("../services/tokenBlacklistService");
 
+// Helper to extract clean IP from potentially port-suffixed IP addresses (Azure load balancer)
+const getCleanIP = (req) => {
+  let ip = req.ip || req.connection?.remoteAddress || 'unknown';
+  // Remove port if present (e.g., "150.242.206.88:32784" -> "150.242.206.88")
+  if (ip.includes(':') && !ip.includes('::')) {
+    // IPv4 with port
+    ip = ip.split(':')[0];
+  } else if (ip.includes('::ffff:')) {
+    // IPv4-mapped IPv6
+    ip = ip.replace('::ffff:', '');
+    if (ip.includes(':')) {
+      ip = ip.split(':')[0];
+    }
+  }
+  return ip;
+};
+
 // Rate limiter for applicant login - 5 attempts per 15 minutes
 const applicantLoginLimiter = rateLimit({
   windowMs: 15 * 60 * 1000, // 15 minutes
@@ -22,6 +39,8 @@ const applicantLoginLimiter = rateLimit({
   standardHeaders: true,
   legacyHeaders: false,
   skipSuccessfulRequests: true, // Don't count successful logins
+  keyGenerator: getCleanIP, // Use clean IP without port
+  validate: { ip: false }, // Disable built-in IP validation
 });
 
 // Rate limiter for department login - stricter (5 attempts per 30 minutes)
@@ -36,6 +55,8 @@ const departmentLoginLimiter = rateLimit({
   standardHeaders: true,
   legacyHeaders: false,
   skipSuccessfulRequests: true,
+  keyGenerator: getCleanIP,
+  validate: { ip: false },
 });
 
 router.post("/login", applicantLoginLimiter, async (req, res) => {
