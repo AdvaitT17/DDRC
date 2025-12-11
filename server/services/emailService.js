@@ -1705,6 +1705,353 @@ async function sendContactAcknowledgement(contactData) {
   }
 }
 
+/**
+ * Send a password reset email with a reset link
+ * @param {string} email - Recipient's email address
+ * @param {string} resetToken - The password reset token
+ * @returns {boolean} - Whether the email was sent successfully
+ */
+async function sendPasswordResetEmail(email, resetToken) {
+  try {
+    // Construct reset URL
+    const baseUrl = process.env.BASE_URL || process.env.APP_URL || "http://localhost:3000";
+    const resetUrl = `${baseUrl}/reset-password?token=${resetToken}`;
+
+    const emailHtml = `
+      <!DOCTYPE html>
+      <html lang="en">
+        <head>
+          <meta charset="UTF-8">
+          <meta name="viewport" content="width=device-width, initial-scale=1.0">
+          <title>Password Reset - DDRC</title>
+          <style>
+            body, html {
+              margin: 0;
+              padding: 0;
+              font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+              color: #333;
+              line-height: 1.6;
+              background-color: #f5f7fa;
+            }
+            
+            .container {
+              max-width: 600px;
+              margin: 0 auto;
+              background-color: #ffffff;
+              border-radius: 8px;
+              overflow: hidden;
+              box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            }
+            
+            .header {
+              background-color: #0d6efd;
+              background-image: linear-gradient(135deg, #0d6efd 0%, #0a4bb3 100%);
+              color: white;
+              padding: 30px;
+              text-align: center;
+            }
+            
+            .header h1 {
+              margin: 0;
+              font-size: 24px;
+              font-weight: 600;
+            }
+            
+            .header p {
+              margin: 10px 0 0;
+              font-size: 16px;
+              opacity: 0.9;
+            }
+            
+            .content {
+              padding: 30px;
+            }
+            
+            .content h2 {
+              margin-top: 0;
+              color: #0a4bb3;
+              font-size: 20px;
+            }
+            
+            .warning-box {
+              background-color: #fff3cd;
+              border-left: 4px solid #ffc107;
+              padding: 15px;
+              margin: 20px 0;
+              border-radius: 4px;
+            }
+            
+            .warning-box p {
+              margin: 0;
+              color: #856404;
+            }
+            
+            .button-container {
+              text-align: center;
+              margin: 30px 0;
+            }
+            
+            .button {
+              display: inline-block;
+              background-color: #0d6efd;
+              color: #ffffff !important;
+              padding: 14px 40px;
+              text-decoration: none;
+              border-radius: 4px;
+              font-weight: 600;
+              font-size: 16px;
+              text-align: center;
+            }
+            
+            .link-fallback {
+              margin-top: 20px;
+              padding: 15px;
+              background-color: #f8f9fa;
+              border-radius: 4px;
+              word-break: break-all;
+              font-size: 14px;
+            }
+            
+            .footer {
+              background-color: #f8f9fa;
+              padding: 20px 30px;
+              color: #6c757d;
+              font-size: 14px;
+              text-align: center;
+              border-top: 1px solid #e9ecef;
+            }
+            
+            .footer p {
+              margin: 5px 0;
+            }
+          </style>
+        </head>
+        <body>
+          <div class="container">
+            <div class="header">
+              <h1>DDRC Mumbai</h1>
+              <p>Password Reset Request</p>
+            </div>
+            
+            <div class="content">
+              <h2>Reset Your Password</h2>
+              
+              <p>We received a request to reset your password for your DDRC account. Click the button below to set a new password:</p>
+              
+              <div class="button-container">
+                <a href="${resetUrl}" class="button">Reset Password</a>
+              </div>
+              
+              <div class="warning-box">
+                <p><strong>⚠️ Important:</strong> This link will expire in <strong>1 hour</strong>. If you did not request a password reset, please ignore this email.</p>
+              </div>
+              
+              <p>If the button above doesn't work, copy and paste the following link into your browser:</p>
+              
+              <div class="link-fallback">
+                <a href="${resetUrl}" style="color: #0d6efd;">${resetUrl}</a>
+              </div>
+              
+              <p style="margin-top: 30px;">Best regards,<br><strong>DDRC Mumbai Team</strong></p>
+            </div>
+            
+            <div class="footer">
+              <p>This is an automated message from the District Disability Rehabilitation Centre (DDRC) Management System.</p>
+              <p>If you did not request this password reset, no action is needed.</p>
+            </div>
+          </div>
+        </body>
+      </html>
+    `;
+
+    const info = await transporter.sendMail({
+      from: {
+        name: "DDRC Account Security",
+        address: process.env.EMAIL_FROM || process.env.EMAIL_USER,
+      },
+      to: email,
+      subject: "Reset Your DDRC Password",
+      text: `You requested to reset your password. Click this link to reset it: ${resetUrl}\n\nThis link will expire in 1 hour. If you did not request this, please ignore this email.`,
+      html: emailHtml,
+    });
+
+    console.log("Password reset email sent:", info.messageId);
+    return true;
+  } catch (error) {
+    console.error("Error sending password reset email:", error);
+    return false;
+  }
+}
+
+/**
+ * Send a confirmation email when password is successfully changed
+ * @param {string} email - User's email address
+ * @returns {boolean} - Whether the email was sent successfully
+ */
+async function sendPasswordChangeConfirmation(email) {
+  try {
+    const loginUrl = (process.env.BASE_URL || process.env.APP_URL || "http://localhost:3000") + "/login";
+    const contactUrl = (process.env.BASE_URL || process.env.APP_URL || "http://localhost:3000") + "/contact";
+
+    const emailHtml = `
+      <!DOCTYPE html>
+      <html lang="en">
+        <head>
+          <meta charset="UTF-8">
+          <meta name="viewport" content="width=device-width, initial-scale=1.0">
+          <title>Password Changed - DDRC</title>
+          <style>
+            body, html {
+              margin: 0;
+              padding: 0;
+              font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+              color: #333;
+              line-height: 1.6;
+              background-color: #f5f7fa;
+            }
+            
+            .container {
+              max-width: 600px;
+              margin: 0 auto;
+              background-color: #ffffff;
+              border-radius: 8px;
+              overflow: hidden;
+              box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            }
+            
+            .header {
+              background-color: #28a745;
+              background-image: linear-gradient(135deg, #28a745 0%, #218838 100%);
+              color: white;
+              padding: 30px;
+              text-align: center;
+            }
+            
+            .header h1 {
+              margin: 0;
+              font-size: 24px;
+              font-weight: 600;
+            }
+            
+            .header p {
+              margin: 10px 0 0;
+              font-size: 16px;
+              opacity: 0.9;
+            }
+            
+            .content {
+              padding: 30px;
+            }
+            
+            .success-icon {
+              text-align: center;
+              font-size: 48px;
+              margin-bottom: 20px;
+            }
+            
+            .info-box {
+              background-color: #e7f5ff;
+              border-left: 4px solid #0d6efd;
+              padding: 15px;
+              margin: 20px 0;
+              border-radius: 4px;
+            }
+            
+            .warning-box {
+              background-color: #fff3cd;
+              border-left: 4px solid #ffc107;
+              padding: 15px;
+              margin: 20px 0;
+              border-radius: 4px;
+            }
+            
+            .warning-box p {
+              margin: 0;
+              color: #856404;
+            }
+            
+            .button-container {
+              text-align: center;
+              margin: 30px 0;
+            }
+            
+            .button {
+              display: inline-block;
+              background-color: #0d6efd;
+              color: #ffffff !important;
+              padding: 14px 40px;
+              text-decoration: none;
+              border-radius: 4px;
+              font-weight: 600;
+              font-size: 16px;
+              text-align: center;
+            }
+            
+            .footer {
+              background-color: #f8f9fa;
+              padding: 20px 30px;
+              color: #6c757d;
+              font-size: 14px;
+              text-align: center;
+              border-top: 1px solid #e9ecef;
+            }
+            
+            .footer p {
+              margin: 5px 0;
+            }
+          </style>
+        </head>
+        <body>
+          <div class="container">
+            <div class="header">
+              <h1>DDRC Mumbai</h1>
+              <p>Password Changed Successfully</p>
+            </div>
+            
+            <div class="content">
+              
+              <p>Your password has been successfully changed. You can now log in to your DDRC account using your new password.</p>
+              
+              <div class="button-container">
+                <a href="${loginUrl}" class="button">Login to Your Account</a>
+              </div>
+              
+              <div class="warning-box">
+                <p><strong>⚠️ Didn't make this change?</strong></p>
+                <p style="margin-top: 10px;">If you did not change your password, please <a href="${contactUrl}" style="color: #856404; font-weight: bold;">contact us immediately</a> as your account may be compromised.</p>
+              </div>
+              
+              <p style="margin-top: 30px;">Best regards,<br><strong>DDRC Mumbai Team</strong></p>
+            </div>
+            
+            <div class="footer">
+              <p>This is an automated security notification from the District Disability Rehabilitation Centre (DDRC) Management System.</p>
+              <p>Please do not reply to this email.</p>
+            </div>
+          </div>
+        </body>
+      </html>
+    `;
+
+    const info = await transporter.sendMail({
+      from: {
+        name: "DDRC Account Security",
+        address: process.env.EMAIL_FROM || process.env.EMAIL_USER,
+      },
+      to: email,
+      subject: "Your DDRC Password Has Been Changed",
+      text: `Your password has been successfully changed. You can now log in using your new password at: ${loginUrl}\n\nIf you did not make this change, please contact us immediately.`,
+      html: emailHtml,
+    });
+
+    console.log("Password change confirmation email sent:", info.messageId);
+    return true;
+  } catch (error) {
+    console.error("Error sending password change confirmation email:", error);
+    return false;
+  }
+}
+
 // Export the functions
 module.exports = {
   sendReportEmail,
@@ -1713,4 +2060,6 @@ module.exports = {
   updateNotificationStatus,
   sendContactEmail,
   sendContactAcknowledgement,
+  sendPasswordResetEmail,
+  sendPasswordChangeConfirmation,
 };

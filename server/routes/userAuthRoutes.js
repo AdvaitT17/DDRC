@@ -2,6 +2,7 @@ const express = require("express");
 const router = express.Router();
 const rateLimit = require("express-rate-limit");
 const userAuthService = require("../services/userAuthService");
+const { sendPasswordResetEmail, sendPasswordChangeConfirmation } = require("../services/emailService");
 
 // Helper to extract clean IP from potentially port-suffixed IP addresses (Azure load balancer)
 const getCleanIP = (req) => {
@@ -23,6 +24,20 @@ const signupLimiter = rateLimit({
   max: 5, // 5 signups per hour per IP
   message: {
     message: "Too many accounts created. Please try again after an hour.",
+    code: "RATE_LIMIT_EXCEEDED",
+  },
+  standardHeaders: true,
+  legacyHeaders: false,
+  keyGenerator: getCleanIP,
+  validate: { ip: false, xForwardedForHeader: false, keyGeneratorIpFallback: false },
+});
+
+// Rate limiter for password reset - prevent abuse
+const passwordResetLimiter = rateLimit({
+  windowMs: 60 * 60 * 1000, // 1 hour
+  max: 3, // 3 password reset requests per hour per IP
+  message: {
+    message: "Too many password reset requests. Please try again after an hour.",
     code: "RATE_LIMIT_EXCEEDED",
   },
   standardHeaders: true,
@@ -108,6 +123,105 @@ router.post("/signup", signupLimiter, async (req, res) => {
       return res.status(400).json({ message: error.message });
     }
     res.status(500).json({ message: "Registration failed" });
+  }
+});
+
+// Request password reset
+router.post("/forgot-password", passwordResetLimiter, async (req, res) => {
+  try {
+    const { email } = req.body;
+
+    // Basic validation
+    if (!email) {
+      return res.status(400).json({ message: "Email is required" });
+    }
+
+    // Email format validation
+    if (!email.match(/^[^\s@]+@[^\s@]+\.[^\s@]+$/)) {
+      return res.status(400).json({ message: "Invalid email format" });
+    }
+
+    // Generate reset token (returns null if user not found, but we don't reveal that)
+    const result = await userAuthService.generateResetToken(email.toLowerCase().trim());
+
+    // If user exists, send the email
+    if (result) {
+      await sendPasswordResetEmail(result.email, result.token);
+      console.log(`Password reset email sent to ${result.email}`);
+    } else {
+      // Log for debugging but don't reveal to user
+      console.log(`Password reset requested for non-existent email: ${email}`);
+    }
+
+    // Always return success to prevent email enumeration
+    res.json({
+      message: "If an account with that email exists, we have sent a password reset link.",
+    });
+  } catch (error) {
+    console.error("Forgot password error:", error);
+    res.status(500).json({ message: "Error processing request. Please try again." });
+  }
+});
+
+// Verify reset token (for page load check)
+router.get("/verify-reset-token", async (req, res) => {
+  try {
+    const { token } = req.query;
+
+    if (!token) {
+      return res.status(400).json({ valid: false, message: "Token is required" });
+    }
+
+    const user = await userAuthService.verifyResetToken(token);
+
+    if (!user) {
+      return res.json({ valid: false, message: "Invalid or expired reset token" });
+    }
+
+    res.json({ valid: true });
+  } catch (error) {
+    console.error("Token verification error:", error);
+    res.status(500).json({ valid: false, message: "Error verifying token" });
+  }
+});
+
+// Reset password with token
+router.post("/reset-password", async (req, res) => {
+  try {
+    const { token, password } = req.body;
+
+    // Basic validation
+    if (!token || !password) {
+      return res.status(400).json({ message: "Token and password are required" });
+    }
+
+    // Validate password policy
+    const passwordErrors = validatePassword(password);
+    if (passwordErrors.length > 0) {
+      return res.status(400).json({
+        message: passwordErrors.join(". "),
+        errors: passwordErrors,
+      });
+    }
+
+    // Reset password
+    const result = await userAuthService.resetPassword(token, password);
+
+    if (!result.success) {
+      return res.status(400).json({ message: result.message });
+    }
+
+    // Send confirmation email (non-blocking)
+    if (result.email) {
+      sendPasswordChangeConfirmation(result.email).catch(err => {
+        console.error("Failed to send password change confirmation:", err);
+      });
+    }
+
+    res.json({ message: result.message });
+  } catch (error) {
+    console.error("Reset password error:", error);
+    res.status(500).json({ message: "Error resetting password. Please try again." });
   }
 });
 

@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Forgot Password | DDRC</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet" />
+    <link rel="stylesheet" href="/css/main.css" />
+    <link rel="stylesheet" href="/css/header.css" />
+    <link rel="stylesheet" href="/css/footer.css" />
+    <link rel="stylesheet" href="/login/css/style.css" />
+    <link rel="stylesheet" href="/css/accessibility.css" />
+</head>
+
+<body>
+    <!-- Accessibility Announcement for Screen Readers -->
+    <div id="screenReaderAnnouncer" class="sr-only" role="alert" aria-live="polite"></div>
+
+    <!-- Main content -->
+    <div id="mainContent">
+        <!-- Site Header Component -->
+        <div id="site-header"></div>
+
+        <!-- Main Content -->
+        <main class="auth-container" id="main-content" role="main" tabindex="-1">
+            <div class="auth-box">
+                <div class="auth-header">
+                    <h2>Forgot Password</h2>
+                    <p>Enter your email to receive a reset link</p>
+                </div>
+
+                <form id="forgotPasswordForm" class="auth-form" novalidate aria-label="Forgot password form">
+                    <div class="alert alert-danger" style="display: none" id="forgotError" role="alert"></div>
+                    <div class="alert alert-success" style="display: none" id="forgotSuccess" role="alert"></div>
+
+                    <div class="form-group">
+                        <label for="email">Email Address</label>
+                        <input type="email" class="form-control" id="email" name="email" required aria-required="true"
+                            placeholder="Enter your registered email" />
+                        <div class="invalid-feedback">Please enter a valid email address</div>
+                    </div>
+
+                    <button type="submit" class="btn btn-primary w-100" id="submitBtn">
+                        Send Reset Link
+                    </button>
+
+                    <div class="auth-footer">
+                        <p>
+                            Remember your password? <a href="/login">Login here</a>
+                        </p>
+                    </div>
+                </form>
+            </div>
+        </main>
+
+        <!-- Footer -->
+        <footer role="contentinfo" aria-label="Site Footer">
+            <div class="footer-content">
+                <div class="footer-section">
+                    <h3>About</h3>
+                    <ul>
+                        <li>
+                            <a href="/about-ddrc" aria-label="Know more about DDRC">Know more about DDRC</a>
+                        </li>
+                        <li>
+                            <a href="/schemes" aria-label="Schemes for Persons with Disabilities">Schemes for Persons
+                                with
+                                Disabilities</a>
+                        </li>
+                        <li>
+                            <a href="/about-department" aria-label="About Department">About Department</a>
+                        </li>
+                        <li>
+                            <a href="/medical-camps" aria-label="Medical Camps and Hospitals">Medical Camps /
+                                Hospitals</a>
+                        </li>
+                    </ul>
+                </div>
+                <div class="footer-section">
+                    <h3>Quick Access Key</h3>
+                    <ul>
+                        <li>H = Go to Home Page</li>
+                        <li>S = Skip to main content</li>
+                        <li>F = Site Search</li>
+                        <li>T = Back to Top</li>
+                    </ul>
+                </div>
+                <div class="footer-section">
+                    <h3>Use keyboard for quick access</h3>
+                    <ul>
+                        <li>Internet Explorer - [Alt] + accesskey</li>
+                        <li>Chrome - [Alt] + accesskey</li>
+                        <li>Firefox - [Alt] [Shift] + accesskey</li>
+                        <li>Safari - [Alt] + accesskey</li>
+                    </ul>
+                </div>
+            </div>
+            <div class="footer-bottom">
+                <p>
+                    &copy; Copyright
+                    <script>
+                        document.write(new Date().getFullYear());
+                    </script>
+                    District Disability Rehabilitation Centre, Mumbai. All Rights
+                    Reserved.
+                </p>
+                <div class="footer-links">
+                    <a href="/terms" aria-label="Terms and Conditions">Terms & Conditions</a>
+                    <a href="/privacy" aria-label="Privacy Policy">Privacy Policy</a>
+                    <a href="/copyright" aria-label="Copyright Policy">Copyright Policy</a>
+                    <a href="/accessibility" aria-label="Accessibility Statement">Accessibility Statement</a>
+                </div>
+            </div>
+        </footer>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="/js/auth.js"></script>
+    <script src="/js/components/header.js"></script>
+    <script src="/js/accessibility.js"></script>
+    <script src="/forgot-password/js/forgot-password.js"></script>
+</body>
+
+</html>
