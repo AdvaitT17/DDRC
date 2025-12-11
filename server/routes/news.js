@@ -14,6 +14,7 @@ const isAdmin = (req, res, next) => {
 };
 const db = require("../config/database");
 const fs = require("fs");
+const { sanitize } = require("../utils/sanitize");
 
 // Configure multer for file uploads
 const storage = multer.diskStorage({
@@ -104,7 +105,8 @@ router.use(isAdmin);
 // Add new news item
 router.post("/", upload.single("file"), handleMulterError, async (req, res) => {
   try {
-    const { title, description } = req.body;
+    const title = sanitize(req.body.title);
+    const description = sanitize(req.body.description);
     if (!title || !description) {
       return res.status(400).json({
         success: false,
@@ -194,7 +196,8 @@ router.put(
   handleMulterError,
   async (req, res) => {
     try {
-      const { title, description } = req.body;
+      const title = sanitize(req.body.title);
+      const description = sanitize(req.body.description);
       if (!title || !description) {
         return res.status(400).json({
           success: false,

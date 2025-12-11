@@ -14,6 +14,7 @@ const isAdmin = (req, res, next) => {
 };
 const db = require("../config/database");
 const fs = require("fs");
+const { sanitize } = require("../utils/sanitize");
 
 // Configure multer for file uploads
 const storage = multer.diskStorage({
@@ -141,7 +142,10 @@ router.post(
   handleMulterError,
   async (req, res) => {
     try {
-      const { title, description, body, event_date } = req.body;
+      const title = sanitize(req.body.title);
+      const description = sanitize(req.body.description);
+      const body = sanitize(req.body.body);
+      const event_date = req.body.event_date;
       if (!title || !description || !event_date) {
         return res.status(400).json({
           success: false,
@@ -272,18 +276,16 @@ router.put(
   handleMulterError,
   async (req, res) => {
     try {
-      const {
-        title,
-        description,
-        body,
-        event_date,
-        removeMainImage,
-        remove_additional_image1,
-        remove_additional_image2,
-        remove_additional_image3,
-        remove_additional_image4,
-        remove_additional_image5,
-      } = req.body;
+      const title = sanitize(req.body.title);
+      const description = sanitize(req.body.description);
+      const body = sanitize(req.body.body);
+      const event_date = req.body.event_date;
+      const removeMainImage = req.body.removeMainImage;
+      const remove_additional_image1 = req.body.remove_additional_image1;
+      const remove_additional_image2 = req.body.remove_additional_image2;
+      const remove_additional_image3 = req.body.remove_additional_image3;
+      const remove_additional_image4 = req.body.remove_additional_image4;
+      const remove_additional_image5 = req.body.remove_additional_image5;
       const eventId = req.params.id;
 
       // Get current event data
