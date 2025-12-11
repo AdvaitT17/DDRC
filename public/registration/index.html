@@ -26,6 +26,74 @@
     .form-footer a:hover {
       text-decoration: underline;
     }
+
+    /* Password Requirements Popup */
+    .password-group {
+      position: relative;
+    }
+
+    .password-requirements-popup {
+      position: absolute;
+      top: 100%;
+      left: 0;
+      right: 0;
+      background: #ffffff;
+      border: 1px solid #dee2e6;
+      border-radius: 8px;
+      padding: 12px 15px;
+      margin-top: 8px;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+      z-index: 100;
+      animation: fadeIn 0.2s ease-out;
+    }
+
+    @keyframes fadeIn {
+      from {
+        opacity: 0;
+        transform: translateY(-5px);
+      }
+
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    .password-requirements-popup .requirements-header {
+      font-weight: 600;
+      font-size: 13px;
+      color: #495057;
+      margin-bottom: 8px;
+    }
+
+    .password-requirements-popup ul {
+      list-style: none;
+      margin: 0;
+      padding: 0;
+    }
+
+    .password-requirements-popup li {
+      font-size: 12px;
+      color: #6c757d;
+      padding: 3px 0;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .password-requirements-popup li .req-icon {
+      font-size: 10px;
+      width: 14px;
+      text-align: center;
+    }
+
+    .password-requirements-popup li.valid {
+      color: #28a745;
+    }
+
+    .password-requirements-popup li.valid .req-icon {
+      color: #28a745;
+    }
   </style>
 </head>
 
@@ -68,13 +136,24 @@
             </div>
           </div>
 
-          <div class="form-group">
+          <div class="form-group password-group">
             <label for="password">Password</label>
             <div class="password-input">
               <input type="password" class="form-control" id="password" name="password" required aria-required="true" />
               <button type="button" class="toggle-password" aria-label="Toggle password visibility">
                 <img src="/images/eye.svg" alt="Show password icon" class="eye-icon" />
               </button>
+            </div>
+            <!-- Password Requirements Popup -->
+            <div id="passwordRequirements" class="password-requirements-popup" style="display: none;">
+              <div class="requirements-header">Password must have:</div>
+              <ul>
+                <li id="req-length"><span class="req-icon">○</span> At least 8 characters</li>
+                <li id="req-uppercase"><span class="req-icon">○</span> One uppercase letter</li>
+                <li id="req-lowercase"><span class="req-icon">○</span> One lowercase letter</li>
+                <li id="req-number"><span class="req-icon">○</span> One number</li>
+                <li id="req-special"><span class="req-icon">○</span> One special character</li>
+              </ul>
             </div>
             <div class="invalid-feedback">
               Password must be at least 8 characters

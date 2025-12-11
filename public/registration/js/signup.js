@@ -2,6 +2,9 @@ class SignupHandler {
   constructor() {
     this.form = document.getElementById("signupForm");
     this.errorAlert = document.getElementById("signupError");
+    this.passwordInput = document.getElementById("password");
+    this.confirmPasswordInput = document.getElementById("confirmPassword");
+    this.requirementsPopup = document.getElementById("passwordRequirements");
     this.setupEventListeners();
   }
 
@@ -10,6 +13,59 @@ class SignupHandler {
     document
       .querySelector(".toggle-password")
       .addEventListener("click", () => this.togglePassword());
+
+    // Password requirements popup handlers
+    this.passwordInput.addEventListener("focus", () => this.showRequirements());
+    this.passwordInput.addEventListener("blur", () => this.hideRequirements());
+    this.passwordInput.addEventListener("input", () => this.validatePasswordRequirements());
+  }
+
+  showRequirements() {
+    if (this.requirementsPopup) {
+      this.requirementsPopup.style.display = "block";
+      this.validatePasswordRequirements();
+    }
+  }
+
+  hideRequirements() {
+    // Small delay to allow clicking on popup if needed
+    setTimeout(() => {
+      if (this.requirementsPopup) {
+        this.requirementsPopup.style.display = "none";
+      }
+    }, 200);
+  }
+
+  validatePasswordRequirements() {
+    const password = this.passwordInput.value;
+
+    const requirements = {
+      "req-length": password.length >= 8,
+      "req-uppercase": /[A-Z]/.test(password),
+      "req-lowercase": /[a-z]/.test(password),
+      "req-number": /[0-9]/.test(password),
+      "req-special": /[!@#$%^&*(),.?":{}|<>]/.test(password),
+    };
+
+    Object.entries(requirements).forEach(([id, valid]) => {
+      const el = document.getElementById(id);
+      if (el) {
+        el.classList.toggle("valid", valid);
+        const icon = el.querySelector(".req-icon");
+        if (icon) {
+          icon.textContent = valid ? "✓" : "○";
+        }
+      }
+    });
+
+    const allMet = Object.values(requirements).every(Boolean);
+
+    // Auto-hide popup when all requirements are met
+    if (allMet && this.requirementsPopup) {
+      this.requirementsPopup.style.display = "none";
+    }
+
+    return allMet;
   }
 
   togglePassword() {
@@ -84,8 +140,9 @@ class SignupHandler {
       return false;
     }
 
-    if (password.length < 8) {
-      this.showError("Password must be at least 8 characters long");
+    // Check all password requirements
+    if (!this.validatePasswordRequirements()) {
+      this.showError("Password does not meet all requirements");
       return false;
     }
 

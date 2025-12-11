@@ -364,6 +364,8 @@ app.get(
     "/registration/form",
     "/registration/success",
     "/login",
+    "/forgot-password",
+    "/reset-password",
     "/track",
     "/events",
     "/events/event",
@@ -412,6 +414,8 @@ app.get(
         "/registration/success": "../public/registration/success/index.html",
         "/department-login": "../public/department-login/index.html",
         "/login": "../public/login/index.html",
+        "/forgot-password": "../public/forgot-password/index.html",
+        "/reset-password": "../public/reset-password/index.html",
         "/track": "../public/track/index.html",
         "/events": "../public/events/index.html",
       };
