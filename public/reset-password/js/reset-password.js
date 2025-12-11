@@ -4,6 +4,7 @@ class ResetPasswordHandler {
         this.errorAlert = document.getElementById("resetError");
         this.successAlert = document.getElementById("resetSuccess");
         this.invalidTokenMessage = document.getElementById("invalidTokenMessage");
+        this.loadingState = document.getElementById("loadingState");
         this.submitBtn = document.getElementById("submitBtn");
         this.passwordInput = document.getElementById("password");
         this.confirmPasswordInput = document.getElementById("confirmPassword");
@@ -35,12 +36,19 @@ class ResetPasswordHandler {
                 return;
             }
 
-            // Token is valid, setup the form
+            // Token is valid, show the form and setup listeners
+            this.showForm();
             this.setupEventListeners();
         } catch (error) {
             console.error("Token verification error:", error);
             this.showInvalidToken();
         }
+    }
+
+    showForm() {
+        this.loadingState.style.display = "none";
+        this.invalidTokenMessage.style.display = "none";
+        this.form.style.display = "block";
     }
 
     setupEventListeners() {
@@ -95,6 +103,7 @@ class ResetPasswordHandler {
     }
 
     showInvalidToken() {
+        this.loadingState.style.display = "none";
         this.form.style.display = "none";
         this.invalidTokenMessage.style.display = "block";
     }
