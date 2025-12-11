@@ -55,7 +55,12 @@ class SignupHandler {
         AuthManager.setAuth(data.token, { ...data.user, type: "applicant" });
         window.location.href = "/registration/form";
       } else {
-        this.showError(data.message || "Registration failed");
+        // Show specific password errors if available
+        if (data.errors && data.errors.length > 0) {
+          this.showError(data.errors.join(". "));
+        } else {
+          this.showError(data.message || "Registration failed");
+        }
       }
     } catch (error) {
       console.error("Signup error:", error);
