@@ -81,7 +81,7 @@ router.post("/signup", signupLimiter, async (req, res) => {
     const passwordErrors = validatePassword(password);
     if (passwordErrors.length > 0) {
       return res.status(400).json({
-        message: "Password does not meet security requirements",
+        message: passwordErrors.join(". "),
         errors: passwordErrors
       });
     }
