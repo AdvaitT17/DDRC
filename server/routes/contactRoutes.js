@@ -2,6 +2,7 @@ const express = require("express");
 const router = express.Router();
 const rateLimit = require("express-rate-limit");
 const { sendContactEmail, sendContactAcknowledgement } = require("../services/emailService");
+const { sanitize } = require("../utils/sanitize");
 
 // Rate limiter: max 5 contact form submissions per IP per hour
 const contactLimiter = rateLimit({
@@ -21,7 +22,12 @@ const contactLimiter = rateLimit({
  */
 router.post("/", contactLimiter, async (req, res) => {
     try {
-        const { name, email, phone, subject, message } = req.body;
+        // Sanitize user input to prevent XSS
+        const name = sanitize(req.body.name);
+        const email = req.body.email; // Email validated by regex, not sanitized
+        const phone = req.body.phone;
+        const subject = req.body.subject;
+        const message = sanitize(req.body.message);
 
         // Validate required fields
         if (!name || !email || !subject || !message) {
@@ -50,7 +56,7 @@ router.post("/", contactLimiter, async (req, res) => {
             complaint: "Complaint",
         };
 
-        const subjectDisplay = subjectMap[subject] || subject;
+        const subjectDisplay = subjectMap[subject] || sanitize(subject);
 
         const contactData = {
             name,

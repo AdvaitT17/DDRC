@@ -25,7 +25,8 @@
     "mysql2": "^3.6.5",
     "node-cron": "^4.1.0",
     "nodemailer": "^7.0.3",
-    "puppeteer": "^24.9.0"
+    "puppeteer": "^24.9.0",
+    "xss": "^1.0.15"
   },
   "devDependencies": {
     "@types/jest": "^29.5.14",
