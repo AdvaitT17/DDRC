@@ -32,12 +32,26 @@ const signupLimiter = rateLimit({
   validate: { ip: false, xForwardedForHeader: false, keyGeneratorIpFallback: false },
 });
 
-// Rate limiter for password reset - prevent abuse
+// Rate limiter for password reset request - prevent abuse
 const passwordResetLimiter = rateLimit({
   windowMs: 60 * 60 * 1000, // 1 hour
   max: 3, // 3 password reset requests per hour per IP
   message: {
     message: "Too many password reset requests. Please try again after an hour.",
+    code: "RATE_LIMIT_EXCEEDED",
+  },
+  standardHeaders: true,
+  legacyHeaders: false,
+  keyGenerator: getCleanIP,
+  validate: { ip: false, xForwardedForHeader: false, keyGeneratorIpFallback: false },
+});
+
+// Rate limiter for actual password reset - prevent brute force on tokens
+const resetPasswordLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000, // 15 minutes
+  max: 5, // 5 attempts per 15 min
+  message: {
+    message: "Too many password reset attempts. Please try again later.",
     code: "RATE_LIMIT_EXCEEDED",
   },
   standardHeaders: true,
@@ -186,7 +200,7 @@ router.get("/verify-reset-token", async (req, res) => {
 });
 
 // Reset password with token
-router.post("/reset-password", async (req, res) => {
+router.post("/reset-password", resetPasswordLimiter, async (req, res) => {
   try {
     const { token, password } = req.body;
 
