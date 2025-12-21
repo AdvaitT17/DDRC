@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>My Documents - DDRC</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet" />
+    <link rel="stylesheet" href="/css/main.css" />
+    <link rel="stylesheet" href="/css/header.css" />
+    <link rel="stylesheet" href="/dashboard/css/style.css" />
+    <link rel="stylesheet" href="/css/accessibility.css" />
+</head>
+
+<body>
+    <div id="authLoader" class="auth-loader">
+        <div class="spinner"></div>
+    </div>
+
+    <div id="mainContent" style="display: none">
+        <div id="site-header"></div>
+
+        <div class="dashboard-container" id="main-content" tabindex="-1">
+            <div class="breadcrumb">
+                <a href="/dashboard">Dashboard</a>
+                <span class="breadcrumb-separator">/</span>
+                <span class="breadcrumb-current">Documents</span>
+            </div>
+
+            <div class="status-header">
+                <h2>My Documents</h2>
+            </div>
+
+            <div id="documentsContent">
+                <div class="text-center p-5">
+                    <div class="spinner-border text-primary" role="status">
+                        <span class="visually-hidden">Loading...</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="/js/auth.js"></script>
+    <script src="/js/components/header.js"></script>
+    <script>
+        document.addEventListener("DOMContentLoaded", async () => {
+            // Auth check
+            const isAuth = await AuthManager.verifyAuth();
+            if (!isAuth || AuthManager.getUserInfo()?.type !== 'applicant') {
+                window.location.href = '/login';
+                return;
+            }
+
+            document.getElementById("authLoader").style.display = "none";
+            document.getElementById("mainContent").style.display = "block";
+
+            loadDocuments();
+        });
+
+        async function loadDocuments() {
+            try {
+                const response = await fetch("/api/dashboard/documents", {
+                    headers: { Authorization: `Bearer ${AuthManager.getAuthToken()}` }
+                });
+
+                if (!response.ok) throw new Error("Failed to load documents");
+
+                const data = await response.json();
+                const contentDiv = document.getElementById("documentsContent");
+
+                if (data.documents.length === 0) {
+                    contentDiv.innerHTML = `
+                      <div class="text-center py-5">
+                        <div class="mb-3">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="#e5e7eb" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                                <polyline points="14 2 14 8 20 8"></polyline>
+                                <line x1="12" y1="18" x2="12" y2="12"></line>
+                                <line x1="9" y1="15" x2="15" y2="15"></line>
+                            </svg>
+                        </div>
+                        <h4 class="h5 text-secondary fw-normal mb-2">No Documents Found</h4>
+                        <p class="text-muted small">You haven't uploaded any documents yet.</p>
+                      </div>
+                    `;
+                    return;
+                }
+
+                const token = AuthManager.getAuthToken();
+
+                // HTML escape utility to prevent XSS
+                function escapeHtml(unsafe) {
+                    if (!unsafe) return '';
+                    return String(unsafe)
+                        .replace(/&/g, "&amp;")
+                        .replace(/</g, "&lt;")
+                        .replace(/>/g, "&gt;")
+                        .replace(/"/g, "&quot;")
+                        .replace(/'/g, "&#039;");
+                }
+
+                contentDiv.innerHTML = `
+          <div class="document-grid">
+            ${data.documents.map(doc => {
+                    const ext = doc.file_path.split('.').pop().toLowerCase();
+                    let iconSvg = '';
+                    let iconClass = 'text-secondary';
+                    let fileType = 'other';
+
+                    if (['jpg', 'jpeg', 'png'].includes(ext)) {
+                        iconClass = 'text-primary';
+                        fileType = 'image';
+                        iconSvg = '<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>';
+                    } else if (ext === 'pdf') {
+                        iconClass = 'text-danger';
+                        fileType = 'pdf';
+                        iconSvg = '<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>';
+                    } else {
+                        iconSvg = '<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M13 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9z"/><polyline points="13 2 13 9 20 9"/></svg>';
+                    }
+
+                    const filename = doc.file_path.split(/[/\\]/).pop();
+                    const url = `/uploads/forms/${encodeURIComponent(filename)}?access_token=${encodeURIComponent(doc.token)}`;
+                    const safeTitle = escapeHtml(doc.display_name);
+                    const safeDisplayName = escapeHtml(doc.display_name);
+
+                    return `
+                <div class="document-card">
+                  <div class="document-icon ${iconClass}">${iconSvg}</div>
+                  <div class="document-name" title="${safeTitle}">${safeDisplayName}</div>
+                  <a href="${escapeHtml(url)}" onclick="return openDocument(event, '${escapeHtml(url)}', '${escapeHtml(fileType)}', '${safeTitle}')" target="_blank" class="btn btn-sm btn-outline-primary w-100 mt-auto">View File</a>
+                </div>
+              `;
+                }).join('')}
+          </div>
+        `;
+            } catch (error) {
+                console.error("Error:", error);
+                document.getElementById("documentsContent").innerHTML = `
+          <div class="alert alert-danger">Error loading documents. Please try again later.</div>
+        `;
+            }
+        }
+
+    </script>
+    <script src="/js/components/doc-viewer.js"></script>
+    <script src="/js/accessibility.js"></script>
+</body>
+
+</html>

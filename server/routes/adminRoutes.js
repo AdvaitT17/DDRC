@@ -133,9 +133,8 @@ router.get("/recent-applications", async (req, res) => {
 
       return {
         applicationId: app.application_id,
-        applicantName: `${formData.firstname || ""} ${
-          formData.lastname || ""
-        }`.trim(),
+        applicantName: `${formData.firstname || ""} ${formData.lastname || ""
+          }`.trim(),
         email: app.email,
         submittedAt: app.completed_at,
         disabilityType: app.disability_type,
@@ -183,7 +182,7 @@ router.get("/all-applications", async (req, res) => {
     // OPTIMIZATION: Get ALL responses for these applications in ONE query
     const applicationIds = applications.map(app => app.id);
     let allResponses = [];
-    
+
     if (applicationIds.length > 0) {
       const [responses] = await pool.query(
         `SELECT 
@@ -217,9 +216,8 @@ router.get("/all-applications", async (req, res) => {
 
       return {
         applicationId: app.application_id,
-        applicantName: `${formData.firstname || ""} ${
-          formData.lastname || ""
-        }`.trim(),
+        applicantName: `${formData.firstname || ""} ${formData.lastname || ""
+          }`.trim(),
         email: app.email,
         submittedAt: app.completed_at,
         disabilityType: app.disability_type,
@@ -315,7 +313,7 @@ router.get("/incomplete-registrations", async (req, res) => {
     // Format registrations using the batched data
     const formattedRegistrations = registrations.map((reg) => {
       const responses = responsesByRegistration[reg.id] || [];
-      
+
       const formData = responses.reduce((acc, curr) => {
         acc[curr.name] = curr.value;
         acc.displayNames = acc.displayNames || {};
@@ -611,37 +609,37 @@ router.get("/applications/:id", authenticateToken, async (req, res) => {
        SET service_status = CASE 
          WHEN service_status IS NULL OR service_status = 'pending' 
          THEN 'under_review' 
-         ELSE service_status 
-       END,
-       last_updated_by = CASE 
-         WHEN service_status IS NULL OR service_status = 'pending' 
-         THEN ? 
-         ELSE last_updated_by 
-       END,
-       last_action_at = CASE 
+         ELSE service_status
+END,
+  last_updated_by = CASE 
+         WHEN service_status IS NULL OR service_status = 'pending'
+THEN ?
+  ELSE last_updated_by
+END,
+  last_action_at = CASE 
          WHEN service_status IS NULL OR service_status = 'pending' 
          THEN CURRENT_TIMESTAMP 
-         ELSE last_action_at 
-       END
-       WHERE application_id = ?`,
+         ELSE last_action_at
+END
+       WHERE application_id = ? `,
       [req.user.id, req.params.id]
     );
 
     // Get basic application info
     const [applicationInfo] = await pool.query(
-      `SELECT 
-         rp.*,
-         COALESCE(staff.full_name, ru.username) as last_updated_by,
-         CASE 
+      `SELECT
+rp.*,
+  COALESCE(staff.full_name, ru.username) as last_updated_by,
+  CASE 
            WHEN rp.last_action_at IS NULL OR rp.last_action_at = '0000-00-00 00:00:00' THEN NULL
            ELSE DATE_FORMAT(rp.last_action_at, '%Y-%m-%d %H:%i:%s')
-         END as formatted_update_time,
-         ru.email,
-         ru.username
+END as formatted_update_time,
+  ru.email,
+  ru.username
        FROM registration_progress rp
        LEFT JOIN registered_users ru ON rp.user_id = ru.id
        LEFT JOIN users staff ON rp.last_updated_by = staff.id AND rp.last_updated_by IS NOT NULL
-       WHERE rp.application_id = ?`,
+       WHERE rp.application_id = ? `,
       [req.params.id]
     );
 
@@ -652,8 +650,8 @@ router.get("/applications/:id", authenticateToken, async (req, res) => {
     // Log the status change if it was updated
     if (applicationInfo[0].service_status === "under_review") {
       await pool.query(
-        `INSERT INTO action_logs (user_id, action_type, application_id, previous_status, new_status) 
-         VALUES (?, 'review', ?, 'pending', 'under_review')`,
+        `INSERT INTO action_logs(user_id, action_type, application_id, previous_status, new_status)
+VALUES(?, 'review', ?, 'pending', 'under_review')`,
         [req.user.id, req.params.id]
       );
     }
@@ -671,22 +669,22 @@ router.get("/applications/:id", authenticateToken, async (req, res) => {
 
     // Get form sections with responses
     const [sections] = await pool.query(
-      `SELECT 
-        fs.id,
-        fs.name,
-        fs.order_index,
-        ff.id as field_id,
-        ff.name as field_name,
-        ff.display_name,
-        ff.field_type,
-        ff.options,
-        rr.value
+      `SELECT
+fs.id,
+  fs.name,
+  fs.order_index,
+  ff.id as field_id,
+  ff.name as field_name,
+  ff.display_name,
+  ff.field_type,
+  ff.options,
+  rr.value
       FROM form_sections fs
       JOIN form_fields ff ON fs.id = ff.section_id
       LEFT JOIN registration_responses rr 
         ON ff.id = rr.field_id 
         AND rr.registration_id = ?
-      ORDER BY fs.order_index, ff.order_index`,
+  ORDER BY fs.order_index, ff.order_index`,
       [applicationInfo[0].id]
     );
 
@@ -736,30 +734,30 @@ router.get(
       const { actionType, date, userQuery } = req.query;
 
       let query = `
-      SELECT 
-        al.*,
-        u.full_name as user_name,
-        u.email as user_email,
-        u.role as user_role
+SELECT
+al.*,
+  u.full_name as user_name,
+  u.email as user_email,
+  u.role as user_role
       FROM action_logs al
       JOIN users u ON al.user_id = u.id
-      WHERE 1=1
-    `;
+      WHERE 1 = 1
+  `;
       const params = [];
 
       if (actionType) {
-        query += ` AND al.action_type = ?`;
+        query += ` AND al.action_type = ? `;
         params.push(actionType);
       }
 
       if (date) {
-        query += ` AND DATE(al.performed_at) = ?`;
+        query += ` AND DATE(al.performed_at) = ? `;
         params.push(date);
       }
 
       if (userQuery) {
-        query += ` AND (u.full_name LIKE ? OR u.email LIKE ?)`;
-        params.push(`%${userQuery}%`, `%${userQuery}%`);
+        query += ` AND(u.full_name LIKE ? OR u.email LIKE ?)`;
+        params.push(`% ${userQuery}% `, ` % ${userQuery}% `);
       }
 
       query += ` ORDER BY al.performed_at DESC`;
@@ -783,10 +781,10 @@ router.put("/applications/:id/status", authenticateToken, async (req, res) => {
     // Update application status
     await pool.query(
       `UPDATE registration_progress 
-       SET service_status = ?, 
-           last_updated_by = ?, 
-           last_action_at = CURRENT_TIMESTAMP 
-       WHERE application_id = ?`,
+       SET service_status = ?,
+  last_updated_by = ?,
+  last_action_at = CURRENT_TIMESTAMP 
+       WHERE application_id = ? `,
       [status, userId, applicationId]
     );
 
@@ -798,8 +796,8 @@ router.put("/applications/:id/status", authenticateToken, async (req, res) => {
 
     // Log the action
     await pool.query(
-      `INSERT INTO action_logs (user_id, action_type, application_id, previous_status, new_status) 
-       VALUES (?, ?, ?, ?, ?)`,
+      `INSERT INTO action_logs(user_id, action_type, application_id, previous_status, new_status)
+VALUES(?, ?, ?, ?, ?)`,
       [
         userId,
         status === "pending" ? "undo" : status,
@@ -811,7 +809,7 @@ router.put("/applications/:id/status", authenticateToken, async (req, res) => {
 
     // Get user info for response
     const [userInfo] = await pool.query(
-      `SELECT full_name FROM users WHERE id = ?`,
+      `SELECT full_name FROM users WHERE id = ? `,
       [userId]
     );
 
@@ -836,7 +834,7 @@ router.put(
       const { id, field_id } = req.params;
       const { value, reason, user_consent, original_file_name } = req.body;
       const userId = req.user.id;
-      
+
       // Validate admin input (warning only, doesn't block)
       let validationWarnings = null;
       if (value && value !== "__FILE_REMOVED__") {
@@ -844,10 +842,10 @@ router.put(
         const validation = await validationService.validateFormData({
           [field_id]: value
         });
-        
+
         // Log validation warnings but don't block admin
         if (!validation.isValid) {
-          console.warn(`Admin edit validation warning for field ${field_id}:`, validation.errors);
+          console.warn(`Admin edit validation warning for field ${field_id}: `, validation.errors);
           validationWarnings = validation.errors;
         }
       }
@@ -913,7 +911,7 @@ router.put(
       ) {
         // If we're removing a file but the database already has an empty value
         // (because file was deleted from server first), use the original_file_name
-        logPreviousValue = `uploads/forms/${original_file_name}`;
+        logPreviousValue = `uploads / forms / ${original_file_name} `;
       }
 
       // Create edit details JSON
@@ -930,15 +928,15 @@ router.put(
 
       // Log the action
       await pool.query(
-        `INSERT INTO action_logs 
-       (user_id, action_type, application_id, edit_details) 
-       VALUES (?, 'edit_response', ?, ?)`,
+        `INSERT INTO action_logs
+  (user_id, action_type, application_id, edit_details)
+VALUES(?, 'edit_response', ?, ?)`,
         [userId, id, JSON.stringify(editDetails)]
       );
 
       // Get user info for response
       const [userInfo] = await pool.query(
-        `SELECT full_name FROM users WHERE id = ?`,
+        `SELECT full_name FROM users WHERE id = ? `,
         [userId]
       );
 
@@ -986,24 +984,24 @@ router.put(
       }
 
       const registrationId = registration[0].id;
-      
+
       // Validate all changes (warning only, doesn't block)
       const validationService = require('../services/validationService');
       const allValidationWarnings = [];
-      
+
       for (const response of responses) {
         if (response.value && response.value !== "__FILE_REMOVED__") {
           const validation = await validationService.validateFormData({
             [response.field_id]: response.value
           });
-          
+
           if (!validation.isValid) {
             allValidationWarnings.push(...validation.errors);
-            console.warn(`Admin batch edit validation warning for field ${response.field_id}:`, validation.errors);
+            console.warn(`Admin batch edit validation warning for field ${response.field_id}: `, validation.errors);
           }
         }
       }
-      
+
       const conn = await pool.getConnection();
 
       try {
@@ -1065,7 +1063,7 @@ router.put(
           ) {
             // If we're removing a file but the database already has an empty value
             // (because file was deleted from server first), use the original_file_name
-            logPreviousValue = `uploads/forms/${original_file_name}`;
+            logPreviousValue = `uploads / forms / ${original_file_name} `;
           }
 
           // Create edit details JSON
@@ -1082,9 +1080,9 @@ router.put(
 
           // Log the action
           await conn.query(
-            `INSERT INTO action_logs 
-           (user_id, action_type, application_id, edit_details) 
-           VALUES (?, 'edit_response', ?, ?)`,
+            `INSERT INTO action_logs
+  (user_id, action_type, application_id, edit_details)
+VALUES(?, 'edit_response', ?, ?)`,
             [userId, id, JSON.stringify(editDetails)]
           );
 
@@ -1101,7 +1099,7 @@ router.put(
 
         // Get user info for response
         const [userInfo] = await pool.query(
-          `SELECT full_name FROM users WHERE id = ?`,
+          `SELECT full_name FROM users WHERE id = ? `,
           [userId]
         );
 
@@ -1136,10 +1134,10 @@ router.get(
 
       // Get all edit actions for this application
       const [editLogs] = await pool.query(
-        `SELECT 
-        al.*,
-        u.full_name as user_name,
-        u.role as user_role
+        `SELECT
+al.*,
+  u.full_name as user_name,
+  u.role as user_role
       FROM action_logs al
       JOIN users u ON al.user_id = u.id
       WHERE al.application_id = ? AND al.action_type = 'edit_response'
@@ -1171,7 +1169,7 @@ router.get(
           };
         } catch (error) {
           console.error(
-            `Error parsing edit_details for log ID ${log.id}:`,
+            `Error parsing edit_details for log ID ${log.id}: `,
             error
           );
           // Return a fallback object for logs with invalid JSON
@@ -1284,17 +1282,17 @@ router.put(
           ) {
             // If we're removing a file but the database already has an empty value
             // (because file was deleted from server first), use the original_file_name
-            logPreviousValue = `uploads/forms/${original_file_name}`;
+            logPreviousValue = `uploads / forms / ${original_file_name} `;
           }
 
           // Log the edit
           await conn.query(
-            `INSERT INTO action_logs 
-             (user_id, action_type, application_id, edit_details) 
-             VALUES (?, 'edit_incomplete', ?, ?)`,
+            `INSERT INTO action_logs
+  (user_id, action_type, application_id, edit_details)
+VALUES(?, 'edit_incomplete', ?, ?)`,
             [
               userId,
-              registration[0].application_id || `TEMP-${id}`,
+              registration[0].application_id || `TEMP - ${id} `,
               JSON.stringify({
                 field_id: parseInt(fieldId) || fieldId,
                 field_name: fieldInfo[0].name,
@@ -1325,7 +1323,7 @@ router.put(
 
         // Get user info for response
         const [userInfo] = await pool.query(
-          `SELECT full_name FROM users WHERE id = ?`,
+          `SELECT full_name FROM users WHERE id = ? `,
           [userId]
         );
 
@@ -1391,26 +1389,26 @@ router.post(
           ? parseInt(lastApp[0].application_id.split("-")[2])
           : 0;
         const appNum = String(lastNum + 1).padStart(4, "0");
-        const applicationId = `${year}-${month}-${appNum}`;
+        const applicationId = `${year} -${month} -${appNum} `;
 
         // Update the registration status to completed
         await conn.query(
-          `UPDATE registration_progress SET 
-           status = 'completed', 
-           service_status = 'pending',
-           completed_at = CURRENT_TIMESTAMP,
-           last_updated_by = ?,
-           last_action_at = CURRENT_TIMESTAMP,
-           application_id = ?
-           WHERE id = ?`,
+          `UPDATE registration_progress SET
+status = 'completed',
+  service_status = 'pending',
+  completed_at = CURRENT_TIMESTAMP,
+  last_updated_by = ?,
+  last_action_at = CURRENT_TIMESTAMP,
+  application_id = ?
+    WHERE id = ? `,
           [userId, applicationId, id]
         );
 
         // Log the action
         await conn.query(
-          `INSERT INTO action_logs 
-           (user_id, action_type, application_id, previous_status, new_status, edit_details) 
-           VALUES (?, 'complete_registration', ?, 'in_progress', 'completed', ?)`,
+          `INSERT INTO action_logs
+  (user_id, action_type, application_id, previous_status, new_status, edit_details)
+VALUES(?, 'complete_registration', ?, 'in_progress', 'completed', ?)`,
           [
             userId,
             applicationId,
@@ -1435,7 +1433,7 @@ router.post(
 
         // Get user info for response
         const [userInfo] = await pool.query(
-          `SELECT full_name FROM users WHERE id = ?`,
+          `SELECT full_name FROM users WHERE id = ? `,
           [userId]
         );
 
@@ -1498,9 +1496,9 @@ router.post(
       } else {
         // Create a new registration record
         const [result] = await pool.query(
-          `INSERT INTO registration_progress 
-           (user_id, status, current_section_id, created_at, updated_at, last_updated_by) 
-           VALUES (?, 'in_progress', NULL, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, ?)`,
+          `INSERT INTO registration_progress
+  (user_id, status, current_section_id, created_at, updated_at, last_updated_by)
+VALUES(?, 'in_progress', NULL, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, ?)`,
           [userId, staffUserId]
         );
 
@@ -1508,9 +1506,9 @@ router.post(
 
         // Log the action
         await pool.query(
-          `INSERT INTO action_logs 
-           (user_id, action_type, edit_details) 
-           VALUES (?, 'create_registration', ?)`,
+          `INSERT INTO action_logs
+  (user_id, action_type, edit_details)
+VALUES(?, 'create_registration', ?)`,
           [
             staffUserId,
             JSON.stringify({
@@ -1569,7 +1567,7 @@ router.delete(
       if (registrationId) {
         await pool.query(
           `UPDATE registration_responses SET value = '' 
-           WHERE registration_id = ? AND field_id = ?`,
+           WHERE registration_id = ? AND field_id = ? `,
           [registrationId, fieldId]
         );
       }
@@ -1611,7 +1609,7 @@ router.delete("/applications/delete-file/:fieldId", async (req, res) => {
       await pool.query(
         `UPDATE registration_responses SET value = '' 
            WHERE registration_id = (SELECT id FROM registration_progress WHERE application_id = ?) 
-           AND field_id = ?`,
+           AND field_id = ? `,
         [applicationId, fieldId]
       );
     }
@@ -1623,6 +1621,219 @@ router.delete("/applications/delete-file/:fieldId", async (req, res) => {
   } catch (error) {
     console.error("File deletion error:", error);
     res.status(500).json({ message: "Error deleting file" });
+  }
+});
+
+// ==========================================
+// EQUIPMENT MANAGEMENT ROUTES
+// ==========================================
+
+// Get all equipment requests (combining table records and virtual registration requests)
+router.get("/equipment-requests", authenticateToken, requireRole(["admin", "staff"]), async (req, res) => {
+  try {
+    // 1. Get all formal requests from equipment_requests table
+    const [dbRequests] = await pool.query(`
+      SELECT
+        er.id,
+        er.user_id,
+        er.registration_id,
+        er.equipment_type,
+        er.equipment_details,
+        er.status,
+        er.requested_at,
+        er.fulfilled_at,
+        er.admin_notes,
+        er.source,
+        ru.username as applicant_username,
+        ru.email as applicant_email,
+        ru.phone as applicant_phone,
+        (SELECT value FROM registration_responses 
+         WHERE registration_id = er.registration_id AND field_id = 1 LIMIT 1) as first_name,
+        (SELECT value FROM registration_responses 
+         WHERE registration_id = er.registration_id AND field_id = 2 LIMIT 1) as last_name
+      FROM equipment_requests er
+      JOIN registered_users ru ON er.user_id = ru.id
+      ORDER BY er.requested_at DESC
+  `);
+
+    // 2. Get potential requests from completed registrations
+    // Logic: Look for completed registrations where require_equipment is YES/True
+    // AND we haven't already created an equipment_request record for them
+
+    // Fetch registration equipment data
+    const [regEquipment] = await pool.query(`
+SELECT
+rp.id as registration_id,
+  rp.user_id,
+  rp.completed_at as requested_at,
+  rr.value as equipment_type,
+  ru.username as applicant_username,
+  ru.email as applicant_email,
+  ru.phone as applicant_phone,
+  (SELECT value FROM registration_responses 
+   WHERE registration_id = rp.id AND field_id = 1 LIMIT 1) as first_name,
+  (SELECT value FROM registration_responses 
+   WHERE registration_id = rp.id AND field_id = 2 LIMIT 1) as last_name,
+  (
+    SELECT value FROM registration_responses 
+          WHERE registration_id = rp.id AND field_id = (SELECT id FROM form_fields WHERE name = 'require_equipment')
+        ) as require_equipment_val
+      FROM registration_progress rp
+      JOIN registration_responses rr ON rp.id = rr.registration_id
+      JOIN form_fields ff ON rr.field_id = ff.id
+      JOIN registered_users ru ON rp.user_id = ru.id
+      WHERE rp.status = 'completed'
+      AND ff.name = 'disability_eqreq'
+  `);
+
+
+
+    // Filter and format registration requests
+    const virtualRequests = regEquipment.filter(req => {
+      const val = String(req.require_equipment_val || "").toLowerCase();
+      return val.includes("yes") || val.includes("true") || val === "1" || val.includes("होय");
+    }).map(req => {
+      // Check if this specific registration/equipment combo already exists in dbRequests
+      // We need to match BOTH registration_id AND equipment_type to avoid hiding different equipment requests
+      const exists = dbRequests.some(dbReq => {
+        const matchesRegistration = dbReq.registration_id && String(dbReq.registration_id) === String(req.registration_id);
+        const matchesEquipmentType = dbReq.equipment_type && String(dbReq.equipment_type).toLowerCase() === String(req.equipment_type).toLowerCase();
+
+        // Only consider it a duplicate if BOTH registration AND equipment type match
+        return matchesRegistration && matchesEquipmentType;
+      });
+
+      if (exists) return null;
+
+      return {
+        id: `reg-${req.registration_id}`, // Virtual ID
+        user_id: req.user_id,
+        registration_id: req.registration_id,
+        equipment_type: req.equipment_type,
+        equipment_details: "Requested in Application",
+        status: "pending",
+        requested_at: req.requested_at,
+        fulfilled_at: null,
+        admin_notes: null,
+        source: "registration",
+        applicant_username: req.applicant_username,
+        applicant_email: req.applicant_email,
+        applicant_phone: req.applicant_phone,
+        first_name: req.first_name,
+        last_name: req.last_name
+      };
+    }).filter(req => req !== null);
+
+    // Combine and sort
+    const allRequests = [...dbRequests, ...virtualRequests].sort((a, b) =>
+      new Date(b.requested_at) - new Date(a.requested_at)
+    );
+
+    res.json(allRequests);
+
+  } catch (error) {
+    console.error("Error fetching equipment requests:", error);
+    res.status(500).json({ message: "Error fetching equipment requests" });
+  }
+});
+
+// Update equipment request status
+router.put("/equipment/:id/status", authenticateToken, requireRole(["admin", "staff"]), async (req, res) => {
+  try {
+    const { status, admin_notes } = req.body;
+    const requestId = req.params.id;
+
+    // Check if it's a virtual request (starting with 'reg-')
+    if (String(requestId).startsWith("reg-")) {
+
+      // It's a first-time update for a registration request. We need to CREATE a record.
+      const registrationId = requestId.replace("reg-", "");
+
+      // 1. Fetch details from registration to verify and get data
+      const [sourceData] = await pool.query(`
+SELECT
+rp.user_id,
+  rr.value as equipment_type
+            FROM registration_progress rp
+            JOIN registration_responses rr ON rp.id = rr.registration_id
+            JOIN form_fields ff ON rr.field_id = ff.id
+            WHERE rp.id = ? AND ff.name = 'disability_eqreq'
+  `, [registrationId]);
+
+      if (sourceData.length === 0) {
+        console.error(`Original registration request not found for ID: ${registrationId}`);
+        return res.status(404).json({ message: "Original registration request not found" });
+      }
+
+      const { user_id, equipment_type } = sourceData[0];
+
+      // 2. Insert into equipment_requests
+      const [insertResult] = await pool.query(`
+            INSERT INTO equipment_requests 
+  (user_id, registration_id, equipment_type, equipment_details, status, admin_notes, fulfilled_at, source)
+VALUES(?, ?, ?, ?, ?, ?, ?, 'registration')
+        `, [
+        user_id,
+        registrationId,
+        equipment_type,
+        "Requested in Application (Imported)",
+        status,
+        admin_notes || null,
+        status === 'provided' ? new Date() : null
+      ]);
+
+
+      if (insertResult.affectedRows === 0) {
+        throw new Error("Insert operation failed (0 rows affected)");
+      }
+
+      // 3. Log action
+      await pool.query(
+        `INSERT INTO action_logs(user_id, action_type, application_id, previous_status, new_status)
+VALUES(?, 'equipment_update', ?, 'virtual_pending', ?)`,
+        [req.user.id, `EQ-NEW-${insertResult.insertId}`, status]
+      );
+
+      return res.json({ message: "Request imported and updated successfully", newId: insertResult.insertId, type: 'new' });
+
+    } else {
+
+      // It's a standard update for an existing record
+      const [updateResult] = await pool.query(`
+            UPDATE equipment_requests 
+            SET status = ?,
+  admin_notes = ?,
+  fulfilled_at = ?
+    WHERE id = ?
+      `, [
+        status,
+        admin_notes || null,
+        status === 'provided' ? new Date() : null,
+        requestId
+      ]);
+
+      if (updateResult.affectedRows === 0) {
+        console.warn(`Update failed: Request ID ${requestId} not found in database.`);
+        return res.status(404).json({ message: "Request not found or no changes made", detail: "ID not found" });
+      }
+
+      // Log action
+      await pool.query(
+        `INSERT INTO action_logs(user_id, action_type, application_id, previous_status, new_status)
+VALUES(?, 'equipment_update', ?, 'unknown', ?)`,
+        [req.user.id, `EQ-${requestId}`, status]
+      );
+
+      return res.json({ message: "Status updated successfully", type: 'existing' });
+    }
+
+  } catch (error) {
+    console.error("Error updating equipment status:", error);
+    res.status(500).json({
+      message: "Error updating equipment status",
+      detail: error.message,
+      sqlMessage: error.sqlMessage
+    });
   }
 });
 

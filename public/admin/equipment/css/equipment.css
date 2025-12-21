@@ -1,0 +1,195 @@
+/* Equipment Page Refinements */
+
+/* Stats Cards - Exact Copy from Dashboard */
+.equipment-stats {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 1.5rem;
+    margin-bottom: 2.5rem;
+}
+
+.equipment-stat-card {
+    background: white;
+    border-radius: 12px;
+    padding: 1.25rem;
+    box-shadow: 0 4px 24px rgba(0, 0, 0, 0.08);
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.equipment-stat-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 28px rgba(0, 0, 0, 0.12);
+}
+
+.equipment-stat-card .stat-icon {
+    font-size: 1.5rem;
+    width: 3.5rem;
+    height: 3.5rem;
+    background: var(--primary-color);
+    color: white;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 4px 12px rgba(26, 35, 126, 0.15);
+    transition: all 0.2s ease;
+}
+
+.equipment-stat-card .stat-icon svg {
+    width: 24px;
+    height: 24px;
+    stroke-width: 2px;
+    stroke: currentColor;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+}
+
+.equipment-stat-card .stat-info h3 {
+    font-size: 0.875rem;
+    color: #6b7280;
+    margin: 0 0 0.25rem 0;
+    font-weight: 500;
+}
+
+.equipment-stat-card .stat-value {
+    font-size: 1.75rem;
+    font-weight: 600;
+    color: #344767;
+    line-height: 1.2;
+}
+
+/* Refined Status Badges */
+.badge.rounded-pill {
+    padding: 0.5rem 1rem;
+    font-size: 0.75rem;
+    font-weight: 600;
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
+}
+
+/* Source Badge Styling */
+.badge.bg-indigo-subtle {
+    background-color: #e0e7ff !important;
+    color: #3730a3 !important;
+    border: none !important;
+}
+
+.badge.bg-gray-subtle {
+    background-color: #f3f4f6 !important;
+    color: #4b5563 !important;
+    border: none !important;
+}
+
+/* Card Header Enhancement */
+.content-card .card-header {
+    background: #f8f9fa;
+    border-bottom: 2px solid #e5e7eb;
+    padding: 1.5rem;
+}
+
+.content-card .card-header h5 {
+    color: #1f2937;
+    font-weight: 700;
+    font-size: 1.125rem;
+    margin: 0;
+}
+
+/* Mobile Filter Responsiveness */
+#equipmentMobileFilters {
+    width: 100%;
+}
+
+#equipmentMobileFilters .d-flex {
+    width: 100%;
+}
+
+@media (max-width: 575px) {
+
+    #equipmentMobileFilters .form-select,
+    #equipmentMobileFilters .form-control,
+    #equipmentMobileFilters select,
+    #equipmentMobileFilters input {
+        width: 100% !important;
+        max-width: 100% !important;
+        min-width: 100% !important;
+    }
+}
+
+/* Applicant Name Styling */
+.fw-bold.text-dark {
+    color: #1f2937 !important;
+    font-weight: 600 !important;
+    font-size: 0.95rem;
+}
+
+/* Loading State */
+.spinner-border.text-primary {
+    color: #667eea !important;
+    width: 3rem;
+    height: 3rem;
+    border-width: 0.3rem;
+}
+
+/* Empty State */
+.text-muted {
+    color: #9ca3af !important;
+}
+
+/* Responsive Adjustments - Matching Dashboard */
+@media (max-width: 1200px) {
+    .equipment-stats {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+
+@media (max-width: 768px) {
+    .equipment-stats {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 1rem;
+    }
+
+    .equipment-stat-card {
+        padding: 1rem;
+    }
+
+    .equipment-stat-card .stat-value {
+        font-size: 1.5rem;
+    }
+
+    .equipment-stat-card .stat-icon {
+        width: 3rem;
+        height: 3rem;
+    }
+
+    .equipment-stat-card .stat-icon svg {
+        width: 20px;
+        height: 20px;
+    }
+}
+
+@media (max-width: 576px) {
+    .equipment-stats {
+        grid-template-columns: 1fr;
+    }
+
+    .equipment-stat-card {
+        padding: 1rem;
+    }
+
+    .equipment-stat-card .stat-icon {
+        width: 3rem;
+        height: 3rem;
+    }
+
+    .equipment-stat-card .stat-value {
+        font-size: 1.5rem;
+    }
+}
+
+.badge.rounded-pill {
+    font-size: 0.7rem;
+    padding: 0.4rem 0.8rem;
+}

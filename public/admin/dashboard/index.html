@@ -6,8 +6,11 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Admin Dashboard | DDRC</title>
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet" />
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css" />
   <link rel="stylesheet" href="/css/main.css" />
   <link rel="stylesheet" href="/admin/css/style.css" />
+  <link rel="stylesheet" href="/admin/equipment/css/equipment.css" />
+  <link rel="stylesheet" href="/admin/equipment/css/custom-modal.css" />
   <style>
     /* Edit Summary Styles - Completely simplified and direct */
     #editSummaryList {
@@ -557,6 +560,81 @@
       display: flex;
       align-items: center;
     }
+
+    /* View Tabs Styling */
+    .view-tabs {
+      display: flex;
+      gap: 0.5rem;
+      border-bottom: 2px solid #e5e7eb;
+      margin-bottom: 1.5rem;
+    }
+
+    .view-tab {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      padding: 0.75rem 1.5rem;
+      background: transparent;
+      border: none;
+      border-bottom: 3px solid transparent;
+      color: #6b7280;
+      font-weight: 500;
+      font-size: 0.95rem;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      position: relative;
+      bottom: -2px;
+    }
+
+    .view-tab svg {
+      flex-shrink: 0;
+    }
+
+    .view-tab:hover {
+      color: var(--primary-color);
+      background-color: rgba(26, 35, 126, 0.05);
+    }
+
+    .view-tab.active {
+      color: var(--primary-color);
+      border-bottom-color: var(--primary-color);
+      font-weight: 600;
+    }
+
+    /* Responsive adjustments */
+    @media (max-width: 768px) {
+      .view-tab {
+        padding: 0.625rem 1rem;
+        font-size: 0.875rem;
+      }
+
+      .view-tab span {
+        display: none;
+      }
+
+      .view-tab svg {
+        width: 20px;
+        height: 20px;
+      }
+
+      .dashboard-header h1 {
+        font-size: 1.5rem;
+      }
+
+      .dashboard-header p {
+        font-size: 0.875rem;
+      }
+    }
+
+    @media (max-width: 480px) {
+      .view-tabs {
+        gap: 0.25rem;
+      }
+
+      .view-tab {
+        padding: 0.5rem 0.75rem;
+      }
+    }
   </style>
 </head>
 
@@ -612,131 +690,267 @@
     </header>
     <div class="admin-content">
       <div class="dashboard-header">
-        <div class="d-flex justify-content-between align-items-center">
-          <div>
-            <h1>Admin Dashboard</h1>
-            <p class="text-muted">Overview of system statistics and recent activities</p>
-          </div>
-        </div>
-      </div>
-      <!-- Stats Grid -->
-      <div class="stats-grid">
-        <div class="stat-card">
-          <div class="stat-icon">
-            <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none"
-              stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-              <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
-              <circle cx="9" cy="7" r="4"></circle>
-              <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
-              <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
-            </svg>
-          </div>
-          <div class="stat-info">
-            <h3>Total Registrations</h3>
-            <div class="stat-value" id="totalRegistrations">
-              <div class="skeleton-row" style="width: 80px; height: 32px; margin: 0;"></div>
-            </div>
+        <div class="d-flex justify-content-between align-items-start mb-3">
+          <div class="flex-grow-1">
+            <h1 id="dashboardTitle" class="mb-2">Admin Dashboard</h1>
+            <p class="text-muted mb-0" id="dashboardSubtitle">Overview of system statistics and recent activities</p>
           </div>
         </div>
 
-        <div class="stat-card">
-          <div class="stat-icon">
-            <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none"
+        <!-- View Tabs -->
+        <div class="view-tabs">
+          <button class="view-tab active" id="applicationsViewBtn" onclick="switchView('applications')">
+            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none"
               stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
               <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
-              <path d="M14 2v6h6"></path>
-              <path d="M16 13H8"></path>
-              <path d="M16 17H8"></path>
-              <path d="M10 9H8"></path>
+              <polyline points="14 2 14 8 20 8"></polyline>
             </svg>
+            <span>Applications</span>
+          </button>
+          <button class="view-tab" id="equipmentViewBtn" onclick="switchView('equipment')">
+            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none"
+              stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <rect x="2" y="7" width="20" height="14" rx="2" ry="2"></rect>
+              <path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"></path>
+            </svg>
+            <span>Service Requests</span>
+          </button>
+        </div>
+      </div>
+      <!-- Applications View (Default) -->
+      <div id="applicationsView">
+        <!-- Stats Grid -->
+        <div class="stats-grid">
+          <div class="stat-card">
+            <div class="stat-icon">
+              <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none"
+                stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
+                <circle cx="9" cy="7" r="4"></circle>
+                <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
+                <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
+              </svg>
+            </div>
+            <div class="stat-info">
+              <h3>Total Registrations</h3>
+              <div class="stat-value" id="totalRegistrations">
+                <div class="skeleton-row" style="width: 80px; height: 32px; margin: 0;"></div>
+              </div>
+            </div>
           </div>
-          <div class="stat-info">
-            <h3>Awaiting Review</h3>
-            <div class="stat-value" id="applicationsToReview">
-              <div class="skeleton-row" style="width: 80px; height: 32px; margin: 0;"></div>
+
+          <div class="stat-card">
+            <div class="stat-icon">
+              <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none"
+                stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                <path d="M14 2v6h6"></path>
+                <path d="M16 13H8"></path>
+                <path d="M16 17H8"></path>
+                <path d="M10 9H8"></path>
+              </svg>
+            </div>
+            <div class="stat-info">
+              <h3>Awaiting Review</h3>
+              <div class="stat-value" id="applicationsToReview">
+                <div class="skeleton-row" style="width: 80px; height: 32px; margin: 0;"></div>
+              </div>
+            </div>
+          </div>
+
+          <div class="stat-card">
+            <div class="stat-icon">
+              <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none"
+                stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
+                <polyline points="22 4 12 14.01 9 11.01"></polyline>
+              </svg>
+            </div>
+            <div class="stat-info">
+              <h3>Approved Today</h3>
+              <div class="stat-value" id="approvedToday">
+                <div class="skeleton-row" style="width: 80px; height: 32px; margin: 0;"></div>
+              </div>
+            </div>
+          </div>
+
+          <div class="stat-card">
+            <div class="stat-icon">
+              <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none"
+                stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <circle cx="12" cy="12" r="10"></circle>
+                <polyline points="12 6 12 12 16 14"></polyline>
+              </svg>
+            </div>
+            <div class="stat-info">
+              <h3>Partial Registrations</h3>
+              <div class="stat-value" id="incompleteRegistrations">
+                <div class="skeleton-row" style="width: 80px; height: 32px; margin: 0;"></div>
+              </div>
             </div>
           </div>
         </div>
 
-        <div class="stat-card">
-          <div class="stat-icon">
-            <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none"
-              stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-              <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
-              <polyline points="22 4 12 14.01 9 11.01"></polyline>
-            </svg>
+        <!-- Recent Applications -->
+        <div class="content-card mt-4">
+          <div class="card-header d-flex justify-content-between align-items-center">
+            <h2>Awaiting Review</h2>
+            <a href="/admin/applications" class="btn btn-primary btn-sm">View All</a>
           </div>
-          <div class="stat-info">
-            <h3>Approved Today</h3>
-            <div class="stat-value" id="approvedToday">
-              <div class="skeleton-row" style="width: 80px; height: 32px; margin: 0;"></div>
-            </div>
+          <div class="table-responsive">
+            <table class="table mobile-list">
+              <thead>
+                <tr>
+                  <th class="text-nowrap">Application ID</th>
+                  <th class="text-nowrap">Applicant Name</th>
+                  <th class="text-nowrap">Submission Date</th>
+                  <th>Type of Disability</th>
+                  <th>Location</th>
+                </tr>
+              </thead>
+              <tbody id="recentApplications">
+                <!-- Will be populated by JavaScript -->
+              </tbody>
+            </table>
           </div>
         </div>
 
-        <div class="stat-card">
-          <div class="stat-icon">
-            <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none"
-              stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-              <circle cx="12" cy="12" r="10"></circle>
-              <polyline points="12 6 12 12 16 14"></polyline>
-            </svg>
+        <!-- Incomplete Registrations -->
+        <div class="content-card mt-4">
+          <div class="card-header d-flex justify-content-between align-items-center">
+            <h2 data-label="Partial Registrations">Partial Registrations</h2>
           </div>
-          <div class="stat-info">
-            <h3>Partial Registrations</h3>
-            <div class="stat-value" id="incompleteRegistrations">
-              <div class="skeleton-row" style="width: 80px; height: 32px; margin: 0;"></div>
-            </div>
+          <div class="table-responsive">
+            <table class="table mobile-list">
+              <thead>
+                <tr>
+                  <th>ID</th>
+                  <th>Name</th>
+                  <th>Email</th>
+                  <th>Phone</th>
+                  <th>Last Updated</th>
+                  <th>Inactive For</th>
+                  <th>Current Section</th>
+                </tr>
+              </thead>
+              <tbody id="incompleteRegistrationsList">
+                <!-- Will be populated by JavaScript -->
+              </tbody>
+            </table>
           </div>
         </div>
       </div>
 
-      <!-- Recent Applications -->
-      <div class="content-card mt-4">
-        <div class="card-header d-flex justify-content-between align-items-center">
-          <h2>Awaiting Review</h2>
-          <a href="/admin/applications" class="btn btn-primary btn-sm">View All</a>
+      <!-- Equipment View (Hidden by default) -->
+      <div id="equipmentView" style="display: none;">
+        <!-- Equipment Stats -->
+        <div class="equipment-stats" id="equipmentStats">
+          <!-- Stats will be dynamically populated -->
         </div>
-        <div class="table-responsive">
-          <table class="table mobile-list">
-            <thead>
-              <tr>
-                <th class="text-nowrap">Application ID</th>
-                <th class="text-nowrap">Applicant Name</th>
-                <th class="text-nowrap">Submission Date</th>
-                <th>Type of Disability</th>
-                <th>Location</th>
-              </tr>
-            </thead>
-            <tbody id="recentApplications">
-              <!-- Will be populated by JavaScript -->
-            </tbody>
-          </table>
+
+        <!-- Equipment Requests Table -->
+        <div class="content-card mt-4">
+          <div class="card-header">
+            <div class="d-flex w-100 justify-content-between align-items-center">
+              <h2>Equipment Requests</h2>
+              <!-- Filter Toggle Button (Mobile Only) -->
+              <button class="btn btn-outline-primary btn-sm d-sm-none" type="button" id="equipmentFilterToggle"
+                data-bs-toggle="collapse" data-bs-target="#equipmentMobileFilters" aria-expanded="false"
+                aria-controls="equipmentMobileFilters" style="width: auto;">
+                <i class="bi bi-funnel"></i> Filters
+              </button>
+              <!-- Desktop Filters -->
+              <div class="admin-controls d-none d-sm-flex" id="equipmentFilters">
+                <label for="equipmentStatusFilter" class="visually-hidden">Filter by Status</label>
+                <select id="equipmentStatusFilter" class="form-select" style="width: 160px;">
+                  <option value="all">All Statuses</option>
+                  <option value="pending">Pending</option>
+                  <option value="processing">Processing</option>
+                  <option value="provided">Provided</option>
+                  <option value="rejected">Rejected</option>
+                  <option value="not_available">Not Available</option>
+                </select>
+                <label for="equipmentSearchInput" class="visually-hidden">Search Applicant</label>
+                <input type="text" id="equipmentSearchInput" class="form-control" placeholder="Search Applicant..."
+                  style="width: 220px;">
+              </div>
+            </div>
+            <!-- Mobile Filters (Collapsible) -->
+            <div class="collapse mt-3 d-sm-none" id="equipmentMobileFilters">
+              <div class="d-flex flex-column gap-2">
+                <select id="equipmentStatusFilterMobile" class="form-select">
+                  <option value="all">All Statuses</option>
+                  <option value="pending">Pending</option>
+                  <option value="processing">Processing</option>
+                  <option value="provided">Provided</option>
+                  <option value="rejected">Rejected</option>
+                  <option value="not_available">Not Available</option>
+                </select>
+                <input type="text" id="equipmentSearchInputMobile" class="form-control"
+                  placeholder="Search Applicant...">
+              </div>
+            </div>
+          </div>
+
+          <div class="table-responsive">
+            <table class="table mobile-list">
+              <thead>
+                <tr>
+                  <th class="text-nowrap">Applicant</th>
+                  <th>Equipment Type</th>
+                  <th class="text-nowrap">Requested Date</th>
+                  <th>Source</th>
+                  <th>Status</th>
+                </tr>
+              </thead>
+              <tbody id="requestsTableBody">
+                <!-- Will be populated by JavaScript -->
+              </tbody>
+            </table>
+          </div>
         </div>
       </div>
+    </div>
+  </div>
 
-      <!-- Incomplete Registrations -->
-      <div class="content-card mt-4">
-        <div class="card-header d-flex justify-content-between align-items-center">
-          <h2 data-label="Partial Registrations">Partial Registrations</h2>
+  <!-- Status Update Modal -->
+  <!-- Custom Status Update Modal -->
+  <div class="custom-modal-overlay" id="statusModal" style="display: none;">
+    <div class="custom-modal-container">
+      <div class="custom-modal-content">
+        <div class="custom-modal-header">
+          <h5 class="custom-modal-title">Update Status</h5>
+          <button type="button" class="custom-modal-close" onclick="closeStatusModal()">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <line x1="18" y1="6" x2="6" y2="18"></line>
+              <line x1="6" y1="6" x2="18" y2="18"></line>
+            </svg>
+          </button>
         </div>
-        <div class="table-responsive">
-          <table class="table mobile-list">
-            <thead>
-              <tr>
-                <th>ID</th>
-                <th>Name</th>
-                <th>Email</th>
-                <th>Phone</th>
-                <th>Last Updated</th>
-                <th>Inactive For</th>
-                <th>Current Section</th>
-              </tr>
-            </thead>
-            <tbody id="incompleteRegistrationsList">
-              <!-- Will be populated by JavaScript -->
-            </tbody>
-          </table>
+        <div class="custom-modal-body">
+          <div id="userNotesDisplay"></div>
+          <form id="statusForm">
+            <input type="hidden" id="requestId">
+            <div class="custom-form-group">
+              <label class="custom-form-label">New Status</label>
+              <select class="custom-form-select" id="newStatus" required>
+                <option value="pending">Pending</option>
+                <option value="processing">Processing</option>
+                <option value="provided">Provided</option>
+                <option value="not_available">Not Available</option>
+                <option value="rejected">Rejected</option>
+              </select>
+            </div>
+            <div class="custom-form-group">
+              <label class="custom-form-label">Admin Notes</label>
+              <textarea class="custom-form-textarea" id="adminNotes" rows="3"
+                placeholder="Add notes about this update..."></textarea>
+            </div>
+          </form>
+        </div>
+        <div class="custom-modal-footer">
+          <button type="button" class="custom-btn custom-btn-secondary" onclick="closeStatusModal()">Cancel</button>
+          <button type="button" class="custom-btn custom-btn-primary" id="saveStatusBtn">Update Status</button>
         </div>
       </div>
     </div>
@@ -964,6 +1178,47 @@
   <script src="/admin/js/api.js"></script>
   <script src="/admin/js/init.js"></script>
   <script src="/admin/js/dashboard.js"></script>
+  <script src="/admin/equipment/js/equipment.js"></script>
+  <script>
+    // View switching functionality
+    let currentView = 'applications';
+    let equipmentDataLoaded = false;
+
+    function switchView(view) {
+      if (view === currentView) return;
+
+      currentView = view;
+
+      // Update button states
+      const applicationsBtn = document.getElementById('applicationsViewBtn');
+      const equipmentBtn = document.getElementById('equipmentViewBtn');
+
+      if (view === 'applications') {
+        applicationsBtn.classList.add('active');
+        equipmentBtn.classList.remove('active');
+        document.getElementById('applicationsView').style.display = 'block';
+        document.getElementById('equipmentView').style.display = 'none';
+        document.getElementById('dashboardTitle').textContent = 'Admin Dashboard';
+        document.getElementById('dashboardSubtitle').textContent = 'Overview of system statistics and recent activities';
+      } else {
+        applicationsBtn.classList.remove('active');
+        equipmentBtn.classList.add('active');
+        document.getElementById('applicationsView').style.display = 'none';
+        document.getElementById('equipmentView').style.display = 'block';
+        document.getElementById('dashboardTitle').textContent = 'Service Requests';
+        document.getElementById('dashboardSubtitle').textContent = 'Manage assistive device requests and track their status';
+
+        // Load equipment data if not already loaded
+        if (!equipmentDataLoaded && typeof loadRequests === 'function') {
+          loadRequests();
+          equipmentDataLoaded = true;
+        }
+      }
+    }
+
+    // Make switchView available globally
+    window.switchView = switchView;
+  </script>
 </body>
 
 </html>

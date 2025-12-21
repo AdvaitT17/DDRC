@@ -59,8 +59,10 @@
         <img src="/images/home.svg" alt="Home" />
         <span class="nav-icon-text">Home</span>
       </a>
+      <a href="/dashboard" aria-label="Dashboard">Dashboard</a>
       <a href="/dashboard/profile" aria-label="View Profile">Profile</a>
       <a href="/dashboard/documents" aria-label="Access Documents">Documents</a>
+      <a href="/dashboard/equipment" aria-label="Request Equipment">Request Equipment</a>
       <div class="nav-spacer"></div>
       <span class="nav-user-email" aria-label="Logged in as ${userEmail}">Logged in as: ${userEmail}</span>
       <a href="#" class="nav-logout-btn" id="logoutBtn" aria-label="Logout">
