@@ -358,28 +358,14 @@ async function generateApplicationPDF(applicationData, profileData) {
 </html>
     `;
 
-    // Launch browser - use serverless chromium in production, regular puppeteer locally
-    let browser;
-    const isProduction = process.env.NODE_ENV === 'production' || process.env.WEBSITE_SITE_NAME;
-
-    if (isProduction) {
-        // Azure/serverless: use puppeteer-core with @sparticuz/chromium
-        const puppeteerCore = require('puppeteer-core');
-        const chromium = require('@sparticuz/chromium');
-        browser = await puppeteerCore.launch({
-            args: chromium.args,
-            defaultViewport: chromium.defaultViewport,
-            executablePath: await chromium.executablePath(),
-            headless: chromium.headless
-        });
-    } else {
-        // Local development: use regular puppeteer with bundled Chromium
-        const puppeteerLocal = require('puppeteer');
-        browser = await puppeteerLocal.launch({
-            headless: 'new',
-            args: ['--no-sandbox', '--disable-setuid-sandbox']
-        });
-    }
+    // Launch Puppeteer
+    // On Azure: chromium is installed via startup script (apt-get install chromium)
+    // Locally: puppeteer bundles its own Chromium
+    const puppeteer = require('puppeteer');
+    const browser = await puppeteer.launch({
+        headless: 'new',
+        args: ['--no-sandbox', '--disable-setuid-sandbox']
+    });
 
     try {
         const page = await browser.newPage();
