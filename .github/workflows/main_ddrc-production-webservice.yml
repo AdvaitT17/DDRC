@@ -1,4 +1,4 @@
-name: Build and deploy Node.js app to Azure Web App - ddrc
+name: Build and deploy Node.js app to Azure Web App - ddrc-production-webservice
 
 on:
   push:
@@ -15,122 +15,33 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Set up Node.js version
-        uses: actions/setup-node@v3
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
         with:
           node-version: "22.x"
 
-      - name: Install dependencies
+      - name: Install dependencies (server)
         run: |
           cd server
-          npm install
-          cd ..
+          npm ci
 
       - name: Run tests
         run: |
           cd server
-          npm test
-          cd ..
+          npm test --if-present
 
-      - name: Apply path fixes for Azure
-        run: |
-          cp server/server.js server/server.js.bak
-          cat > server/path-fix.js << 'EOL'
-          const fs = require('fs');
-          const path = require('path');
-
-          const isAzure = process.env.WEBSITE_SITE_NAME !== undefined;
-
-          if (isAzure) {
-            global.PUBLIC_PATH = path.join(process.cwd(), 'public');
-
-            const originalResolve = path.resolve;
-            path.resolve = function (...args) {
-              const result = originalResolve.apply(this, args);
-              if (result.includes('/home/site/public')) {
-                return result.replace('/home/site/public', global.PUBLIC_PATH);
-              }
-              return result;
-            };
-
-            ['stat', 'statSync'].forEach(method => {
-              const original = fs[method];
-              fs[method] = function (pathStr, ...args) {
-                if (typeof pathStr === 'string' && pathStr.startsWith('/home/site/public/')) {
-                  const newPath = pathStr.replace('/home/site/public/', `${global.PUBLIC_PATH}/`);
-                  return original.call(this, newPath, ...args);
-                }
-                return original.apply(this, arguments);
-              };
-            });
-
-            try {
-              if (!fs.existsSync('/home/site/public')) {
-                fs.symlinkSync(global.PUBLIC_PATH, '/home/site/public', 'dir');
-              }
-            } catch (_) {}
-          }
-          EOL
-
-          sed -i '1s/^/require(".\/path-fix.js");\n/' server/server.js
-
-      - name: Prepare deployment
+      - name: Prepare deployment package
         run: |
           mkdir -p deployment
           cp -r server deployment/
-          rm -rf deployment/server/node_modules
           cp -r public deployment/
 
-          mv deployment/server/* deployment/
-          rm -rf deployment/server
-
-          mkdir -p deployment/uploads/{news,forms,documents,events}
-          chmod -R 755 deployment/uploads
-
-          cat > deployment/startup.sh << 'EOL'
-          #!/bin/bash
-          mkdir -p /home/site/wwwroot/uploads/{news,forms,documents,events}
-          chmod -R 755 /home/site/wwwroot/uploads
-          node server.js
-          EOL
-
-          chmod +x deployment/startup.sh
-
-          cat > deployment/web.config << 'EOL'
-          <?xml version="1.0" encoding="utf-8"?>
-          <configuration>
-            <system.webServer>
-              <handlers>
-                <add name="iisnode" path="startup.sh" verb="*" modules="iisnode"/>
-              </handlers>
-              <rewrite>
-                <rules>
-                  <rule name="StaticContent">
-                    <action type="Rewrite" url="public{REQUEST_URI}"/>
-                  </rule>
-                  <rule name="DynamicContent">
-                    <conditions>
-                      <add input="{REQUEST_FILENAME}" matchType="IsFile" negate="True"/>
-                    </conditions>
-                    <action type="Rewrite" url="startup.sh"/>
-                  </rule>
-                </rules>
-              </rewrite>
-              <security>
-                <requestFiltering>
-                  <requestLimits maxAllowedContentLength="50000000" />
-                </requestFiltering>
-              </security>
-            </system.webServer>
-          </configuration>
-          EOL
-
-      - name: Zip artifact for deployment
+      - name: Zip artifact
         run: |
           cd deployment
-          zip -r ../release.zip ./*
+          zip -r ../release.zip .
 
-      - name: Upload artifact for deployment job
+      - name: Upload artifact
         uses: actions/upload-artifact@v4
         with:
           name: node-app
@@ -144,7 +55,7 @@ jobs:
       contents: read
 
     steps:
-      - name: Download artifact from build job
+      - name: Download artifact
         uses: actions/download-artifact@v4
         with:
           name: node-app
@@ -162,6 +73,6 @@ jobs:
       - name: Deploy to Azure Web App
         uses: azure/webapps-deploy@v3
         with:
-          app-name: "ddrc-production-webservice"
-          slot-name: "Production"
+          app-name: ddrc-production-webservice
+          slot-name: Production
           package: .
