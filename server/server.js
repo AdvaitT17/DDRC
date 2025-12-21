@@ -354,6 +354,7 @@ app.use("/api/news", newsRoutes);
 app.use("/api/events", eventRoutes);
 app.use("/api/users", userRoutes);
 app.use("/api/contact", contactRoutes);
+app.use("/api/equipment", require("./routes/equipmentRoutes"));
 
 // HTML Routes - make sure these come after API routes
 app.get(
@@ -558,6 +559,12 @@ app.get("/dashboard/profile", (req, res) => {
 app.get("/dashboard/documents", (req, res) => {
   res.sendFile(
     path.join(__dirname, "../public/dashboard/documents/index.html")
+  );
+});
+
+app.get("/dashboard/equipment", (req, res) => {
+  res.sendFile(
+    path.join(__dirname, "../public/dashboard/equipment/index.html")
   );
 });
 

@@ -65,6 +65,19 @@
         </div>
       </div>
 
+      <!-- Equipment Status Card (New) -->
+      <div class="status-card" id="equipmentCard" role="region" aria-labelledby="equipment-heading">
+        <div class="status-header">
+          <h2 id="equipment-heading">Equipment Status</h2>
+          <a href="/dashboard/equipment" class="btn btn-sm btn-outline-primary">Request Equipment</a>
+        </div>
+        <div id="equipmentList" class="equipment-list">
+          <!-- Equipment items will be populated here -->
+          <div class="skeleton-row"></div>
+          <div class="skeleton-row"></div>
+        </div>
+      </div>
+
       <!-- Quick Actions -->
       <div class="actions-grid" role="region" aria-label="Quick actions">
         <div class="action-card">
@@ -76,9 +89,9 @@
           </button>
         </div>
         <div class="action-card">
-          <h3>Update Profile</h3>
+          <h3>View Profile</h3>
           <p>Manage your personal information</p>
-          <a href="/dashboard/profile" class="btn-primary" aria-label="View and update your profile">
+          <a href="/dashboard/profile" class="btn-secondary" aria-label="View and update your profile">
             <img src="/images/user.svg" alt="Profile icon" aria-hidden="true" />
             View Profile
           </a>
@@ -86,7 +99,7 @@
         <div class="action-card">
           <h3>Support</h3>
           <p>Need help? Contact our support team</p>
-          <a href="/contact" class="btn-primary" aria-label="Get help from support">
+          <a href="/contact" class="btn-secondary" aria-label="Get help from support">
             <img src="/images/help.svg" alt="Help icon" aria-hidden="true" />
             Get Help
           </a>

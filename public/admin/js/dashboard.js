@@ -2995,13 +2995,13 @@ class DashboardManager {
 
   // Update event listeners when showing All Applications View
   setupFilterAndPaginationListeners() {
-    // Set up status filter
+    // Set up status filter - Desktop
     const statusFilter = document.getElementById("statusFilter");
     if (statusFilter) {
       statusFilter.addEventListener("change", () => this.applyFilters());
     }
 
-    // Set up search input with debounce
+    // Set up search input with debounce - Desktop
     const searchInput = document.getElementById("searchInput");
     if (searchInput) {
       let debounceTimeout;
@@ -3011,12 +3011,51 @@ class DashboardManager {
       });
     }
 
-    // Set up location filter button
+    // Set up location filter button - Desktop
     const locationFilterBtn = document.getElementById("locationFilterBtn");
     if (locationFilterBtn) {
       locationFilterBtn.addEventListener("click", () =>
         this.toggleLocationFilter()
       );
+    }
+
+    // Mobile filters - sync with desktop
+    const statusFilterMobile = document.getElementById("statusFilterMobile");
+    if (statusFilterMobile) {
+      statusFilterMobile.addEventListener("change", (e) => {
+        if (statusFilter) statusFilter.value = e.target.value;
+        this.applyFilters();
+      });
+    }
+
+    const searchInputMobile = document.getElementById("searchInputMobile");
+    if (searchInputMobile) {
+      let debounceTimeout;
+      searchInputMobile.addEventListener("input", (e) => {
+        if (searchInput) searchInput.value = e.target.value;
+        clearTimeout(debounceTimeout);
+        debounceTimeout = setTimeout(() => this.applyFilters(), 300);
+      });
+    }
+
+    const locationFilterBtnMobile = document.getElementById("locationFilterBtnMobile");
+    if (locationFilterBtnMobile) {
+      locationFilterBtnMobile.addEventListener("click", () =>
+        this.toggleLocationFilter()
+      );
+    }
+
+    // Sync desktop to mobile
+    if (statusFilter && statusFilterMobile) {
+      statusFilter.addEventListener("change", (e) => {
+        statusFilterMobile.value = e.target.value;
+      });
+    }
+
+    if (searchInput && searchInputMobile) {
+      searchInput.addEventListener("input", (e) => {
+        searchInputMobile.value = e.target.value;
+      });
     }
 
     // Set up pagination buttons
@@ -3049,7 +3088,12 @@ class DashboardManager {
     recentAppsContainer.querySelector(".card-header").innerHTML = `
       <div class="d-flex w-100 justify-content-between align-items-center">
         <h2>All Applications</h2>
-        <div class="admin-controls">
+        <!-- Filter Toggle Button (Mobile Only) -->
+        <button class="btn btn-outline-primary btn-sm d-sm-none" type="button" id="applicationsFilterToggle" data-bs-toggle="collapse" data-bs-target="#applicationsMobileFilters" aria-expanded="false" aria-controls="applicationsMobileFilters" style="width: auto;">
+          <i class="bi bi-funnel"></i> Filters
+        </button>
+        <!-- Desktop Filters -->
+        <div class="admin-controls d-none d-sm-flex">
           <button type="button" id="locationFilterBtn" class="btn">Filter by Location</button>
           <select id="statusFilter" class="form-select">
             <option value="all">All Statuses</option>
@@ -3059,6 +3103,20 @@ class DashboardManager {
             <option value="rejected">Rejected</option>
           </select>
           <input type="text" id="searchInput" class="form-control" placeholder="Search applications...">
+        </div>
+      </div>
+      <!-- Mobile Filters (Collapsible) -->
+      <div class="collapse mt-3 d-sm-none" id="applicationsMobileFilters">
+        <div class="d-flex flex-column gap-2">
+          <button type="button" id="locationFilterBtnMobile" class="btn btn-outline-secondary">Filter by Location</button>
+          <select id="statusFilterMobile" class="form-select">
+            <option value="all">All Statuses</option>
+            <option value="pending">Pending</option>
+            <option value="under_review">Under Review</option>
+            <option value="approved">Approved</option>
+            <option value="rejected">Rejected</option>
+          </select>
+          <input type="text" id="searchInputMobile" class="form-control" placeholder="Search applications...">
         </div>
       </div>
     `;
@@ -3913,13 +3971,15 @@ class DashboardManager {
   }
 
   applyFilters() {
-    // Get selected status filter
+    // Get selected status filter (check mobile as fallback)
     const statusFilter = document.getElementById("statusFilter");
-    const selectedStatus = statusFilter ? statusFilter.value : "all";
+    const statusFilterMobile = document.getElementById("statusFilterMobile");
+    const selectedStatus = statusFilter ? statusFilter.value : (statusFilterMobile ? statusFilterMobile.value : "all");
 
-    // Get search query
+    // Get search query (check mobile as fallback)
     const searchInput = document.getElementById("searchInput");
-    const searchQuery = searchInput ? searchInput.value.toLowerCase() : "";
+    const searchInputMobile = document.getElementById("searchInputMobile");
+    const searchQuery = searchInput ? searchInput.value.toLowerCase() : (searchInputMobile ? searchInputMobile.value.toLowerCase() : "");
 
     // Filter the applications
     this.filteredApplications = this.allApplications.filter((app) => {

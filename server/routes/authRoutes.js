@@ -174,6 +174,7 @@ router.post("/department/login", departmentLoginLimiter, async (req, res) => {
       {
         id: user.id,
         username: user.username,
+        full_name: user.full_name, // Match init.js property
         role: user.role,
         type: "department",
         fp: fingerprint, // Token fingerprint for validation

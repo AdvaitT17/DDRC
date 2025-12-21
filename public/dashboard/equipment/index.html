@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Equipment Requests - DDRC</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet" />
+    <link rel="stylesheet" href="/css/main.css" />
+    <link rel="stylesheet" href="/css/header.css" />
+    <link rel="stylesheet" href="/dashboard/css/style.css" />
+    <link rel="stylesheet" href="/css/accessibility.css" />
+</head>
+
+<body>
+    <div id="authLoader" class="auth-loader">
+        <div class="spinner"></div>
+    </div>
+
+    <div id="mainContent" style="display: none">
+        <div id="site-header"></div>
+
+        <div class="dashboard-container" id="main-content" tabindex="-1">
+            <div class="breadcrumb">
+                <a href="/dashboard">Dashboard</a>
+                <span class="breadcrumb-separator">/</span>
+                <span class="breadcrumb-current">Equipment Requests</span>
+            </div>
+
+            <div class="row g-4">
+                <div class="col-lg-8">
+                    <div class="status-card">
+                        <div class="status-header">
+                            <h2>My Requests</h2>
+                        </div>
+                        <div id="requestHistory" class="equipment-list">
+                            <div class="skeleton-row"></div>
+                            <div class="skeleton-row"></div>
+                            <div class="skeleton-row"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-lg-4">
+                    <div class="status-card sticky-top" style="top: 2rem; z-index: 1;">
+                        <h3>Request New Equipment</h3>
+                        <p class="text-muted small mb-4">You can request additional assistive devices if needed.</p>
+
+                        <form id="equipmentForm">
+                            <div class="mb-3">
+                                <label class="form-label">Equipment Type</label>
+                                <select class="form-select" id="equipmentType" required>
+                                    <option value="">Select Equipment...</option>
+                                </select>
+                            </div>
+
+                            <div class="mb-3">
+                                <label class="form-label">Additional Details (Optional)</label>
+                                <textarea class="form-control" id="equipmentDetails" rows="3"
+                                    placeholder="Describe why you need this equipment..."></textarea>
+                            </div>
+
+                            <button type="submit" class="btn-primary w-100 justify-content-center">
+                                Submit Request
+                            </button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="/js/auth.js"></script>
+    <script src="/js/components/header.js"></script>
+    <script>
+        document.addEventListener("DOMContentLoaded", async () => {
+            // Auth check
+            const isAuth = await AuthManager.verifyAuth();
+            if (!isAuth || AuthManager.getUserInfo()?.type !== 'applicant') {
+                window.location.href = '/login';
+                return;
+            }
+
+            document.getElementById("authLoader").style.display = "none";
+            document.getElementById("mainContent").style.display = "block";
+
+            loadData();
+            setupForm();
+        });
+
+        async function loadData() {
+            try {
+                const token = AuthManager.getAuthToken();
+
+                // Load types
+                const typesRes = await fetch("/api/equipment/types", {
+                    headers: { Authorization: `Bearer ${token}` }
+                });
+                const typesData = await typesRes.json();
+
+                const select = document.getElementById("equipmentType");
+                typesData.types.forEach(type => {
+                    const option = document.createElement("option");
+                    option.value = type;
+                    option.textContent = type;
+                    select.appendChild(option);
+                });
+
+                // Load history
+                const historyRes = await fetch("/api/equipment/my-requests", {
+                    headers: { Authorization: `Bearer ${token}` }
+                });
+                const historyData = await historyRes.json();
+
+                const list = document.getElementById("requestHistory");
+                if (historyData.allRequests.length === 0) {
+                    list.innerHTML = `
+                      <div class="text-center py-5">
+                        <div class="mb-3">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="#e5e7eb" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path>
+                                <polyline points="3.27 6.96 12 12.01 20.73 6.96"></polyline>
+                                <line x1="12" y1="22.08" x2="12" y2="12"></line>
+                            </svg>
+                        </div>
+                        <h4 class="h5 text-secondary fw-normal mb-2">No Requests Yet</h4>
+                        <p class="text-muted small">Your request history will appear here.</p>
+                      </div>
+                    `;
+                    return;
+                }
+
+                list.innerHTML = historyData.allRequests.map(req => `
+                    <div class="equipment-item">
+                        <div class="equipment-icon-wrapper">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <circle cx="12" cy="12" r="10"></circle>
+                                <path d="M12 16v-4"></path>
+                                <path d="M12 8h.01"></path>
+                            </svg>
+                        </div>
+                        <div class="equipment-content">
+                            <div class="equipment-header">
+                                <h4 class="mb-0 text-dark fw-bold" style="font-size: 1rem;">${req.equipment_type}</h4>
+                                <span class="status-badge ${req.status || 'pending'}">
+                                    ${(req.status || 'pending').replace('_', ' ')}
+                                </span>
+                            </div>
+                            <div class="equipment-meta d-flex flex-wrap gap-2 text-muted small">
+                                <span>Requested: ${new Date(req.requested_at).toLocaleDateString()}</span>
+                                ${req.source === 'registration' ? '<span>&bull; From Registration</span>' : ''}
+                            </div>
+                            ${req.admin_notes ? `<div class="mt-2 small text-muted bg-light p-2 rounded border border-light">Note: ${req.admin_notes}</div>` : ''}
+                        </div>
+                    </div>
+                `).join('');
+
+            } catch (error) {
+                console.error("Error loading data:", error);
+            }
+        }
+
+        function setupForm() {
+            document.getElementById("equipmentForm").addEventListener("submit", async (e) => {
+                e.preventDefault();
+
+                const btn = e.target.querySelector("button");
+                const originalText = btn.textContent;
+                btn.disabled = true;
+                btn.textContent = "Submitting...";
+
+                try {
+                    const response = await fetch("/api/equipment/request", {
+                        method: "POST",
+                        headers: {
+                            "Content-Type": "application/json",
+                            Authorization: `Bearer ${AuthManager.getAuthToken()}`
+                        },
+                        body: JSON.stringify({
+                            equipment_type: document.getElementById("equipmentType").value,
+                            equipment_details: document.getElementById("equipmentDetails").value
+                        })
+                    });
+
+                    if (!response.ok) throw new Error("Submission failed");
+
+                    alert("Request submitted successfully!");
+                    window.location.reload();
+                } catch (error) {
+                    console.error("Error:", error);
+                    alert("Error submitting request. Please try again.");
+                    btn.disabled = false;
+                    btn.textContent = originalText;
+                }
+            });
+        }
+    </script>
+    <script src="/js/accessibility.js"></script>
+</body>
+
+</html>

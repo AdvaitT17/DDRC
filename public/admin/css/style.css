@@ -1489,18 +1489,10 @@ body.modal-open {
 /* Clickable table rows - Base styling */
 .clickable-row {
   cursor: pointer;
-  transition: all 0.2s ease-in-out;
-  position: relative;
+  transition: background-color 0.2s ease-in-out;
 }
 
-/* Note: The main hover styling is defined in the override section at the bottom of this file */
-.clickable-row:hover {
-  position: relative;
-}
-
-.clickable-row:active {
-  background-color: rgba(var(--primary-color-rgb), 0.15);
-}
+/* Hover/active styling defined in override section at bottom */
 
 .document-preview-container {
   position: relative;
@@ -2526,13 +2518,6 @@ body.modal-open {
   min-width: 150px;
 }
 
-/* Note: Main hover styling is in the override section at the end of the file */
-.clickable-row {
-  cursor: pointer;
-  transition: all 0.2s ease-in-out;
-  position: relative;
-}
-
 /* Responsive table styles */
 @media (max-width: 768px) {
   .table {
@@ -2568,6 +2553,19 @@ body.modal-open {
     float: left;
     font-weight: 600;
     color: #6b7280;
+  }
+
+  /* Mobile hover effect - apply to tr since it's a block card */
+  .table tr.clickable-row:hover {
+    background-color: rgba(173, 216, 230, 0.15) !important;
+  }
+
+  .table tr.clickable-row:hover td {
+    background-color: transparent !important;
+  }
+
+  .table tr.clickable-row:active {
+    background-color: rgba(173, 216, 230, 0.12) !important;
   }
 }
 
@@ -2627,6 +2625,29 @@ body.modal-open {
   border-color: #6366f1;
   box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
   outline: none;
+}
+
+/* Mobile Filter Responsiveness */
+#applicationsMobileFilters {
+  width: 100%;
+}
+
+#applicationsMobileFilters .d-flex {
+  width: 100%;
+}
+
+@media (max-width: 575px) {
+
+  #applicationsMobileFilters .btn,
+  #applicationsMobileFilters .form-select,
+  #applicationsMobileFilters .form-control,
+  #applicationsMobileFilters button,
+  #applicationsMobileFilters select,
+  #applicationsMobileFilters input {
+    width: 100% !important;
+    max-width: 100% !important;
+    min-width: 100% !important;
+  }
 }
 
 /* Status dropdown specific styles */
@@ -2885,37 +2906,18 @@ body.modal-open {
 /* Simple hover effect - applied to all clickable rows */
 html body .clickable-row {
   cursor: pointer;
+}
+
+html body .clickable-row td {
   transition: all 0.2s ease-in-out;
-  position: relative;
 }
 
-html body .clickable-row:hover {
-  background-color: rgba(173,
-      216,
-      230,
-      0.15) !important;
-  /* Light blue with increased opacity */
-  position: relative !important;
-  z-index: 2;
+html body .clickable-row:hover td {
+  background-color: rgba(173, 216, 230, 0.15) !important;
 }
 
-html body .clickable-row:hover::after {
-  content: "";
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  pointer-events: none;
-  box-shadow: 0 2px 4px rgba(173, 216, 230, 0.15);
-  background: rgba(173, 216, 230, 0.1);
-  /* Light blue with increased opacity */
-  z-index: 1;
-}
-
-html body .clickable-row:active {
+html body .clickable-row:active td {
   background-color: rgba(173, 216, 230, 0.12) !important;
-  transform: none;
 }
 
 /* ===== MOBILE RESPONSIVE STYLES ===== */
