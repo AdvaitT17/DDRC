@@ -1219,6 +1219,46 @@
     // Make switchView available globally
     window.switchView = switchView;
   </script>
+
+  <!-- Hardware QR/Barcode Scanner Handler -->
+  <script>
+    (function () {
+      let scanBuffer = '';
+      let scanTimeout = null;
+      const SCAN_TIMEOUT_MS = 100; // Hardware scanners type very fast, humans don't
+      const APP_ID_PATTERN = /^\d{4}-\d{2}-\d{4}$/; // Pattern like 2025-12-0200
+
+      document.addEventListener('keypress', function (e) {
+        // Ignore if user is typing in an input/textarea
+        if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA' || e.target.isContentEditable) {
+          return;
+        }
+
+        // Clear previous timeout
+        if (scanTimeout) clearTimeout(scanTimeout);
+
+        // Enter key - process the buffer
+        if (e.key === 'Enter') {
+          if (scanBuffer && APP_ID_PATTERN.test(scanBuffer)) {
+            console.log('QR Scanner: Application ID detected:', scanBuffer);
+            window.location.href = `/admin/dashboard/?id=${encodeURIComponent(scanBuffer)}`;
+          }
+          scanBuffer = '';
+          return;
+        }
+
+        // Accumulate characters
+        scanBuffer += e.key;
+
+        // Reset buffer after timeout (if human typing slowly)
+        scanTimeout = setTimeout(() => {
+          scanBuffer = '';
+        }, SCAN_TIMEOUT_MS);
+      });
+
+      console.log('Hardware QR scanner listener active');
+    })();
+  </script>
 </body>
 
 </html>

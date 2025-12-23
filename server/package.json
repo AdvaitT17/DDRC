@@ -12,6 +12,8 @@
     "test:coverage": "jest --coverage"
   },
   "dependencies": {
+    "@signpdf/placeholder-pdf-lib": "^3.2.6",
+    "@signpdf/signer-p12": "^3.2.4",
     "bcrypt": "^5.1.1",
     "bcryptjs": "^2.4.3",
     "cors": "^2.8.5",
@@ -24,8 +26,11 @@
     "multer": "^2.0.1",
     "mysql2": "^3.6.5",
     "node-cron": "^4.1.0",
+    "node-signpdf": "^3.0.0",
     "nodemailer": "^7.0.3",
+    "pdf-lib": "^1.17.1",
     "puppeteer": "^24.34.0",
+    "qrcode": "^1.5.4",
     "xss": "^1.0.15"
   },
   "devDependencies": {
