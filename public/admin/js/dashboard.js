@@ -32,6 +32,23 @@ class DashboardManager {
       this.showAllApplicationsView();
     }
 
+    // Check if an application ID is specified (from QR scanner or direct link)
+    const appIdParam = urlParams.get("id");
+    if (appIdParam) {
+      // Use setTimeout to ensure DOM is ready and other init is complete
+      setTimeout(() => {
+        this.viewApplication(appIdParam);
+
+        // Clear the id param from URL when modal is closed
+        const modalEl = document.getElementById("applicationModal");
+        modalEl.addEventListener("hidden.bs.modal", () => {
+          const url = new URL(window.location);
+          url.searchParams.delete("id");
+          window.history.replaceState({}, "", url);
+        }, { once: true });
+      }, 100);
+    }
+
     // Set up event listeners for all applications view
     this.setupAllApplicationsEventListeners();
   }

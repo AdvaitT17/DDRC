@@ -21,6 +21,8 @@ uploads/
 !.vscode/extensions.json
 .cursorignore
 .idea
+.cache
+*.sql
 .DS_Store
 *.suo
 *.ntvs*
@@ -44,3 +46,7 @@ modelfiles
 site
 TEMPLATE.md
 generate_dummy_data.js
+
+# Certificate files (sensitive - do not commit)
+server/certs/
+*.p12

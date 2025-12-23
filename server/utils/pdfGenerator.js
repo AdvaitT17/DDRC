@@ -1,5 +1,6 @@
 const path = require('path');
 const fs = require('fs');
+const QRCode = require('qrcode');
 
 /**
  * Generate a styled PDF for an application using Puppeteer
@@ -17,6 +18,19 @@ async function generateApplicationPDF(applicationData, profileData) {
     const ddrcLogoBase64 = fs.existsSync(ddrcLogoPath)
         ? `data:image/png;base64,${fs.readFileSync(ddrcLogoPath).toString('base64')}`
         : '';
+
+    // Generate QR code with just the application ID (simple, scannable)
+    let qrCodeBase64 = '';
+    try {
+        qrCodeBase64 = await QRCode.toDataURL(applicationData.applicationId || 'N/A', {
+            width: 50,
+            margin: 0,
+            errorCorrectionLevel: 'M',
+            color: { dark: '#1a237e', light: '#ffffff' }
+        });
+    } catch (err) {
+        console.error('Error generating QR code:', err.message);
+    }
 
     // Convert disabled photo to base64 if available
     let disabledPhotoBase64 = '';
@@ -253,6 +267,77 @@ async function generateApplicationPDF(applicationData, profileData) {
             text-transform: uppercase;
         }
         
+        .signature-seal {
+            margin-left: auto;
+            padding: 6px 8px;
+            border: 2px solid #1a237e;
+            border-radius: 4px;
+            display: flex;
+            flex-direction: row;
+            align-items: center;
+            gap: 8px;
+            background: #fff;
+            position: relative;
+        }
+        
+        .signature-seal::before {
+            content: '';
+            position: absolute;
+            top: 2px;
+            left: 2px;
+            right: 2px;
+            bottom: 2px;
+            border: 1px solid #1a237e;
+            border-radius: 2px;
+            pointer-events: none;
+        }
+        
+        .seal-qr {
+            position: relative;
+            z-index: 1;
+        }
+        
+        .seal-qr img {
+            width: 45px;
+            height: 45px;
+        }
+        
+        .seal-content {
+            text-align: center;
+            position: relative;
+            z-index: 1;
+        }
+        
+        .seal-text-top {
+            font-size: 6px;
+            font-weight: 700;
+            color: #1a237e;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 2px;
+        }
+        
+        .seal-icon {
+            font-size: 12px;
+            color: #28a745;
+            font-weight: bold;
+        }
+        
+        .seal-text-main {
+            font-size: 5px;
+            font-weight: 800;
+            color: #1a237e;
+            text-transform: uppercase;
+            letter-spacing: 0.3px;
+            margin-top: 1px;
+        }
+        
+        .seal-date {
+            font-size: 5px;
+            color: #666;
+            margin-top: 2px;
+        }
+        
         .section-header {
             background: #1a237e;
             color: white;
@@ -343,6 +428,15 @@ async function generateApplicationPDF(applicationData, profileData) {
                 <span class="status-badge-small">${escapeHtml(status.replace(/_/g, ' '))}</span>
             </div>
         </div>
+        <div class="signature-seal">
+            ${qrCodeBase64 ? `<div class="seal-qr"><img src="${qrCodeBase64}" alt="QR"></div>` : ''}
+            <div class="seal-content">
+                <div class="seal-text-top">DDRC Mumbai</div>
+                <div class="seal-icon">✓</div>
+                <div class="seal-text-main">Digitally Signed</div>
+                <div class="seal-date">${new Date().toLocaleDateString('en-IN')}</div>
+            </div>
+        </div>
     </div>
     ` : ''}
     
@@ -351,7 +445,7 @@ async function generateApplicationPDF(applicationData, profileData) {
     </div>
     
     <div class="footer">
-        <span>This is a computer-generated document.</span>
+        <span>This is a digitally signed computer-generated document.</span>
         <span>Ref: ${escapeHtml(applicationData.applicationId)}</span>
     </div>
 </body>
@@ -362,6 +456,8 @@ async function generateApplicationPDF(applicationData, profileData) {
     // On Azure: chromium is installed via startup script (apt-get install chromium)
     // Locally: puppeteer bundles its own Chromium
     const puppeteer = require('puppeteer');
+    const { signPDF } = require('./pdfSigner');
+
     const browser = await puppeteer.launch({
         headless: 'new',
         args: ['--no-sandbox', '--disable-setuid-sandbox']
@@ -377,7 +473,10 @@ async function generateApplicationPDF(applicationData, profileData) {
             margin: { top: '10mm', bottom: '20mm', left: '0', right: '0' }
         });
 
-        return pdfBuffer;
+        // Sign the PDF with DDRC certificate
+        const signedPdfBuffer = await signPDF(pdfBuffer);
+
+        return signedPdfBuffer;
     } finally {
         await browser.close();
     }
