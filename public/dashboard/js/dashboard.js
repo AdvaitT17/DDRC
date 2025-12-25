@@ -97,14 +97,20 @@ class DashboardManager {
 
       // Update application ID
       const appIdEl = document.getElementById("applicationId");
-      if (appIdEl) appIdEl.textContent = data.applicationId || "N/A";
+      if (appIdEl) {
+        appIdEl.removeAttribute('data-original-text'); // Clear stored original so it doesn't restore to '-'
+        appIdEl.textContent = data.applicationId || "N/A";
+      }
 
       // Update submission date
       const dateEl = document.getElementById("submittedDate");
       const submittedDate = data.submittedDate
         ? new Date(data.submittedDate).toLocaleDateString()
         : "Pending";
-      if (dateEl) dateEl.textContent = submittedDate;
+      if (dateEl) {
+        dateEl.removeAttribute('data-original-text'); // Clear stored original so it doesn't restore to '-'
+        dateEl.textContent = submittedDate;
+      }
 
       // Get elements
       const reviewStep = document.getElementById("reviewStep");
@@ -181,8 +187,18 @@ class DashboardManager {
           if (completedText) completedText.textContent = "Awaiting decision";
           break;
       }
+
+      // Trigger translation for dynamically updated content
+      if (window.TranslationManager && window.TranslationManager.getCurrentLanguage() !== 'en') {
+        const savedLang = window.TranslationManager.getCurrentLanguage();
+        // Translate the timeline elements that were updated
+        const timelineItems = document.querySelectorAll('.timeline-content p');
+        timelineItems.forEach(el => {
+          window.TranslationManager.translateElement(el, savedLang);
+        });
+      }
     } catch (err) {
-      console.error("Error updating dashboard UI:", err);
+      // Error updating dashboard UI - fail silently
     }
   }
 

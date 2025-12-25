@@ -1,5 +1,12 @@
 // Header Component - Reusable header for all pages
 (function () {
+  // Dynamically load translation.js if not already loaded
+  if (typeof TranslationManager === 'undefined' && !document.querySelector('script[src="/js/translation.js"]')) {
+    const translationScript = document.createElement('script');
+    translationScript.src = '/js/translation.js';
+    translationScript.async = true;
+    document.head.appendChild(translationScript);
+  }
   // Check if user is logged in using AuthManager
   let isAuthenticated = false;
   let userType = null;
@@ -152,7 +159,11 @@
         </button>
         <select class="mobile-language-select" id="languageSelectMobileTop" aria-label="Select language">
           <option value="en">English</option>
-          <option value="hi">हिंदी</option>
+          <option value="mr">मराठी</option>
+          <option value="hi">हिन्दी</option>
+          <option value="gu">ગુજરાતી</option>
+          <option value="kn">ಕನ್ನಡ</option>
+          <option value="te">తెలుగు</option>
         </select>
       </div>
       <button class="hamburger-menu" id="hamburgerBtn" aria-label="Toggle navigation menu" aria-expanded="false">
@@ -176,7 +187,11 @@
         </button>
         <select class="language-select" id="languageSelectDesktop" aria-label="Select language">
           <option value="en">English</option>
-          <option value="hi">हिंदी</option>
+          <option value="mr">मराठी</option>
+          <option value="hi">हिन्दी</option>
+          <option value="gu">ગુજરાતી</option>
+          <option value="kn">ಕನ್ನಡ</option>
+          <option value="te">తెలుగు</option>
         </select>
       </div>
     </div>
@@ -236,7 +251,11 @@
         <label for="languageSelectMobile">Language:</label>
         <select id="languageSelectMobile" aria-label="Select language">
           <option value="en">English</option>
-          <option value="hi">हिंदी</option>
+          <option value="mr">मराठी</option>
+          <option value="hi">हिन्दी</option>
+          <option value="gu">ગુજરાતી</option>
+          <option value="kn">ಕನ್ನಡ</option>
+          <option value="te">తెలుగు</option>
         </select>
       </div>
     </nav>
@@ -400,10 +419,21 @@
     const languageSelectMobileTop = document.getElementById('languageSelectMobileTop');
     const languageSelectMobile = document.getElementById('languageSelectMobile');
 
+    // Set initial value from saved preference
+    const savedLang = localStorage.getItem('selectedLanguage') || 'en';
+    if (languageSelectDesktop) languageSelectDesktop.value = savedLang;
+    if (languageSelectMobileTop) languageSelectMobileTop.value = savedLang;
+    if (languageSelectMobile) languageSelectMobile.value = savedLang;
+
     function syncLanguageSelectors(value) {
       if (languageSelectDesktop) languageSelectDesktop.value = value;
       if (languageSelectMobileTop) languageSelectMobileTop.value = value;
       if (languageSelectMobile) languageSelectMobile.value = value;
+
+      // Trigger translation if TranslationManager is available
+      if (typeof TranslationManager !== 'undefined') {
+        TranslationManager.translatePage(value);
+      }
     }
 
     if (languageSelectDesktop) {

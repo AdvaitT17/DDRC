@@ -31,6 +31,7 @@ const {
 } = require("./schedulers/reportEmailScheduler");
 const userRoutes = require("./routes/userRoutes");
 const contactRoutes = require("./routes/contactRoutes");
+const translationRoutes = require("./routes/translationRoutes");
 
 const app = express();
 
@@ -355,6 +356,7 @@ app.use("/api/events", eventRoutes);
 app.use("/api/users", userRoutes);
 app.use("/api/contact", contactRoutes);
 app.use("/api/equipment", require("./routes/equipmentRoutes"));
+app.use("/api/translate", translationRoutes);
 
 // HTML Routes - make sure these come after API routes
 app.get(

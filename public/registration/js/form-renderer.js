@@ -170,9 +170,10 @@ class RegistrationFormRenderer {
 
         // Only validate if there's a value
         if (this.value) {
-          // Check pattern (only if pattern attribute exists)
-          if (this.hasAttribute('pattern')) {
-            const regex = new RegExp(`^${this.pattern}$`);
+          // Check pattern (HTML pattern attribute or data-js-pattern for v-mode fallback)
+          const patternAttr = this.getAttribute('pattern') || this.getAttribute('data-js-pattern');
+          if (patternAttr) {
+            const regex = new RegExp(`^${patternAttr}$`);
             if (!regex.test(this.value)) {
               const errorMsg = this.title || "Please match the required format";
               this.setCustomValidity(errorMsg);
@@ -357,6 +358,20 @@ class RegistrationFormRenderer {
           validationRules.pattern = validationRules.pattern
             .replace(/^\^/, '')  // Remove leading ^
             .replace(/\$$/, ''); // Remove trailing $
+
+          // Fix pattern for v-mode browser compatibility:
+          // If pattern contains special chars that cause v-mode issues, skip HTML pattern
+          // and let JavaScript validation in addValidationListeners handle it
+          if (validationRules.pattern.includes("'") ||
+            (validationRules.pattern.includes(".") && validationRules.pattern.includes("["))) {
+            // Store the original pattern for JS validation, but don't use in HTML
+            validationRules.jsPattern = validationRules.pattern;
+            validationRules.pattern = null; // Don't add pattern attribute
+          } else {
+            // For simple patterns, just move hyphen to end
+            validationRules.pattern = validationRules.pattern
+              .replace(/\[-(.*?)\]/g, '[$1-]');
+          }
         }
       } catch (e) {
         console.error("Error parsing validation rules:", e);
@@ -395,6 +410,10 @@ class RegistrationFormRenderer {
 
       if (validationRules.pattern) {
         parts.push(`pattern="${validationRules.pattern}"`);
+      }
+      // For patterns that can't use HTML pattern attribute (v-mode issues), add data attribute
+      if (validationRules.jsPattern) {
+        parts.push(`data-js-pattern="${validationRules.jsPattern}"`);
       }
       if (validationRules.minLength) {
         parts.push(`minlength="${validationRules.minLength}"`);
