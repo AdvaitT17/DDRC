@@ -40,14 +40,16 @@
 
           <div class="form-group">
             <label for="email">Email</label>
-            <input type="email" class="form-control" id="email" name="email" required aria-required="true" />
+            <input type="email" class="form-control" id="email" name="email" required aria-required="true"
+              placeholder="Enter your email" />
             <div class="invalid-feedback">Please enter a valid email</div>
           </div>
 
           <div class="form-group">
             <label for="password">Password</label>
             <div class="password-input">
-              <input type="password" class="form-control" id="password" name="password" required aria-required="true" />
+              <input type="password" class="form-control" id="password" name="password" required aria-required="true"
+                placeholder="Enter your password" />
               <button type="button" class="toggle-password" aria-label="Toggle password visibility">
                 <img src="/images/eye.svg" alt="Show password icon" class="eye-icon" />
               </button>
@@ -61,10 +63,10 @@
             <p>
               <a href="/forgot-password">Forgot Password?</a>
             </p>
-            <p>
-              Don't have an account? <a href="/registration">Register</a> <br>Unable to access your account? <a
-                href="/contact">Contact Us</a>
-            </p>
+            <p style="display:inline;">Don't have an account? </p>
+            <p style="display:inline;"><a href="/registration">Register here</a></p><br>
+            <p style="display:inline;">Unable to access your account? </p>
+            <p style="display:inline;"><a href="/contact">Contact Us</a></p>
           </div>
         </form>
       </div>

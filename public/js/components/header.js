@@ -432,7 +432,10 @@
 
       // Trigger translation if TranslationManager is available
       if (typeof TranslationManager !== 'undefined') {
-        TranslationManager.translatePage(value);
+        TranslationManager.translatePage(value).then(() => {
+          // Re-setup MutationObserver for dynamic content in the new language
+          TranslationManager.setupMutationObserver();
+        });
       }
     }
 

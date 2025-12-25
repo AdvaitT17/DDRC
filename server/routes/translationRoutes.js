@@ -8,10 +8,10 @@ const rateLimit = require('express-rate-limit');
 const router = express.Router();
 const translationService = require('../services/translationService');
 
-// Rate limiter for translation API (100 requests per minute per IP)
+// Rate limiter for translation API (500 requests per minute per IP)
 const translationLimiter = rateLimit({
     windowMs: 60 * 1000, // 1 minute
-    max: 100, // 100 requests per minute
+    max: 500, // 500 requests per minute
     message: {
         success: false,
         error: 'Too many translation requests. Please try again later.'
