@@ -591,14 +591,18 @@
 
         if (savedLang && savedLang !== 'en') {
 
-
-            // Apply blur to body content (combine with high contrast if active)
-            if (document.body.classList.contains('high-contrast')) {
-                document.body.style.filter = 'invert(100%) hue-rotate(180deg) blur(3px)';
-            } else {
-                document.body.style.filter = 'blur(3px)';
+            // Add translation-blur class (CSS will handle the filter, avoiding conflicts with high-contrast)
+            // First, inject the CSS if not already present
+            if (!document.getElementById('translation-blur-style')) {
+                const style = document.createElement('style');
+                style.id = 'translation-blur-style';
+                style.textContent = `
+                    .translation-blur { filter: blur(3px) !important; transition: filter 0.2s ease; }
+                    .high-contrast.translation-blur { filter: invert(100%) hue-rotate(180deg) blur(3px) !important; }
+                `;
+                document.head.appendChild(style);
             }
-            document.body.style.transition = 'filter 0.2s ease';
+            document.body.classList.add('translation-blur');
 
             // Create toast loader (added after blur, so it stays crisp)
             const initialLoader = document.createElement('div');
@@ -636,16 +640,12 @@
             // Append to documentElement (html) instead of body to avoid blur
             document.documentElement.appendChild(initialLoader);
 
-            // Helper to remove loader and blur (preserve high contrast if active)
+            // Helper to remove loader and blur class
             const removeLoader = () => {
                 const loader = document.getElementById('initialTranslationLoader');
                 if (loader) loader.remove();
-                // Preserve high contrast filter if active, otherwise clear filter
-                if (document.body.classList.contains('high-contrast')) {
-                    document.body.style.filter = 'invert(100%) hue-rotate(180deg)';
-                } else {
-                    document.body.style.filter = '';
-                }
+                // Just remove the blur class - high contrast CSS will still work
+                document.body.classList.remove('translation-blur');
             };
 
             // Call translatePage directly
