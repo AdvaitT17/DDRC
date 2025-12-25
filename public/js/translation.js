@@ -119,13 +119,6 @@
         return devanagariPattern.test(text);
     }
 
-    /**
-     * Check if text contains only Latin/English characters
-     */
-    function isEnglishText(text) {
-        // English text contains only ASCII letters, numbers, punctuation, spaces
-        return /^[\x00-\x7F]+$/.test(text);
-    }
 
     /**
      * Extract English portion from bilingual text (e.g., "मराठी / English" -> "English")
@@ -187,16 +180,26 @@
             'li:not([data-no-translate])',
             'td:not([data-no-translate])',
             'th:not([data-no-translate])',
+            'strong:not([data-no-translate])',
             '.important-note',
             '.hero-content h2',
             '.hero-content p',
             '.accordion-body',
             '.accordion-button',
-            // Error messages
+            // Error messages and alerts
             '.error-message',
             '.invalid-feedback',
             'small.text-danger',
             '.field-error',
+            '.alert',
+            '.alert-danger',
+            '.alert-success',
+            '.alert-warning',
+            '.alert-info',
+            '.requirements-header',
+            // Placeholder attributes
+            'input[placeholder]:not([data-no-translate])',
+            'textarea[placeholder]:not([data-no-translate])',
             // Select options (except language selector)
             'select:not(#languageSelector):not(.language-select) option:not([data-no-translate])'
         ];
@@ -223,6 +226,13 @@
                     textElements.push(el);
                     processedElements.add(el);
                 }
+                return;
+            }
+
+            // For INPUT/TEXTAREA elements with placeholder, include them (they don't have text content)
+            if ((el.tagName === 'INPUT' || el.tagName === 'TEXTAREA') && el.hasAttribute('placeholder')) {
+                textElements.push(el);
+                processedElements.add(el);
                 return;
             }
 
@@ -314,6 +324,10 @@
         if (el.hasAttribute('data-original-text')) {
             el.textContent = el.getAttribute('data-original-text');
         }
+        // Also restore placeholder if it was translated
+        if (el.hasAttribute('data-original-placeholder')) {
+            el.setAttribute('placeholder', el.getAttribute('data-original-placeholder'));
+        }
     }
 
     /**
@@ -383,63 +397,94 @@
         // Skip for English - no translation needed
         if (targetLang === 'en') return;
 
+        // Translate text content
         const text = getElementText(el);
-        if (!text || text.length === 0 || text.length >= 1000) return;
+        if (text && text.length > 0 && text.length < 1000) {
+            const parsed = parseBilingualText(text);
 
-        const parsed = parseBilingualText(text);
+            if (parsed.isBilingual && parsed.englishPart) {
+                // For Marathi, bilingual text already has Marathi - skip
+                if (targetLang === 'mr') return;
 
-        if (parsed.isBilingual && parsed.englishPart) {
-            // For Marathi, bilingual text already has Marathi - skip
-            if (targetLang === 'mr') return;
-
-            const cached = getCachedTranslation(parsed.englishPart, targetLang);
-            if (cached) {
-                const reconstructed = parsed.marathiPart + parsed.separator + cached;
-                setElementText(el, reconstructed, text);
-            } else {
-                // Need to translate - batch single element
-                try {
-                    const response = await fetch('/api/translate', {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({ texts: [parsed.englishPart], targetLang })
-                    });
-                    if (response.ok) {
-                        const result = await response.json();
-                        if (result.translations && result.translations[0]) {
-                            cacheTranslation(parsed.englishPart, targetLang, result.translations[0]);
-                            const reconstructed = parsed.marathiPart + parsed.separator + result.translations[0];
-                            setElementText(el, reconstructed, text);
+                const cached = getCachedTranslation(parsed.englishPart, targetLang);
+                if (cached) {
+                    const reconstructed = parsed.marathiPart + parsed.separator + cached;
+                    setElementText(el, reconstructed, text);
+                } else {
+                    // Need to translate - batch single element
+                    try {
+                        const response = await fetch('/api/translate', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({ texts: [parsed.englishPart], targetLang })
+                        });
+                        if (response.ok) {
+                            const result = await response.json();
+                            if (result.translations && result.translations[0]) {
+                                cacheTranslation(parsed.englishPart, targetLang, result.translations[0]);
+                                const reconstructed = parsed.marathiPart + parsed.separator + result.translations[0];
+                                setElementText(el, reconstructed, text);
+                            }
                         }
+                    } catch (e) {
+                        // Error translating element - fail silently
                     }
-                } catch (e) {
-                    // Error translating element - fail silently
                 }
-            }
-        } else if (parsed.englishPart && !parsed.marathiPart) {
-            // Pure English text
-            const cached = getCachedTranslation(text, targetLang);
-            if (cached) {
-                setElementText(el, cached, text);
-            } else {
-                try {
-                    const response = await fetch('/api/translate', {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({ texts: [text], targetLang })
-                    });
-                    if (response.ok) {
-                        const result = await response.json();
-                        if (result.translations && result.translations[0]) {
-                            cacheTranslation(text, targetLang, result.translations[0]);
-                            setElementText(el, result.translations[0], text);
+            } else if (parsed.englishPart && !parsed.marathiPart) {
+                // Pure English text
+                const cached = getCachedTranslation(text, targetLang);
+                if (cached) {
+                    setElementText(el, cached, text);
+                } else {
+                    try {
+                        const response = await fetch('/api/translate', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({ texts: [text], targetLang })
+                        });
+                        if (response.ok) {
+                            const result = await response.json();
+                            if (result.translations && result.translations[0]) {
+                                cacheTranslation(text, targetLang, result.translations[0]);
+                                setElementText(el, result.translations[0], text);
+                            }
                         }
+                    } catch (e) {
+                        // Error translating element - fail silently
                     }
-                } catch (e) {
-                    // Error translating element - fail silently
                 }
             }
         }
+
+        // Translate placeholder attribute
+        if (el.hasAttribute('placeholder') && !el.hasAttribute('data-no-translate')) {
+            const placeholder = el.getAttribute('data-original-placeholder') || el.getAttribute('placeholder');
+            if (placeholder && placeholder.length > 0 && placeholder.length < 200) {
+                if (!el.hasAttribute('data-original-placeholder')) {
+                    el.setAttribute('data-original-placeholder', placeholder);
+                }
+                const cached = getCachedTranslation(placeholder, targetLang);
+                if (cached) {
+                    el.setAttribute('placeholder', cached);
+                } else {
+                    try {
+                        const response = await fetch('/api/translate', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({ texts: [placeholder], targetLang })
+                        });
+                        if (response.ok) {
+                            const result = await response.json();
+                            if (result.translations && result.translations[0]) {
+                                cacheTranslation(placeholder, targetLang, result.translations[0]);
+                                el.setAttribute('placeholder', result.translations[0]);
+                            }
+                        }
+                    } catch (e) { }
+                }
+            }
+        }
+
     }
 
     /**
@@ -470,7 +515,6 @@
 
         try {
             const elements = getTranslatableElements();
-
 
             const textsToTranslate = [];
             const elementsToUpdate = [];
@@ -523,7 +567,35 @@
                 }
             });
 
-
+            // Translate placeholder attributes (do this before checking cache to ensure it always runs)
+            const placeholderElements = document.querySelectorAll('input[placeholder]:not([data-no-translate]), textarea[placeholder]:not([data-no-translate])');
+            for (const el of placeholderElements) {
+                const placeholder = el.getAttribute('data-original-placeholder') || el.getAttribute('placeholder');
+                if (placeholder && placeholder.length > 0 && placeholder.length < 200) {
+                    if (!el.hasAttribute('data-original-placeholder')) {
+                        el.setAttribute('data-original-placeholder', placeholder);
+                    }
+                    const cached = getCachedTranslation(placeholder, targetLang);
+                    if (cached) {
+                        el.setAttribute('placeholder', cached);
+                    } else {
+                        try {
+                            const response = await fetch('/api/translate', {
+                                method: 'POST',
+                                headers: { 'Content-Type': 'application/json' },
+                                body: JSON.stringify({ texts: [placeholder], targetLang })
+                            });
+                            if (response.ok) {
+                                const result = await response.json();
+                                if (result.translations && result.translations[0]) {
+                                    cacheTranslation(placeholder, targetLang, result.translations[0]);
+                                    el.setAttribute('placeholder', result.translations[0]);
+                                }
+                            }
+                        } catch (e) { }
+                    }
+                }
+            }
 
             // If all translations were cached, we're done
             if (textsToTranslate.length === 0) {
@@ -657,8 +729,6 @@
                 // Translation error - fail silently
                 removeLoader();
             });
-        } else {
-
         }
     }
 
@@ -668,8 +738,7 @@
     let translateTimeout = null;
 
     function setupMutationObserver() {
-        const targetLang = getCurrentLanguage();
-        if (!targetLang || targetLang === 'en') return;
+        // Always set up the observer - callback will check current language
 
         if (mutationObserver) {
             mutationObserver.disconnect();
@@ -677,10 +746,11 @@
 
         mutationObserver = new MutationObserver((mutations) => {
             mutations.forEach(mutation => {
+                // Handle new elements added to DOM
                 mutation.addedNodes.forEach(node => {
                     if (node.nodeType === Node.ELEMENT_NODE) {
                         // Get all translatable elements within the added node
-                        const selectors = 'h1, h2, h3, h4, h5, h6, p, span, a, button, label, li, td, th, option, .btn, .nav-link, .dropdown-item, .card-title, .card-text, .hero-content h2, .hero-content p, .important-note, .accordion-body, .accordion-button, .error-message, .invalid-feedback, small.text-danger, .field-error';
+                        const selectors = 'h1, h2, h3, h4, h5, h6, p, span, a, button, label, li, td, th, option, strong, .btn, .nav-link, .dropdown-item, .card-title, .card-text, .hero-content h2, .hero-content p, .important-note, .accordion-body, .accordion-button, .error-message, .invalid-feedback, small.text-danger, .field-error, .alert, .alert-danger, .alert-success, .alert-warning, .alert-info, .requirements-header, input[placeholder], textarea[placeholder]';
                         const elements = [];
 
                         // Check if node itself matches
@@ -702,20 +772,67 @@
                                 const elementsToTranslate = [...pendingElements];
                                 pendingElements = [];
 
-
-                                elementsToTranslate.forEach(el => {
-                                    translateElement(el, targetLang);
-                                });
+                                // Get current language (not captured at setup time)
+                                const currentLang = getCurrentLanguage();
+                                if (currentLang && currentLang !== 'en') {
+                                    elementsToTranslate.forEach(el => {
+                                        translateElement(el, currentLang);
+                                    });
+                                }
                             }, 50);
                         }
                     }
                 });
+
+                // Handle text node changes in alerts (textContent = "..." adds new text node)
+                if (mutation.type === 'childList' && mutation.target.classList) {
+                    const target = mutation.target;
+                    if (target.classList.contains('alert') ||
+                        target.classList.contains('alert-danger') ||
+                        target.classList.contains('alert-success') ||
+                        target.classList.contains('alert-warning') ||
+                        target.classList.contains('alert-info')) {
+                        // Check if text nodes were added
+                        let hasTextChange = false;
+                        mutation.addedNodes.forEach(node => {
+                            if (node.nodeType === Node.TEXT_NODE && node.textContent.trim()) {
+                                hasTextChange = true;
+                            }
+                        });
+                        if (hasTextChange) {
+                            const currentLang = getCurrentLanguage();
+                            if (currentLang && currentLang !== 'en') {
+                                // Clear data-original-text to force re-translation with new text
+                                target.removeAttribute('data-original-text');
+                                // Small delay to let DOM settle
+                                setTimeout(() => {
+                                    translateElement(target, currentLang);
+                                }, 10);
+                            }
+                        }
+                    }
+                }
+
+                // Handle characterData mutations (direct text node modifications)
+                if (mutation.type === 'characterData' && mutation.target.parentElement) {
+                    const parent = mutation.target.parentElement;
+                    if (parent.classList && (parent.classList.contains('alert') ||
+                        parent.classList.contains('alert-danger') ||
+                        parent.classList.contains('alert-success'))) {
+                        const currentLang = getCurrentLanguage();
+                        if (currentLang && currentLang !== 'en') {
+                            parent.removeAttribute('data-original-text');
+                            translateElement(parent, currentLang);
+                        }
+                    }
+                }
             });
         });
 
         mutationObserver.observe(document.body, {
             childList: true,
-            subtree: true
+            subtree: true,
+            characterData: true
         });
 
 
@@ -728,7 +845,8 @@
         getCurrentLanguage,
         setCurrentLanguage,
         getSupportedLanguages: () => SUPPORTED_LANGUAGES,
-        init: initTranslation
+        init: initTranslation,
+        setupMutationObserver
     };
 
     // Auto-initialize when page is fully loaded (including dynamic content)
@@ -736,14 +854,11 @@
 
         const savedLang = getCurrentLanguage();
 
+        // Always set up MutationObserver for dynamic content (it checks current language when translating)
+        setupMutationObserver();
+
         if (savedLang && savedLang !== 'en') {
-
             initTranslation();
-
-            // Setup MutationObserver for dynamic content
-            setupMutationObserver();
-        } else {
-
         }
     });
 

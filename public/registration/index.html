@@ -124,13 +124,15 @@
 
           <div class="form-group">
             <label for="email">Email</label>
-            <input type="email" class="form-control" id="email" name="email" required aria-required="true" />
+            <input type="email" class="form-control" id="email" name="email" required aria-required="true"
+              placeholder="Enter your email" />
             <div class="invalid-feedback">Please enter a valid email</div>
           </div>
 
           <div class="form-group">
             <label for="phone">Phone Number</label>
-            <input type="tel" class="form-control" id="phone" name="phone" required aria-required="true" />
+            <input type="tel" class="form-control" id="phone" name="phone" required aria-required="true"
+              placeholder="Enter your phone number" />
             <div class="invalid-feedback">
               Please enter a valid phone number
             </div>
@@ -139,7 +141,8 @@
           <div class="form-group password-group">
             <label for="password">Password</label>
             <div class="password-input">
-              <input type="password" class="form-control" id="password" name="password" required aria-required="true" />
+              <input type="password" class="form-control" id="password" name="password" required aria-required="true"
+                placeholder="Create a password" />
               <button type="button" class="toggle-password" aria-label="Toggle password visibility">
                 <img src="/images/eye.svg" alt="Show password icon" class="eye-icon" />
               </button>
@@ -163,7 +166,7 @@
           <div class="form-group">
             <label for="confirmPassword">Confirm Password</label>
             <input type="password" class="form-control" id="confirmPassword" name="confirmPassword" required
-              aria-required="true" />
+              aria-required="true" placeholder="Confirm your password" />
             <div class="invalid-feedback">Passwords do not match</div>
           </div>
 
@@ -172,7 +175,8 @@
           </button>
 
           <div class="form-footer">
-            Already have an account? <a href="/login">Login here</a>
+            <p style="display:inline;">Already have an account? </p>
+            <p style="display:inline;"><a href="/login">Login here</a></p>
           </div>
         </form>
       </div>
