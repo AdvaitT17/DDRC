@@ -15,6 +15,7 @@ database
 server/scripts/
 server/uploads/
 uploads/
+migrations/
 
 .vscode/*
 .vscode/launch.json
