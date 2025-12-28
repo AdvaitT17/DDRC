@@ -15,19 +15,10 @@ const isAdmin = (req, res, next) => {
 const db = require("../config/database");
 const fs = require("fs");
 const { sanitize } = require("../utils/sanitize");
+const storageService = require("../services/storageService");
 
-// Configure multer for file uploads
-const storage = multer.diskStorage({
-  destination: function (req, file, cb) {
-    const uploadPath = path.join(__dirname, "../uploads/news");
-    cb(null, uploadPath);
-  },
-  filename: function (req, file, cb) {
-    // Clean the original filename to remove special characters
-    const cleanFileName = file.originalname.replace(/[^a-zA-Z0-9.]/g, "_");
-    cb(null, Date.now() + "-" + cleanFileName);
-  },
-});
+// Use memory storage - files are saved via storageService
+const storage = multer.memoryStorage();
 
 const upload = multer({
   storage: storage,
@@ -114,7 +105,13 @@ router.post("/", upload.single("file"), handleMulterError, async (req, res) => {
       });
     }
 
-    const file_path = req.file ? `/uploads/news/${req.file.filename}` : null;
+    // Save file using storage service (works for both local and Azure)
+    let file_path = null;
+    if (req.file) {
+      const filename = storageService.generateFilename(req.file.originalname);
+      await storageService.saveFile(req.file.buffer, 'news', filename);
+      file_path = `/uploads/news/${filename}`;
+    }
 
     const [result] = await db.query(
       "INSERT INTO news (title, description, file_path, created_by) VALUES (?, ?, ?, ?)",
@@ -147,13 +144,9 @@ router.delete("/:id", async (req, res) => {
       });
     }
 
-    // If there's a file associated with the news
+    // Delete file using storage service (works for both local and Azure)
     if (news[0].file_path) {
-      const filePath = path.join(__dirname, "..", news[0].file_path);
-      // Check if file exists before trying to delete
-      if (fs.existsSync(filePath)) {
-        fs.unlinkSync(filePath);
-      }
+      await storageService.deleteFile(news[0].file_path);
     }
 
     // Now actually delete from the database
@@ -221,17 +214,15 @@ router.put(
 
       // If a new file is uploaded, delete the old one and update the path
       if (req.file) {
-        // Delete old file if it exists
+        // Delete old file using storage service
         if (file_path) {
-          const oldFilePath = path.join(__dirname, "..", file_path);
-          if (fs.existsSync(oldFilePath)) {
-            fs.unlinkSync(oldFilePath);
-          } else {
-          }
+          await storageService.deleteFile(file_path);
         }
 
-        // Set new file path
-        file_path = `/uploads/news/${req.file.filename}`;
+        // Save new file using storage service
+        const filename = storageService.generateFilename(req.file.originalname);
+        await storageService.saveFile(req.file.buffer, 'news', filename);
+        file_path = `/uploads/news/${filename}`;
       }
 
       await db.query(

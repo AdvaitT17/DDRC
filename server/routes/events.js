@@ -15,23 +15,10 @@ const isAdmin = (req, res, next) => {
 const db = require("../config/database");
 const fs = require("fs");
 const { sanitize } = require("../utils/sanitize");
+const storageService = require("../services/storageService");
 
-// Configure multer for file uploads
-const storage = multer.diskStorage({
-  destination: function (req, file, cb) {
-    const uploadPath = path.join(__dirname, "../uploads/events");
-    // Create directory if it doesn't exist
-    if (!fs.existsSync(uploadPath)) {
-      fs.mkdirSync(uploadPath, { recursive: true });
-    }
-    cb(null, uploadPath);
-  },
-  filename: function (req, file, cb) {
-    // Clean the original filename to remove special characters
-    const cleanFileName = file.originalname.replace(/[^a-zA-Z0-9.]/g, "_");
-    cb(null, Date.now() + "-" + cleanFileName);
-  },
-});
+// Use memory storage - files are saved via storageService
+const storage = multer.memoryStorage();
 
 const upload = multer({
   storage: storage,
@@ -160,25 +147,42 @@ router.post(
         });
       }
 
-      // Prepare image paths
+      // Save images using storage service (works for both local and Azure)
       const imagePaths = {
-        image_path: `/uploads/events/${req.files.image[0].filename}`,
-        additional_image1: req.files.additional_image1
-          ? `/uploads/events/${req.files.additional_image1[0].filename}`
-          : null,
-        additional_image2: req.files.additional_image2
-          ? `/uploads/events/${req.files.additional_image2[0].filename}`
-          : null,
-        additional_image3: req.files.additional_image3
-          ? `/uploads/events/${req.files.additional_image3[0].filename}`
-          : null,
-        additional_image4: req.files.additional_image4
-          ? `/uploads/events/${req.files.additional_image4[0].filename}`
-          : null,
-        additional_image5: req.files.additional_image5
-          ? `/uploads/events/${req.files.additional_image5[0].filename}`
-          : null,
+        image_path: null,
+        additional_image1: null,
+        additional_image2: null,
+        additional_image3: null,
+        additional_image4: null,
+        additional_image5: null,
       };
+
+      // Helper function to save an image
+      const saveImage = async (file) => {
+        const filename = storageService.generateFilename(file.originalname);
+        await storageService.saveFile(file.buffer, 'events', filename);
+        return `/uploads/events/${filename}`;
+      };
+
+      // Save main image
+      imagePaths.image_path = await saveImage(req.files.image[0]);
+
+      // Save additional images if provided
+      if (req.files.additional_image1) {
+        imagePaths.additional_image1 = await saveImage(req.files.additional_image1[0]);
+      }
+      if (req.files.additional_image2) {
+        imagePaths.additional_image2 = await saveImage(req.files.additional_image2[0]);
+      }
+      if (req.files.additional_image3) {
+        imagePaths.additional_image3 = await saveImage(req.files.additional_image3[0]);
+      }
+      if (req.files.additional_image4) {
+        imagePaths.additional_image4 = await saveImage(req.files.additional_image4[0]);
+      }
+      if (req.files.additional_image5) {
+        imagePaths.additional_image5 = await saveImage(req.files.additional_image5[0]);
+      }
 
       const [result] = await db.query(
         `INSERT INTO events (
@@ -232,7 +236,7 @@ router.delete("/:id", async (req, res) => {
       });
     }
 
-    // Delete all associated images
+    // Delete all associated images using storage service
     const imagePaths = [
       event[0].image_path,
       event[0].additional_image1,
@@ -242,15 +246,12 @@ router.delete("/:id", async (req, res) => {
       event[0].additional_image5,
     ];
 
-    // Delete each image if it exists
-    imagePaths.forEach((imagePath) => {
+    // Delete each image using storage service
+    for (const imagePath of imagePaths) {
       if (imagePath) {
-        const fullPath = path.join(__dirname, "..", imagePath);
-        if (fs.existsSync(fullPath)) {
-          fs.unlinkSync(fullPath);
-        }
+        await storageService.deleteFile(imagePath);
       }
-    });
+    }
 
     // Now delete from the database
     await db.query("DELETE FROM events WHERE id = ?", [req.params.id]);
@@ -311,12 +312,9 @@ router.put(
         additional_image5: currentEvent[0].additional_image5,
       };
 
-      // Handle image removal flags
+      // Handle image removal flags using storage service
       if (removeMainImage === "true" && imagePaths.image_path) {
-        const fullPath = path.join(__dirname, "..", imagePaths.image_path);
-        if (fs.existsSync(fullPath)) {
-          fs.unlinkSync(fullPath);
-        }
+        await storageService.deleteFile(imagePaths.image_path);
         imagePaths.image_path = null;
       }
 
@@ -329,34 +327,29 @@ router.put(
         additional_image5: remove_additional_image5,
       };
 
-      Object.keys(additionalImageFlags).forEach((field) => {
-        if (additionalImageFlags[field] === "true" && imagePaths[field]) {
-          const fullPath = path.join(__dirname, "..", imagePaths[field]);
-          if (fs.existsSync(fullPath)) {
-            fs.unlinkSync(fullPath);
-          }
+      for (const [field, shouldRemove] of Object.entries(additionalImageFlags)) {
+        if (shouldRemove === "true" && imagePaths[field]) {
+          await storageService.deleteFile(imagePaths[field]);
           imagePaths[field] = null;
         }
-      });
+      }
 
       // Update image paths if new files are uploaded
       if (req.files) {
-        Object.keys(req.files).forEach((fieldName) => {
-          const file = req.files[fieldName][0];
+        for (const [fieldName, files] of Object.entries(req.files)) {
+          const file = files[0];
           const dbField = fieldName === "image" ? "image_path" : fieldName;
 
-          // Delete old image if it exists
-          const oldImagePath = imagePaths[dbField];
-          if (oldImagePath) {
-            const fullPath = path.join(__dirname, "..", oldImagePath);
-            if (fs.existsSync(fullPath)) {
-              fs.unlinkSync(fullPath);
-            }
+          // Delete old image using storage service
+          if (imagePaths[dbField]) {
+            await storageService.deleteFile(imagePaths[dbField]);
           }
 
-          // Set new image path
-          imagePaths[dbField] = `/uploads/events/${file.filename}`;
-        });
+          // Save new file using storage service
+          const filename = storageService.generateFilename(file.originalname);
+          await storageService.saveFile(file.buffer, 'events', filename);
+          imagePaths[dbField] = `/uploads/events/${filename}`;
+        }
       }
 
       // Update event in database

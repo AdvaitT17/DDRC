@@ -33,6 +33,7 @@ const userRoutes = require("./routes/userRoutes");
 const contactRoutes = require("./routes/contactRoutes");
 const translationRoutes = require("./routes/translationRoutes");
 const schemeRoutes = require("./routes/schemeRoutes");
+const storageService = require("./services/storageService");
 
 const app = express();
 
@@ -193,13 +194,43 @@ app.get("/sitemap.xml", (req, res) => {
 });
 
 // Serve news files publicly without authentication
-app.use("/uploads/news", express.static(path.join(__dirname, "uploads/news")));
+// Uses storageService to support both local (dev) and Azure Blob (prod)
+app.get("/uploads/news/:filename", async (req, res) => {
+  try {
+    const filePath = `news/${req.params.filename}`;
+    const fileInfo = await storageService.getFileInfo(filePath);
+
+    if (!fileInfo) {
+      return res.status(404).sendFile(path.join(__dirname, "../public/error.html"));
+    }
+
+    res.setHeader("Content-Type", fileInfo.contentType);
+    const stream = await storageService.getFileStream(filePath);
+    stream.pipe(res);
+  } catch (error) {
+    console.error("Error serving news file:", error);
+    res.status(404).sendFile(path.join(__dirname, "../public/error.html"));
+  }
+});
 
 // Serve event images publicly without authentication
-app.use(
-  "/uploads/events",
-  express.static(path.join(__dirname, "uploads/events"))
-);
+app.get("/uploads/events/:filename", async (req, res) => {
+  try {
+    const filePath = `events/${req.params.filename}`;
+    const fileInfo = await storageService.getFileInfo(filePath);
+
+    if (!fileInfo) {
+      return res.status(404).sendFile(path.join(__dirname, "../public/error.html"));
+    }
+
+    res.setHeader("Content-Type", fileInfo.contentType);
+    const stream = await storageService.getFileStream(filePath);
+    stream.pipe(res);
+  } catch (error) {
+    console.error("Error serving event file:", error);
+    res.status(404).sendFile(path.join(__dirname, "../public/error.html"));
+  }
+});
 
 // Serve user-submitted files with authentication
 app.use("/uploads/forms", async (req, res, next) => {
@@ -214,8 +245,8 @@ app.use("/uploads/forms", async (req, res, next) => {
     }
 
     // Get the file path from the URL and clean it
-    const filePath = req.url.split("?")[0];
-    const cleanPath = filePath.replace(/^\//, "");
+    const urlPath = req.url.split("?")[0];
+    const cleanPath = urlPath.replace(/^\//, "");
     const fullCleanPath = `forms/${cleanPath}`;
 
     // Validate the token and check if it matches the requested file
@@ -229,10 +260,9 @@ app.use("/uploads/forms", async (req, res, next) => {
         });
     }
 
-    // If token is valid and matches the file, serve the file directly
-    const fullPath = path.join(__dirname, "uploads", fullCleanPath);
-
-    if (!fs.existsSync(fullPath)) {
+    // Check if file exists using storage service
+    const fileExists = await storageService.fileExists(fullCleanPath);
+    if (!fileExists) {
       return res
         .status(404)
         .sendFile(path.join(__dirname, "../public/error.html"), {
@@ -240,22 +270,14 @@ app.use("/uploads/forms", async (req, res, next) => {
         });
     }
 
-    // Set appropriate content type based on file extension
-    const ext = path.extname(fullPath).toLowerCase();
-    const contentType =
-      {
-        ".pdf": "application/pdf",
-        ".doc": "application/msword",
-        ".docx":
-          "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
-        ".jpg": "image/jpeg",
-        ".jpeg": "image/jpeg",
-        ".png": "image/png",
-      }[ext] || "application/octet-stream";
+    // Get file info and stream
+    const fileInfo = await storageService.getFileInfo(fullCleanPath);
+    res.setHeader("Content-Type", fileInfo?.contentType || "application/octet-stream");
 
-    res.setHeader("Content-Type", contentType);
-    fs.createReadStream(fullPath).pipe(res);
+    const stream = await storageService.getFileStream(fullCleanPath);
+    stream.pipe(res);
   } catch (error) {
+    console.error("Error serving form file:", error);
     res.status(401).sendFile(path.join(__dirname, "../public/error.html"), {
       query: { code: 401, message: "Error accessing file" },
     });
@@ -283,7 +305,26 @@ app.use("/uploads/documents", async (req, res, next) => {
             query: { code: 403, message: "Access denied" },
           });
       }
-      express.static(path.join(__dirname, "uploads/documents"))(req, res, next);
+
+      // Get the file path from the URL and serve using storage service
+      const urlPath = req.url.split("?")[0];
+      const cleanPath = urlPath.replace(/^\//, "");
+      const fullCleanPath = `documents/${cleanPath}`;
+
+      const fileExists = await storageService.fileExists(fullCleanPath);
+      if (!fileExists) {
+        return res
+          .status(404)
+          .sendFile(path.join(__dirname, "../public/error.html"), {
+            query: { code: 404, message: "File not found" },
+          });
+      }
+
+      const fileInfo = await storageService.getFileInfo(fullCleanPath);
+      res.setHeader("Content-Type", fileInfo?.contentType || "application/octet-stream");
+
+      const stream = await storageService.getFileStream(fullCleanPath);
+      stream.pipe(res);
     } catch (err) {
       return res
         .status(401)
