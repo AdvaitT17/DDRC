@@ -2,35 +2,11 @@ const multer = require("multer");
 const path = require("path");
 const fs = require("fs");
 const { uploadsDir, generateUniqueFilename } = require("../config/upload");
+const storageService = require("../services/storageService");
 
-// Configure multer for file uploads
-const storage = multer.diskStorage({
-  destination: function (req, file, cb) {
-    // Determine destination based on file type or route
-    let uploadPath = path.join(uploadsDir);
-
-    // Default to forms directory if no specific directory is determined
-    if (req.originalUrl.includes("/news")) {
-      uploadPath = path.join(uploadsDir, "news");
-    } else if (req.originalUrl.includes("/events")) {
-      uploadPath = path.join(uploadsDir, "events");
-    } else {
-      uploadPath = path.join(uploadsDir, "forms");
-    }
-
-    // Ensure the directory exists
-    if (!fs.existsSync(uploadPath)) {
-      fs.mkdirSync(uploadPath, { recursive: true });
-    }
-
-    cb(null, uploadPath);
-  },
-  filename: (req, file, cb) => {
-    // Generate a unique filename to prevent overwriting
-    const uniqueFilename = generateUniqueFilename(file.originalname);
-    cb(null, uniqueFilename);
-  },
-});
+// Use memory storage - files are saved by storageService after processing
+// This allows us to switch between local and Azure Blob storage seamlessly
+const storage = multer.memoryStorage();
 
 // Filter function to validate file types if needed
 const fileFilter = (req, file, cb) => {

@@ -7,21 +7,10 @@ const pool = require("../config/database");
 const path = require("path");
 const fs = require("fs");
 const validationService = require("../services/validationService");
+const storageService = require("../services/storageService");
 
-// Configure multer for file uploads
-const storage = multer.diskStorage({
-  destination: function (req, file, cb) {
-    const formsDir = path.join(__dirname, "../uploads/forms");
-    // Ensure the directory exists
-    if (!fs.existsSync(formsDir)) {
-      fs.mkdirSync(formsDir, { recursive: true });
-    }
-    cb(null, formsDir);
-  },
-  filename: (req, file, cb) => {
-    cb(null, generateUniqueFilename(file.originalname));
-  },
-});
+// Use memory storage - files are saved via storageService
+const storage = multer.memoryStorage();
 
 const upload = multer({
   storage,
@@ -79,7 +68,7 @@ router.post("/progress", authenticateToken, upload.any(), async (req, res) => {
 
     // Validate form data against field validation rules
     const validation = await validationService.validateFormData(formData, currentSectionId);
-    
+
     if (!validation.isValid) {
       return res.status(400).json({
         message: "Validation failed",
@@ -114,11 +103,13 @@ router.post("/progress", authenticateToken, upload.any(), async (req, res) => {
       );
     }
 
-    // Handle file uploads
+    // Handle file uploads using storage service
     const files = req.files || [];
     for (const file of files) {
       const fieldId = file.fieldname.replace("file_", "");
-      const filePath = `forms/${file.filename}`;
+      const filename = storageService.generateFilename(file.originalname);
+      await storageService.saveFile(file.buffer, 'forms', filename);
+      const filePath = `forms/${filename}`;
       await pool.query(
         `INSERT INTO registration_responses (registration_id, field_id, value)
          VALUES (?, ?, ?)
@@ -192,7 +183,7 @@ router.post("/submit", authenticateToken, async (req, res) => {
 
     // Validate all form data before final submission
     const validation = await validationService.validateFormData(formData);
-    
+
     if (!validation.isValid) {
       return res.status(400).json({
         message: "Form validation failed. Please review all sections.",
@@ -327,8 +318,11 @@ router.post(
         var registrationId = progress[0].id;
       }
 
-      // Save file info to database
-      const filePath = `forms/${file.filename}`;
+      // Save file using storage service
+      const filename = storageService.generateFilename(file.originalname);
+      await storageService.saveFile(file.buffer, 'forms', filename);
+      const filePath = `forms/${filename}`;
+
       await pool.query(
         `INSERT INTO registration_responses (registration_id, field_id, value) 
          VALUES (?, ?, ?) 
@@ -337,7 +331,7 @@ router.post(
       );
 
       res.json({
-        fileName: file.filename,
+        fileName: filename,
         message: "File uploaded successfully",
       });
     } catch (error) {
@@ -362,11 +356,8 @@ router.delete("/delete-file/:fieldId", authenticateToken, async (req, res) => {
     );
 
     if (files.length > 0) {
-      // Delete file from storage
-      const filePath = path.join(uploadsDir, files[0].value);
-      if (fs.existsSync(filePath)) {
-        fs.unlinkSync(filePath);
-      }
+      // Delete file using storage service
+      await storageService.deleteFile(files[0].value);
 
       // Remove from database
       await pool.query(
