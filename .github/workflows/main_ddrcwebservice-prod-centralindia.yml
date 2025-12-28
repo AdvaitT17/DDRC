@@ -73,6 +73,7 @@ jobs:
       - name: Deploy to Azure Web App
         uses: azure/webapps-deploy@v3
         with:
-          app-name: ddrc-production-webservice
+          app-name: ddrcwebservice-prod-centralindia
           slot-name: Production
           package: release.zip
+
