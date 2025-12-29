@@ -1376,20 +1376,32 @@ router.post(
         await conn.beginTransaction();
 
         // Generate application ID (Year-Month-Sequential Number)
+        // Get the last application ID that follows the YYYY-MM-NNNN format (not MIG- format)
         const [lastApp] = await conn.query(
           `SELECT application_id FROM registration_progress 
            WHERE application_id IS NOT NULL 
+           AND application_id NOT LIKE 'MIG-%'
            ORDER BY id DESC LIMIT 1`
         );
 
         const date = new Date();
         const year = date.getFullYear();
         const month = String(date.getMonth() + 1).padStart(2, "0");
-        const lastNum = lastApp.length
-          ? parseInt(lastApp[0].application_id.split("-")[2])
-          : 0;
+
+        // Parse the last sequential number from YYYY-MM-NNNN format
+        let lastNum = 0;
+        if (lastApp.length && lastApp[0].application_id) {
+          const parts = lastApp[0].application_id.split("-");
+          if (parts.length === 3) {
+            const parsed = parseInt(parts[2]);
+            if (!isNaN(parsed)) {
+              lastNum = parsed;
+            }
+          }
+        }
+
         const appNum = String(lastNum + 1).padStart(4, "0");
-        const applicationId = `${year} -${month} -${appNum} `;
+        const applicationId = `${year}-${month}-${appNum}`;
 
         // Update the registration status to completed
         await conn.query(
