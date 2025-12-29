@@ -35,10 +35,9 @@ class StorageService {
             }
         } else {
             console.log('📁 Using local file storage');
+            // Ensure local uploads directory exists (only needed for local storage)
+            this._ensureLocalDirs();
         }
-
-        // Ensure local uploads directory exists
-        this._ensureLocalDirs();
     }
 
     /**
