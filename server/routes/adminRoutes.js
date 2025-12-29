@@ -10,6 +10,7 @@ const { upload, handleMulterError } = require("../middleware/uploadMiddleware");
 const path = require("path");
 const fs = require("fs");
 const { uploadsDir, generateUniqueFilename } = require("../config/upload");
+const storageService = require("../services/storageService");
 
 // Generate temporary file access URL
 router.get(
@@ -418,20 +419,12 @@ router.post(
         return res.status(400).json({ message: "Field ID is required" });
       }
 
-      // Generate a unique filename
-      const originalName = req.file.originalname;
-      const uniqueFilename = generateUniqueFilename(originalName);
-
-      // Move the file to the forms upload directory
-      const targetPath = path.join(
-        uploadsDir,
-        "forms",
-        uniqueFilename.split("/").pop()
-      );
-      fs.renameSync(req.file.path, targetPath);
+      // Generate a unique filename and save using storage service
+      const filename = storageService.generateFilename(req.file.originalname);
+      await storageService.saveFile(req.file.buffer, 'forms', filename);
 
       // Return the relative path that will be stored in the database
-      const filePath = `forms/${uniqueFilename.split("/").pop()}`;
+      const filePath = `forms/${filename}`;
 
       res.json({
         message: "File uploaded successfully",
@@ -461,20 +454,12 @@ router.post(
         return res.status(400).json({ message: "Field ID is required" });
       }
 
-      // Generate a unique filename
-      const originalName = req.file.originalname;
-      const uniqueFilename = generateUniqueFilename(originalName);
-
-      // Move the file to the forms upload directory
-      const targetPath = path.join(
-        uploadsDir,
-        "forms",
-        uniqueFilename.split("/").pop()
-      );
-      fs.renameSync(req.file.path, targetPath);
+      // Generate a unique filename and save using storage service
+      const filename = storageService.generateFilename(req.file.originalname);
+      await storageService.saveFile(req.file.buffer, 'forms', filename);
 
       // Return the relative path that will be stored in the database
-      const filePath = `forms/${uniqueFilename.split("/").pop()}`;
+      const filePath = `forms/${filename}`;
 
       res.json({
         message: "File uploaded successfully",
