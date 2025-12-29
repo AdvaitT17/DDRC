@@ -44,18 +44,21 @@ if (process.env.NODE_ENV === 'production' || process.env.TRUST_PROXY === 'true')
   console.log('✅ Trust proxy enabled for load balancer/Azure');
 }
 
-// Create uploads directories if they don't exist
-const uploadDirs = [
-  path.join(__dirname, "uploads"),
-  path.join(__dirname, "uploads/news"),
-  path.join(__dirname, "uploads/forms"),
-  path.join(__dirname, "uploads/documents"),];
+// Create uploads directories if they don't exist (skip in production - uses Azure Blob Storage)
+if (process.env.NODE_ENV !== 'production') {
+  const uploadDirs = [
+    path.join(__dirname, "uploads"),
+    path.join(__dirname, "uploads/news"),
+    path.join(__dirname, "uploads/forms"),
+    path.join(__dirname, "uploads/documents"),
+  ];
 
-uploadDirs.forEach((dir) => {
-  if (!fs.existsSync(dir)) {
-    fs.mkdirSync(dir, { recursive: true });
-  }
-});
+  uploadDirs.forEach((dir) => {
+    if (!fs.existsSync(dir)) {
+      fs.mkdirSync(dir, { recursive: true });
+    }
+  });
+}
 
 // Helper function for consistent API error responses
 const apiErrorResponse = (res, status, message) => {
