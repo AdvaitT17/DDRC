@@ -271,4 +271,86 @@ router.put(
   }
 );
 
+// Reorder sections
+router.patch(
+  "/sections/reorder",
+  authenticateToken,
+  requireRole(["admin"]),
+  async (req, res) => {
+    try {
+      const { sectionIds } = req.body;
+
+      if (!Array.isArray(sectionIds) || sectionIds.length === 0) {
+        return res.status(400).json({ message: "Invalid section IDs array" });
+      }
+
+      // Update order_index for each section
+      const connection = await pool.getConnection();
+      try {
+        await connection.beginTransaction();
+
+        for (let i = 0; i < sectionIds.length; i++) {
+          await connection.query(
+            "UPDATE form_sections SET order_index = ? WHERE id = ?",
+            [i, sectionIds[i]]
+          );
+        }
+
+        await connection.commit();
+        res.json({ message: "Sections reordered successfully" });
+      } catch (error) {
+        await connection.rollback();
+        throw error;
+      } finally {
+        connection.release();
+      }
+    } catch (error) {
+      console.error("Error reordering sections:", error);
+      res.status(500).json({ message: "Error reordering sections" });
+    }
+  }
+);
+
+// Reorder fields within a section
+router.patch(
+  "/fields/reorder",
+  authenticateToken,
+  requireRole(["admin"]),
+  async (req, res) => {
+    try {
+      const { sectionId, fieldIds } = req.body;
+
+      if (!sectionId || !Array.isArray(fieldIds) || fieldIds.length === 0) {
+        return res
+          .status(400)
+          .json({ message: "Invalid section ID or field IDs array" });
+      }
+
+      // Update order_index for each field
+      const connection = await pool.getConnection();
+      try {
+        await connection.beginTransaction();
+
+        for (let i = 0; i < fieldIds.length; i++) {
+          await connection.query(
+            "UPDATE form_fields SET order_index = ? WHERE id = ? AND section_id = ?",
+            [i, fieldIds[i], sectionId]
+          );
+        }
+
+        await connection.commit();
+        res.json({ message: "Fields reordered successfully" });
+      } catch (error) {
+        await connection.rollback();
+        throw error;
+      } finally {
+        connection.release();
+      }
+    } catch (error) {
+      console.error("Error reordering fields:", error);
+      res.status(500).json({ message: "Error reordering fields" });
+    }
+  }
+);
+
 module.exports = router;

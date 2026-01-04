@@ -188,6 +188,9 @@ function initializeFormEventListeners() {
     modal.show();
   });
 
+  // Toggle Reorder button
+  document.getElementById("toggleReorderBtn").addEventListener("click", toggleReorderMode);
+
   // Save Section button
   document
     .getElementById("saveSectionBtn")
@@ -355,13 +358,20 @@ function renderFormSections(sections) {
       (section) => `
     <div class="section-item" data-section-id="${section.id}">
       <div class="section-header">
+        <span class="drag-handle" title="Drag to reorder">
+          <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <line x1="3" y1="12" x2="21" y2="12"></line>
+            <line x1="3" y1="6" x2="21" y2="6"></line>
+            <line x1="3" y1="18" x2="21" y2="18"></line>
+          </svg>
+        </span>
         <h3>${section.name}</h3>
         <div class="section-actions">
           <button class="btn btn-primary btn-sm add-field-btn">Add Field</button>
           <button class="btn btn-danger btn-sm delete-section-btn">Delete</button>
         </div>
       </div>
-      <div class="fields-container">
+      <div class="fields-container" data-section-id="${section.id}">
         ${renderFields(section.fields)}
       </div>
     </div>
@@ -371,6 +381,14 @@ function renderFormSections(sections) {
 
   // Add event listeners for the new buttons
   addSectionEventListeners();
+
+  // Initialize section sorting
+  initializeSectionSorting();
+
+  // Initialize field sorting for each section
+  sections.forEach(section => {
+    initializeFieldSorting(section.id);
+  });
 }
 
 function renderFields(fields) {
@@ -378,6 +396,13 @@ function renderFields(fields) {
     .map(
       (field) => `
     <div class="field-item" data-field-id="${field.id}">
+      <span class="drag-handle" title="Drag to reorder">
+        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <line x1="3" y1="12" x2="21" y2="12"></line>
+          <line x1="3" y1="6" x2="21" y2="6"></line>
+          <line x1="3" y1="18" x2="21" y2="18"></line>
+        </svg>
+      </span>
       <div class="field-info">
         <span class="field-name">${field.display_name}</span>
         <span class="field-type">${field.field_type === "nested-select"
@@ -705,6 +730,144 @@ function addSectionEventListeners() {
       }
     });
   });
+}
+
+// Global variables for Sortable instances
+window.sectionSortable = null;
+window.fieldSortables = {};
+window.isReorderMode = false;
+
+// Initialize section sorting with SortableJS
+function initializeSectionSorting() {
+  const sectionsContainer = document.querySelector(".sections-container");
+  if (!sectionsContainer) return;
+
+  window.sectionSortable = new Sortable(sectionsContainer, {
+    animation: 150,
+    handle: ".section-header .drag-handle",
+    ghostClass: "sortable-ghost",
+    chosenClass: "sortable-chosen",
+    dragClass: "sortable-drag",
+    disabled: true, // Start disabled
+    onEnd: async function (evt) {
+      // Get new order of section IDs
+      const sectionIds = Array.from(
+        sectionsContainer.querySelectorAll(".section-item")
+      ).map((item) => parseInt(item.dataset.sectionId));
+
+      try {
+        await reorderSections(sectionIds);
+      } catch (error) {
+        console.error("Error reordering sections:", error);
+        alert("Failed to save new section order. Please refresh the page.");
+        // Refresh to restore original order
+        await initializeFormManagement();
+      }
+    },
+  });
+}
+
+// Initialize field sorting within a section
+function initializeFieldSorting(sectionId) {
+  const fieldsContainer = document.querySelector(
+    `.fields-container[data-section-id="${sectionId}"]`
+  );
+  if (!fieldsContainer) return;
+
+  window.fieldSortables[sectionId] = new Sortable(fieldsContainer, {
+    animation: 150,
+    handle: ".drag-handle",
+    ghostClass: "sortable-ghost",
+    chosenClass: "sortable-chosen",
+    dragClass: "sortable-drag",
+    disabled: true, // Start disabled
+    onEnd: async function (evt) {
+      // Get new order of field IDs
+      const fieldIds = Array.from(
+        fieldsContainer.querySelectorAll(".field-item")
+      ).map((item) => parseInt(item.dataset.fieldId));
+
+      try {
+        await reorderFields(sectionId, fieldIds);
+      } catch (error) {
+        console.error("Error reordering fields:", error);
+        alert("Failed to save new field order. Please refresh the page.");
+        // Refresh to restore original order
+        await initializeFormManagement();
+      }
+    },
+  });
+}
+
+// Toggle reorder mode
+function toggleReorderMode() {
+  window.isReorderMode = !window.isReorderMode;
+  const btn = document.getElementById("toggleReorderBtn");
+  const mainContent = document.getElementById("mainContent");
+
+  if (window.isReorderMode) {
+    // Enable reorder mode
+    btn.textContent = "Done Reordering";
+    btn.classList.remove("btn-outline-secondary");
+    btn.classList.add("btn-success");
+    mainContent.classList.add("reorder-mode");
+
+    // Enable all Sortable instances
+    if (window.sectionSortable) {
+      window.sectionSortable.option("disabled", false);
+    }
+    Object.values(window.fieldSortables).forEach(sortable => {
+      sortable.option("disabled", false);
+    });
+  } else {
+    // Disable reorder mode
+    btn.textContent = "Reorder";
+    btn.classList.remove("btn-success");
+    btn.classList.add("btn-outline-secondary");
+    mainContent.classList.remove("reorder-mode");
+
+    // Disable all Sortable instances
+    if (window.sectionSortable) {
+      window.sectionSortable.option("disabled", true);
+    }
+    Object.values(window.fieldSortables).forEach(sortable => {
+      sortable.option("disabled", true);
+    });
+  }
+}
+
+// API helper: Reorder sections
+async function reorderSections(sectionIds) {
+  const response = await fetchWithAuth("/api/form/sections/reorder", {
+    method: "PATCH",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({ sectionIds }),
+  });
+
+  if (!response.ok) {
+    throw new Error("Failed to reorder sections");
+  }
+
+  return await response.json();
+}
+
+// API helper: Reorder fields within a section
+async function reorderFields(sectionId, fieldIds) {
+  const response = await fetchWithAuth("/api/form/fields/reorder", {
+    method: "PATCH",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({ sectionId, fieldIds }),
+  });
+
+  if (!response.ok) {
+    throw new Error("Failed to reorder fields");
+  }
+
+  return await response.json();
 }
 
 function resetFieldForm() {
