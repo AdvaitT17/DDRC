@@ -3161,7 +3161,8 @@ class DashboardManager {
               <line x1="19" y1="12" x2="5" y2="12"></line>
               <polyline points="12 19 5 12 12 5"></polyline>
             </svg>
-            Back to Recent
+            <span class="back-text-full">Back to Recent</span>
+            <span class="back-text-short">Back</span>
           </button>
           <div id="paginationInfo" class="pagination-info ms-3">Showing 0 of 0 applications</div>
         </div>
@@ -4497,9 +4498,9 @@ class DashboardManager {
 
     // Restore the original header
     recentAppsContainer.querySelector(".card-header").innerHTML = `
-      <h2>Recent Applications</h2>
-      <a href="#" class="btn btn-primary btn-sm">View All</a>
-    `;
+    <h2>Awaiting Review</h2>
+    <a href="/admin/applications" class="btn btn-primary btn-sm" id="awaitingReviewViewAll">View All</a>
+  `;
 
     // Remove the hierarchical filter container if it exists
     const locationFilterContainer = document.getElementById(

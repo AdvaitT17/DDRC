@@ -2920,6 +2920,15 @@ body.modal-open {
   flex-shrink: 0;
 }
 
+/* Back button text - full shown by default, short hidden */
+.back-text-full {
+  display: inline;
+}
+
+.back-text-short {
+  display: none;
+}
+
 /* Responsive adjustments */
 @media (max-width: 768px) {
   .admin-controls {
@@ -3516,20 +3525,47 @@ html body .clickable-row:active td {
 
 @media (max-width: 576px) {
 
-  /* Card headers */
-  .card-header.d-flex {
+  /* Card headers - but exclude awaiting review section */
+  .card-header.d-flex:not(:has(#awaitingReviewViewAll)) {
     flex-direction: column;
     align-items: flex-start !important;
     gap: 1rem;
   }
 
-  .card-header .d-flex {
+  /* Keep Awaiting Review header inline on mobile */
+  .card-header.d-flex:has(#awaitingReviewViewAll) {
+    flex-direction: row;
+    flex-wrap: nowrap;
+    align-items: center !important;
+  }
+
+  .card-header.d-flex:has(#awaitingReviewViewAll) h2 {
+    margin-right: auto;
+    font-size: 1.1rem;
+  }
+
+  #awaitingReviewViewAll {
+    flex-shrink: 0;
+    white-space: nowrap;
+  }
+
+  /* Form management specific button container */
+  .form-header-actions {
     flex-direction: column;
     width: 100%;
   }
 
-  .card-header .btn {
+  .form-header-actions .btn {
     width: 100%;
+  }
+
+  /* Back to Recent button - show short text on mobile */
+  .back-text-full {
+    display: none;
+  }
+
+  .back-text-short {
+    display: inline;
   }
 }
 
