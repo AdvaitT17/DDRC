@@ -357,7 +357,7 @@ class DashboardManager {
         incompleteModal.innerHTML = `
           <div class="modal-dialog modal-dialog-centered modal-xl">
             <div class="modal-content">
-              <div class="modal-header d-flex justify-content-between align-items-center" style="background-color: var(--primary-color); color: white;">
+              <div class="modal-header d-flex justify-content-between align-items-center">
                 <h5 class="modal-title">Incomplete Registration</h5>
                 <div class="header-actions">
                   <button type="button" id="incompleteHistoryBtn" style="display: none;">
@@ -367,20 +367,22 @@ class DashboardManager {
                     </svg>
                     History
                   </button>
-                  <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close" style="filter: brightness(0) invert(1);"></button>
+                  <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
               </div>
               <div class="modal-body">
                 <div class="application-header">
                   <div class="application-header-top">
                     <div class="application-header-main">
-                      <div class="app-id-section">
-                        <span class="label-text">Application ID</span>
-                        <span class="value-text" id="incompleteModalApplicationId"></span>
-                      </div>
-                      <div class="app-date-section">
-                        <span class="label-text">Started</span>
-                        <span class="value-text" id="incompleteModalStartDate"></span>
+                      <div class="header-info-group">
+                        <div class="app-id-section">
+                          <span class="label-text">Application ID</span>
+                          <span class="value-text" id="incompleteModalApplicationId"></span>
+                        </div>
+                        <div class="app-date-section">
+                          <span class="label-text">Started</span>
+                          <span class="value-text" id="incompleteModalStartDate"></span>
+                        </div>
                       </div>
                       <div class="app-name-section">
                         <span class="label-text">Applicant</span>
@@ -409,46 +411,40 @@ class DashboardManager {
                 <div class="application-sections row" id="incompleteModalFormData">
                   <!-- Will be populated with all form sections -->
                 </div>
-              </div>
-              <div class="modal-footer">
-                <div class="action-buttons">
-                  <button type="button" class="btn btn-primary me-2" id="incompleteEditBtn" onclick="dashboardManager.toggleIncompleteEditMode()">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+
+                <!-- Floating Action Toolbar -->
+                <div class="floating-action-toolbar" id="incompleteFAB">
+                  <button type="button" class="fab-btn fab-primary" id="incompleteEditBtn" onclick="dashboardManager.toggleIncompleteEditMode()">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                       <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
                       <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path>
                     </svg>
-                    <span id="incompleteEditBtnText">Complete Form</span>
+                    <span id="incompleteEditBtnText">Edit</span>
                   </button>
-                  <button type="button" class="btn btn-success" id="incompleteCompleteBtn" onclick="dashboardManager.completeRegistration()">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <button type="button" class="fab-btn fab-success" id="incompleteCompleteBtn" onclick="dashboardManager.completeRegistration()">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                       <polyline points="20 6 9 17 4 12"></polyline>
                     </svg>
-                    Mark as Complete
+                    <span>Complete</span>
+                  </button>
+                  <button type="button" class="fab-btn fab-outline-danger" id="incompleteDeleteBtn" onclick="dashboardManager.showDeleteUserModal()">
+                     <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                      <polyline points="3 6 5 6 21 6"></polyline>
+                      <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
+                      <line x1="10" y1="11" x2="10" y2="17"></line>
+                      <line x1="14" y1="11" x2="14" y2="17"></line>
+                    </svg>
+                    <span>Delete User</span>
                   </button>
                 </div>
-                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
               </div>
             </div>
           </div>
         `;
         document.body.appendChild(incompleteModal);
       } else {
-        // Update the existing modal's footer to remove any Contact User button
-        const actionButtons = incompleteModal.querySelector(".action-buttons");
-        if (actionButtons) {
-          // Keep only the Complete Form and Mark as Complete buttons
-          const editBtn = actionButtons.querySelector("#incompleteEditBtn");
-          const completeBtn = actionButtons.querySelector(
-            "#incompleteCompleteBtn"
-          );
-          actionButtons.innerHTML = "";
-          if (editBtn) {
-            // Make sure we preserve the margin class
-            editBtn.classList.add("me-2");
-            actionButtons.appendChild(editBtn);
-          }
-          if (completeBtn) actionButtons.appendChild(completeBtn);
-        }
+        // Modal exists, reusing existing structure
+        // FAB buttons are persistent, so no need to re-order or clear them
       }
 
       // Fill in the fields in the modal
@@ -735,6 +731,8 @@ class DashboardManager {
         arrowContainer.className = "edit-arrow";
         arrowContainer.style.display = "flex";
         arrowContainer.style.justifyContent = "center";
+        arrowContainer.style.alignItems = "center";
+        arrowContainer.style.marginTop = "1.5rem";
         arrowContainer.style.color = "#9ca3af";
         arrowContainer.innerHTML = `
           <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" class="bi bi-arrow-right" viewBox="0 0 16 16">
@@ -1361,7 +1359,10 @@ class DashboardManager {
         statusInfo.innerHTML = `
           <small class="text-muted">
             Last updated by <span id="lastUpdatedBy">${data.last_updated_by}</span> on
-            <span id="lastUpdatedAt">${data.last_action_at}</span>
+            <span id="lastUpdatedAt">
+              <span class="updated-date">${new Date(data.last_action_at).toLocaleDateString()}</span>
+              <span class="updated-time"> ${new Date(data.last_action_at).toLocaleTimeString()}</span>
+            </span>
           </small>`;
       }
 
@@ -1377,13 +1378,15 @@ class DashboardManager {
       const historyBtn = document.getElementById("historyBtn");
       const editBtnText = document.getElementById("editBtnText");
 
-      editBtnText.textContent = "Edit Responses";
+      if (editBtnText) editBtnText.textContent = "Edit Responses";
 
-      // Ensure the button always has the btn-primary class
-      editBtn.classList.remove("btn-outline-primary");
-      editBtn.classList.add("btn-primary");
-      editBtn.classList.remove("pulse-animation");
-      editBtn.classList.remove("has-changes");
+      // Ensure the button always has the fab-primary class (for FAB) or btn-primary (for regular)
+      if (editBtn) {
+        editBtn.classList.remove("btn-outline-primary", "fab-outline-primary");
+        editBtn.classList.add("fab-primary");
+        editBtn.classList.remove("pulse-animation");
+        editBtn.classList.remove("has-changes");
+      }
 
       const currentStatus = data.service_status || "pending";
 
@@ -2161,47 +2164,44 @@ class DashboardManager {
     const hasChanges = Object.keys(this.editedFields).length > 0;
 
     if (this.isEditMode) {
-      // Update button text
-      editBtnText.textContent = hasChanges ? "Save Changes" : "Cancel Edit";
+      // Update button text (if element exists)
+      if (editBtnText) {
+        editBtnText.textContent = hasChanges ? "Save" : "Cancel";
+      }
 
       // Update button styling based on state
-      if (hasChanges) {
-        // Make the save button more prominent when there are changes
-        editBtn.classList.remove("btn-outline-primary");
-        editBtn.classList.add("btn-primary");
+      if (editBtn && hasChanges) {
+        // Keep the button blue (fab-primary) - user preference to not change color
+        editBtn.classList.remove("btn-outline-primary", "fab-success");
+        editBtn.classList.add("fab-primary");
 
         // Add a pulsing effect to draw attention
         editBtn.classList.add("pulse-animation");
 
-        // Add an icon to indicate saving action
-        editBtnText.innerHTML = `
-          Save Changes
-        `;
-
-        // Show the number of fields edited
+        // Show the number of fields edited as a badge
         const fieldCount = Object.keys(this.editedFields).length;
-        const badge = document.createElement("span");
-        badge.className = "badge bg-white text-primary ms-2";
-        badge.textContent = fieldCount > 1 ? `${fieldCount} fields` : "1 field";
-        badge.style.fontSize = "0.75rem";
 
         // Remove any existing badge before adding a new one
-        const existingBadge = editBtn.querySelector(".badge");
+        const existingBadge = editBtn.querySelector(".fab-badge");
         if (existingBadge) {
           existingBadge.remove();
         }
 
+        // Create badge for FAB
+        const badge = document.createElement("span");
+        badge.className = "fab-badge";
+        badge.textContent = fieldCount;
         editBtn.appendChild(badge);
-      } else {
-        // Reset to default styling when no changes but keep btn-primary
-        editBtn.classList.remove("pulse-animation");
-        // Ensure the button always keeps the btn-primary class
+
+      } else if (editBtn) {
+        // Reset to default styling when no changes but keep fab-primary
+        editBtn.classList.remove("pulse-animation", "fab-success");
         editBtn.classList.remove("btn-outline-primary");
-        editBtn.classList.add("btn-primary");
-        editBtnText.textContent = "Cancel Edit";
+        editBtn.classList.add("fab-primary");
+        if (editBtnText) editBtnText.textContent = "Cancel";
 
         // Remove any badge
-        const existingBadge = editBtn.querySelector(".badge");
+        const existingBadge = editBtn.querySelector(".fab-badge");
         if (existingBadge) {
           existingBadge.remove();
         }
@@ -2263,19 +2263,24 @@ class DashboardManager {
 
       // Otherwise, just exit edit mode
       this.isEditMode = false;
-      editBtn.classList.remove("btn-primary");
-      editBtnText.textContent = "Edit Responses";
+      if (editBtn) {
+        editBtn.classList.remove("btn-primary", "fab-success");
+        editBtn.classList.add("fab-primary");
+      }
+      if (editBtnText) editBtnText.textContent = "Edit Responses";
+      if (editBtn) editBtn.setAttribute("data-tooltip", "Edit");
 
       // Remove the has-changes class
-      editBtn.classList.remove("has-changes");
+      if (editBtn) editBtn.classList.remove("has-changes");
 
       // Refresh the application view to reset the form
       this.refreshApplicationForEdit();
     } else {
       // Enter edit mode
       this.isEditMode = true;
-      editBtn.classList.add("btn-primary");
-      editBtnText.textContent = "Save Changes";
+      if (editBtn) editBtn.classList.add("fab-primary");
+      if (editBtnText) editBtnText.textContent = "Save Changes";
+      if (editBtn) editBtn.setAttribute("data-tooltip", "Cancel Edit");
       this.editedFields = {};
 
       // Refresh the form to show editable fields
@@ -2412,6 +2417,8 @@ class DashboardManager {
       arrowContainer.className = "edit-arrow";
       arrowContainer.style.display = "flex";
       arrowContainer.style.justifyContent = "center";
+      arrowContainer.style.alignItems = "center";
+      arrowContainer.style.marginTop = "1.5rem";
       arrowContainer.style.color = "#9ca3af";
       arrowContainer.innerHTML = `
         <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" class="bi bi-arrow-right" viewBox="0 0 16 16">
@@ -2613,11 +2620,17 @@ class DashboardManager {
         this.updateSaveButtonState();
 
         // Remove the has-changes class after saving
-        document.getElementById("editBtn").classList.remove("has-changes");
+        const editBtn = document.getElementById("editBtn");
+        if (editBtn) {
+          editBtn.classList.remove("has-changes", "fab-success");
+          editBtn.classList.add("fab-primary");
+          editBtn.setAttribute("data-tooltip", "Edit");
+        }
 
         // Exit edit mode
         this.isEditMode = false;
-        document.getElementById("editBtnText").textContent = "Edit Responses";
+        const editBtnText = document.getElementById("editBtnText");
+        if (editBtnText) editBtnText.textContent = "Edit Responses";
 
         // Show success message with configuration
         const successToast = document.getElementById("successToast");
@@ -2672,12 +2685,17 @@ class DashboardManager {
 
       if (history.length === 0) {
         historyContent.innerHTML = `
-          <div class="alert alert-info">
-            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="currentColor" class="bi bi-info-circle me-2" viewBox="0 0 16 16">
-              <path d="M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14zm0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16z"/>
-              <path d="m8.93 6.588-2.29.287-.082.38.45.083c.294.07.352.176.288.469l-.738 3.468c-.194.897.105 1.319.808 1.319.545 0 1.178-.252 1.465-.598l.088-.416c-.2.176-.492.246-.686.246-.275 0-.375-.193-.304-.533L8.93 6.588zM9 4.5a1 1 0 1 1-2 0 1 1 0 0 1 2 0z"/>
-            </svg>
-            No edit history found for this application.
+          <div style="display: flex; align-items: center; justify-content: center; flex: 1; min-height: 100%;">
+            <div class="text-center py-5">
+              <div class="mb-3">
+                <svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="#e5e7eb" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+                  <circle cx="12" cy="12" r="10"></circle>
+                  <polyline points="12 6 12 12 16 14"></polyline>
+                </svg>
+              </div>
+              <h4 class="h5 text-secondary fw-normal mb-2">No Edit History</h4>
+              <p class="text-muted small mb-0">This application has not been edited yet.</p>
+            </div>
           </div>
         `;
       } else {
@@ -2689,61 +2707,52 @@ class DashboardManager {
             ${history
             .map(
               (edit, index) => `
-              <div class="history-card">
-                <div class="history-card-header">
-                  <div class="history-meta">
-                    <div class="history-timestamp">
-                      <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-clock me-1" viewBox="0 0 16 16">
+              <div class="edit-summary-item" style="padding: 1.25rem; border-left: 4px solid #6366f1; background-color: white; box-shadow: 0 3px 10px rgba(0, 0, 0, 0.04); margin-bottom: 1rem; border-radius: 10px;">
+                <div class="history-meta" style="margin-bottom: 0.75rem; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 0.5rem; font-size: 0.85rem; color: #6b7280; padding-bottom: 0.75rem; border-bottom: 1px solid #f3f4f6;">
+                    <div style="display: flex; align-items: center;">
+                      <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="currentColor" class="bi bi-clock me-1" viewBox="0 0 16 16">
                         <path d="M8 3.5a.5.5 0 0 0-1 0V9a.5.5 0 0 0 .252.434l3.5 2a.5.5 0 0 0 .496-.868L8 8.71V3.5z"/>
                         <path d="M8 16A8 8 0 1 0 8 0a8 8 0 0 0 0 16zm7-8A7 7 0 1 1 1 8a7 7 0 0 1 14 0z"/>
                       </svg>
                       ${new Date(edit.timestamp).toLocaleString()}
                     </div>
-                    <div class="history-user">
-                      <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-person me-1" viewBox="0 0 16 16">
+                    <div style="display: flex; align-items: center;">
+                      <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="currentColor" class="bi bi-person me-1" viewBox="0 0 16 16">
                         <path d="M8 8a3 3 0 1 0 0-6 3 3 0 0 0 0 6Zm2-3a2 2 0 1 1-4 0 2 2 0 0 1 4 0Zm4 8c0 1-1 1-1 1H3s-1 0-1-1 1-4 6-4 6 3 6 4Zm-1-.004c-.001-.246-.154-.986-.832-1.664C11.516 10.68 10.289 10 8 10c-2.29 0-3.516.68-4.168 1.332-.678.678-.83 1.418-.832 1.664h10Z"/>
                       </svg>
-                      <span class="user-name">${edit.user}</span>
-                      <span class="user-role badge ${edit.userRole === "admin"
-                  ? "bg-primary"
-                  : "bg-secondary"
-                }">${edit.userRole}</span>
+                      <span class="fw-medium text-dark me-1">${edit.user}</span>
+                      <span class="badge rounded-pill ${edit.userRole === "admin" ? "bg-primary" : "bg-secondary"}" style="font-size: 0.7em; padding: 0.35em 0.65em;">${edit.userRole}</span>
                     </div>
-                  </div>
-                  <div class="field-name">
-                    <strong>${edit.field.display_name}</strong>
-                  </div>
                 </div>
-                <div class="history-card-body">
-                  <div class="value-comparison">
-                    <div class="previous-value">
-                      <div class="value-label">Previous Value</div>
-                      <div class="value-content">${this.formatHistoryValue(
-                  edit.previousValue
-                )}</div>
+                
+                <div class="edit-field-name" style="width: 100%; display: block; margin-bottom: 0.5rem; font-weight: 600; font-size: 1.1rem; color: #374151;">
+                    ${edit.field.display_name}
+                </div>
+
+                <div class="edit-field-change" style="display: grid; grid-template-columns: 1fr 40px 1fr; gap: 0; align-items: center; width: 100%; margin-top: 0.5rem; box-sizing: border-box;">
+                    <div class="edit-field-old" style="display: flex; flex-direction: column; width: 100%; flex: 1; min-width: 0;">
+                      <div class="value-label" style="font-size: 0.8rem; font-weight: 500; color: #6b7280; margin-bottom: 0.25rem; text-transform: uppercase;">Previous Value</div>
+                      <div class="value-container" style="background-color: #f9fafb; border: 1px solid #e5e7eb; border-radius: 8px; padding: 0.75rem; min-height: 2.5rem; word-break: break-word; width: 100%; color: #6b7280;">${this.formatHistoryValue(edit.previousValue)}</div>
                     </div>
-                    <div class="change-arrow">
+                    
+                    <div class="edit-arrow" style="display: flex; justify-content: center; align-items: center; margin-top: 1.5rem; color: #9ca3af;">
                       <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" class="bi bi-arrow-right" viewBox="0 0 16 16">
                         <path fill-rule="evenodd" d="M1 8a.5.5 0 0 1 .5-.5h11.793l-3.147-3.146a.5.5 0 0 1 .708-.708l4 4a.5.5 0 0 1 0 .708l-4 4a.5.5 0 0 1-.708-.708L13.293 8.5H1.5A.5.5 0 0 1 1 8z"/>
                       </svg>
                     </div>
-                    <div class="new-value">
-                      <div class="value-label">New Value</div>
-                      <div class="value-content">${this.formatHistoryValue(
-                  edit.newValue
-                )}</div>
+
+                    <div class="edit-field-new" style="display: flex; flex-direction: column; width: 100%; flex: 1; min-width: 0;">
+                      <div class="value-label" style="font-size: 0.8rem; font-weight: 500; color: #6b7280; margin-bottom: 0.25rem; text-transform: uppercase;">New Value</div>
+                      <div class="value-container" style="background-color: white; border: 1px solid #bae6fd; border-radius: 8px; padding: 0.75rem; min-height: 2.5rem; word-break: break-word; width: 100%; background-color: #f0f9ff; color: #0f172a;">${this.formatHistoryValue(edit.newValue)}</div>
                     </div>
-                  </div>
-                  ${edit.reason
-                  ? `
-                  <div class="edit-reason">
-                    <div class="reason-label">Reason for Change:</div>
-                    <div class="reason-content">${edit.reason}</div>
-                  </div>
-                  `
-                  : ""
-                }
                 </div>
+
+                ${edit.reason ? `
+                <div class="edit-reason" style="margin-top: 1rem; padding-top: 1rem; border-top: 1px dashed #e5e7eb;">
+                    <div class="reason-label" style="font-size: 0.85rem; font-weight: 600; color: #4b5563; margin-bottom: 0.25rem;">Reason for Change:</div>
+                    <div class="reason-content" style="color: #4b5563; font-style: italic; font-size: 0.95rem;">${edit.reason}</div>
+                </div>
+                ` : ''}
               </div>
             `
             )
@@ -2848,9 +2857,10 @@ class DashboardManager {
       statusInfo.innerHTML = `
         <small class="text-muted">
           Last updated by <span id="lastUpdatedBy">${data.updatedBy}</span> on
-          <span id="lastUpdatedAt">${new Date(
-        data.updatedAt
-      ).toLocaleString()}</span>
+          <span id="lastUpdatedAt">
+            <span class="updated-date">${new Date(data.updatedAt).toLocaleDateString()}</span>
+            <span class="updated-time"> ${new Date(data.updatedAt).toLocaleTimeString()}</span>
+          </span>
         </small>`;
 
       // Update button visibility
@@ -2932,9 +2942,10 @@ class DashboardManager {
       statusInfo.innerHTML = `
         <small class="text-muted">
           Last updated by <span id="lastUpdatedBy">${result.updatedBy}</span> on
-          <span id="lastUpdatedAt">${new Date(
-        result.updatedAt
-      ).toLocaleString()}</span>
+          <span id="lastUpdatedAt">
+            <span class="updated-date">${new Date(result.updatedAt).toLocaleDateString()}</span>
+            <span class="updated-time"> ${new Date(result.updatedAt).toLocaleTimeString()}</span>
+          </span>
         </small>`;
 
       // Update button states
@@ -4611,6 +4622,254 @@ class DashboardManager {
     // By default, show level 1 only
     return 1;
   }
+
+  // Show delete user confirmation modal
+  showDeleteUserModal() {
+    const registration = this.currentRegistration;
+    if (!registration) {
+      alert('No registration selected');
+      return;
+    }
+
+    // Create or get delete confirmation modal
+    let deleteModal = document.getElementById('deleteUserModal');
+    if (!deleteModal) {
+      deleteModal = document.createElement('div');
+      deleteModal.id = 'deleteUserModal';
+      deleteModal.className = 'modal fade';
+      deleteModal.setAttribute('tabindex', '-1');
+      deleteModal.innerHTML = `
+        <div class="modal-dialog modal-dialog-centered">
+          <div class="modal-content">
+            <div class="modal-header bg-danger text-white">
+              <h5 class="modal-title">
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="me-2">
+                  <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path>
+                  <line x1="12" y1="9" x2="12" y2="13"></line>
+                  <line x1="12" y1="17" x2="12.01" y2="17"></line>
+                </svg>
+                Delete User Permanently
+              </h5>
+              <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+              <div class="alert alert-danger">
+                <strong>Warning:</strong> This action cannot be undone!
+              </div>
+              <p>You are about to permanently delete:</p>
+              <ul class="list-unstyled ms-3">
+                <li><strong>User:</strong> <span id="deleteUserEmail"></span></li>
+                <li><strong>Application ID:</strong> <span id="deleteUserAppId"></span></li>
+              </ul>
+              <p class="text-muted">This will delete:</p>
+              <ul class="small text-muted">
+                <li>User account and login credentials</li>
+                <li>All form responses and application data</li>
+                <li>All uploaded documents and files</li>
+                <li>Equipment requests (if any)</li>
+              </ul>
+              <div class="mb-3">
+                <label for="deleteReasonInput" class="form-label">Reason for deletion (optional):</label>
+                <textarea class="form-control" id="deleteReasonInput" rows="2" placeholder="e.g., User request, duplicate account, etc."></textarea>
+              </div>
+              <div class="form-check">
+                <input class="form-check-input" type="checkbox" id="confirmDeleteCheck">
+                <label class="form-check-label" for="confirmDeleteCheck">
+                  I understand this action is permanent and irreversible
+                </label>
+              </div>
+            </div>
+            <div class="modal-footer">
+              <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+              <button type="button" class="btn btn-danger" id="confirmDeleteUserBtn" disabled onclick="dashboardManager.confirmDeleteUser()">
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="me-1">
+                  <polyline points="3 6 5 6 21 6"></polyline>
+                  <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
+                </svg>
+                Delete Permanently
+              </button>
+            </div>
+          </div>
+        </div>
+      `;
+      document.body.appendChild(deleteModal);
+
+      // Add event listener for checkbox to enable/disable delete button
+      deleteModal.querySelector('#confirmDeleteCheck').addEventListener('change', (e) => {
+        deleteModal.querySelector('#confirmDeleteUserBtn').disabled = !e.target.checked;
+      });
+    }
+
+    // Populate modal with user info
+    deleteModal.querySelector('#deleteUserEmail').textContent = registration.email;
+    deleteModal.querySelector('#deleteUserAppId').textContent = registration.applicationId;
+    deleteModal.querySelector('#deleteReasonInput').value = '';
+    deleteModal.querySelector('#confirmDeleteCheck').checked = false;
+    deleteModal.querySelector('#confirmDeleteUserBtn').disabled = true;
+
+    // Show the modal
+    deleteModal.style.zIndex = '1070'; // Higher than other modals
+    const modal = new bootstrap.Modal(deleteModal);
+    modal.show();
+  }
+
+  // Show delete user modal from completed application view
+  async showDeleteUserModalFromApplication() {
+    if (!this.currentApplicationId) {
+      alert('No application selected');
+      return;
+    }
+
+    try {
+      // Fetch the application details to get userId
+      const response = await fetch(`/api/admin/applications/${this.currentApplicationId}`, {
+        headers: {
+          'Authorization': `Bearer ${AuthManager.getAuthToken()}`
+        }
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to fetch application details');
+      }
+
+      const data = await response.json();
+
+      // We need to get the userId from the database - fetch it via another endpoint
+      // For now, we'll get it from the registration_progress via application_id
+      const regResponse = await fetch(`/api/admin/incomplete-registrations?inactivityThreshold=0`, {
+        headers: {
+          'Authorization': `Bearer ${AuthManager.getAuthToken()}`
+        }
+      });
+
+      // Also check all applications to find the userId
+      const allAppsResponse = await fetch(`/api/admin/all-applications`, {
+        headers: {
+          'Authorization': `Bearer ${AuthManager.getAuthToken()}`
+        }
+      });
+
+      if (!allAppsResponse.ok) {
+        throw new Error('Failed to fetch applications');
+      }
+
+      const allApps = await allAppsResponse.json();
+      const currentApp = allApps.find(app => app.applicationId === this.currentApplicationId);
+
+      if (!currentApp) {
+        // Try to get user info from registration progress directly
+        const regProgressResponse = await fetch(`/api/admin/applications/${this.currentApplicationId}`, {
+          headers: {
+            'Authorization': `Bearer ${AuthManager.getAuthToken()}`
+          }
+        });
+
+        alert('Could not find user ID for this application. Please try deleting from the Partial Registrations view.');
+        return;
+      }
+
+      // Create a registration-like object for the delete modal
+      this.currentRegistration = {
+        userId: currentApp.id, // This is actually the registration_progress.id, we need the user_id
+        email: data.email || currentApp.email,
+        applicationId: this.currentApplicationId
+      };
+
+      // We need to get the actual userId from the backend
+      // Let's make a specific call to get user info
+      const userInfoResponse = await fetch(`/api/admin/applications/${this.currentApplicationId}/user-info`, {
+        headers: {
+          'Authorization': `Bearer ${AuthManager.getAuthToken()}`
+        }
+      });
+
+      if (userInfoResponse.ok) {
+        const userInfo = await userInfoResponse.json();
+        this.currentRegistration.userId = userInfo.user_id;
+      } else {
+        // Fallback: try to find it in the database response
+        // The registration progress id is what we have, but we need user_id
+        alert('Could not retrieve user ID. This feature requires the user-info endpoint.');
+        return;
+      }
+
+      this.showDeleteUserModal();
+
+    } catch (error) {
+      console.error('Error preparing delete modal:', error);
+      alert(`Error: ${error.message}`);
+    }
+  }
+
+  // Confirm and execute user deletion
+  async confirmDeleteUser() {
+    const registration = this.currentRegistration;
+    if (!registration) {
+      alert('No registration selected');
+      return;
+    }
+
+    const userId = registration.userId;
+    const reason = document.getElementById('deleteReasonInput').value.trim();
+    const deleteBtn = document.getElementById('confirmDeleteUserBtn');
+    const originalBtnText = deleteBtn.innerHTML;
+
+    try {
+      // Show loading state
+      deleteBtn.disabled = true;
+      deleteBtn.innerHTML = `
+        <span class="spinner-border spinner-border-sm me-1" role="status" aria-hidden="true"></span>
+        Deleting...
+      `;
+
+      const response = await fetch(`/api/admin/registered-users/${userId}`, {
+        method: 'DELETE',
+        headers: {
+          'Authorization': `Bearer ${AuthManager.getAuthToken()}`,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          confirm: true,
+          reason: reason || 'Admin deletion from dashboard'
+        })
+      });
+
+      const result = await response.json();
+
+      if (!response.ok) {
+        throw new Error(result.message || 'Failed to delete user');
+      }
+
+      // Close all related modals
+      const deleteModal = bootstrap.Modal.getInstance(document.getElementById('deleteUserModal'));
+      if (deleteModal) deleteModal.hide();
+
+      const incompleteModal = bootstrap.Modal.getInstance(document.getElementById('incompleteRegistrationModal'));
+      if (incompleteModal) incompleteModal.hide();
+
+      const applicationModal = bootstrap.Modal.getInstance(document.getElementById('applicationModal'));
+      if (applicationModal) applicationModal.hide();
+
+      // Show success toast
+      this.showToast('User Deleted', `Successfully deleted ${result.deletedData.email} and ${result.deletedData.filesDeleted} files`, 'success');
+
+      // Reload the data
+      this.loadIncompleteRegistrations();
+      this.loadRecentApplications();
+      this.loadStats();
+
+      // If in all applications view, reload that too
+      if (this.isAllApplicationsView) {
+        this.loadAllApplications();
+      }
+
+    } catch (error) {
+      console.error('Error deleting user:', error);
+      alert(`Failed to delete user: ${error.message}`);
+      deleteBtn.disabled = false;
+      deleteBtn.innerHTML = originalBtnText;
+    }
+  }
 }
 
 // Initialize dashboard
@@ -5080,11 +5339,15 @@ style.textContent = `
     height: 100vh !important;
     border-radius: 0 !important;
     border: none !important;
+    display: flex !important;
+    flex-direction: column !important;
   }
   
   #applicationModal.fullscreen .modal-body {
-    max-height: calc(100vh - 140px) !important;
+    flex: 1 !important;
+    max-height: none !important;
     overflow-y: auto;
+    min-height: 0;
   }
   
   #applicationModal.fullscreen .modal-dialog-centered {
@@ -5117,6 +5380,93 @@ style.textContent = `
   
   #fullscreenBtn svg {
     stroke: #fff;
+  }
+  
+  /* History button styles - exact copy of fullscreen button */
+  #historyBtn {
+    background: none;
+    border: none;
+    padding: 8px 12px;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    color: #fff;
+    border-radius: 4px;
+    transition: all 0.2s ease;
+    -webkit-tap-highlight-color: transparent;
+  }
+  
+  #historyBtn:hover {
+    background-color: rgba(255, 255, 255, 0.1);
+  }
+  
+  #historyBtn:active {
+    background-color: rgba(255, 255, 255, 0.2);
+  }
+  
+  #historyBtn svg {
+    stroke: #fff;
+  }
+  
+  /* History modal fullscreen button styles - match fullscreen button */
+  #historyFullscreenBtn {
+    background: none;
+    border: none;
+    padding: 8px 12px;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    color: #fff;
+    border-radius: 4px;
+    transition: all 0.2s ease;
+    -webkit-tap-highlight-color: transparent;
+  }
+  
+  #historyFullscreenBtn:hover {
+    background-color: rgba(255, 255, 255, 0.1);
+  }
+  
+  #historyFullscreenBtn:active {
+    background-color: rgba(255, 255, 255, 0.2);
+  }
+  
+  #historyFullscreenBtn svg {
+    stroke: #fff;
+  }
+  
+  /* Fullscreen styles for edit history modal */
+  #editHistoryModal.fullscreen {
+    padding: 0 !important;
+  }
+  
+  #editHistoryModal.fullscreen .modal-dialog {
+    width: 100vw !important;
+    height: 100vh !important;
+    max-width: 100vw !important;
+    margin: 0 !important;
+    padding: 0 !important;
+  }
+  
+  #editHistoryModal.fullscreen .modal-content {
+    height: 100vh !important;
+    border-radius: 0 !important;
+    border: none !important;
+    display: flex !important;
+    flex-direction: column !important;
+  }
+  
+  #editHistoryModal.fullscreen .modal-body {
+    flex: 1 !important;
+    max-height: none !important;
+    overflow-y: auto;
+    min-height: 0;
+  }
+  
+  #editHistoryModal.fullscreen .modal-dialog-centered {
+    align-items: flex-start !important;
+    min-height: 100vh !important;
   }
   
   /* Mobile-specific styles */
@@ -5157,18 +5507,13 @@ style.textContent = `
       gap: 0.25rem;
     }
     
-    #applicationModal .modal-header #historyBtn {
-      padding: 6px 10px;
-      font-size: 0.875rem;
-    }
-    
-    #applicationModal .modal-header #historyBtn svg {
-      width: 14px;
-      height: 14px;
-    }
-    
     /* Hide fullscreen button on mobile */
     #fullscreenBtn {
+      display: none !important;
+    }
+    
+    /* Hide history modal fullscreen button on mobile */
+    #historyFullscreenBtn {
       display: none !important;
     }
     
@@ -5242,37 +5587,101 @@ style.textContent = `
     }
     
     #applicationModal.fullscreen .modal-body {
-      max-height: calc(100vh - 180px) !important;
+      flex: 1 !important;
+      max-height: none !important;
+      min-height: 0;
+      padding: 1rem;
+      padding-bottom: 70px; /* Space for FAB */
+    }
+    
+    /* ============================================
+       RESPONSIVE APPLICATION HEADER (Tablet ≤768px)
+       Single seamless container - no nested boxes
+       Non-sticky behavior requested by user
+       ============================================ */
+    
+    /* Header container - remove nested appearance */
+    #applicationModal .application-header {
+      margin: 0 0 1rem 0;
+      padding: 0;
+      border: none;
+      box-shadow: none;
+      background: transparent;
+      border-radius: 0;
+      flex-shrink: 0; /* Keep it from shrinking */
+    }
+
+    /* Make the modal body scrollable as a whole */
+    #applicationModal .modal-body {
+      overflow-y: auto !important;
+      display: block !important; /* Switch from flex column to block for normal flow */
       padding: 1rem;
     }
+
+    /* Disable internal scrolling for sections - let them expand */
+    #applicationModal .application-sections {
+      overflow: visible !important;
+      height: auto !important;
+      flex: none !important;
+      display: block !important;
+    }
     
-    /* Application header adjustments - maintain elegant design on mobile */
+    /* Top section - this IS the visible container */
     #applicationModal .application-header-top {
       padding: 0.75rem 1rem;
+      background: #f8fafc;
+      border-radius: 8px 8px 0 0;
+      border: 1px solid #e5e7eb;
+      border-bottom: none;
     }
     
+    /* Main info row - horizontal layout */
     #applicationModal .application-header-main {
+      display: flex;
+      flex-direction: row;
+      flex-wrap: wrap;
+      align-items: center;
       gap: 1.25rem;
+      row-gap: 0.5rem;
+    }
+    
+    /* Individual sections - simple flex */
+    #applicationModal .app-id-section,
+    #applicationModal .app-date-section {
+      display: flex;
       flex-direction: column;
-      align-items: flex-start;
+      gap: 0.125rem;
     }
     
+    /* Status section - push to end */
     #applicationModal .app-status-section {
-      margin-left: 0;
-      margin-top: 0.25rem;
-      align-self: flex-start;
+      margin-left: auto;
+      flex-shrink: 0;
     }
     
-    #applicationModal .application-header .value-text {
-      font-size: 0.9375rem;
+    /* Status badge */
+    #applicationModal .application-header .status-badge {
+      padding: 0.375rem 0.75rem;
+      font-size: 0.75rem;
     }
     
+    /* Label styling */
     #applicationModal .application-header .label-text {
       font-size: 0.625rem;
     }
     
+    /* Value styling */
+    #applicationModal .application-header .value-text {
+      font-size: 0.9375rem;
+    }
+    
+    /* Bottom meta section - complete the single container */
     #applicationModal .application-header-bottom {
       padding: 0.4375rem 1rem;
+      background: #f1f5f9;
+      border: 1px solid #e5e7eb;
+      border-top: 1px solid #e5e7eb;
+      border-radius: 0 0 8px 8px;
     }
     
     #applicationModal .application-header .status-meta-text {
@@ -5290,59 +5699,116 @@ style.textContent = `
     #applicationModal .modal-content {
       border-radius: 0;
       height: 100vh;
+      display: flex;
+      flex-direction: column;
     }
     
     #applicationModal .modal-body {
-      max-height: calc(100vh - 180px); /* More space for content */
+      flex: 1;
+      max-height: none;
+      min-height: 0;
       overflow-y: auto;
       -webkit-overflow-scrolling: touch;
       padding: 0.75rem;
+      padding-bottom: 70px; /* Space for FAB */
     }
     
     #applicationModal .modal-title {
       font-size: 1rem;
     }
     
-    /* Ultra-compact header on small phones */
+    /* ============================================
+       RESPONSIVE APPLICATION HEADER (Mobile ≤576px)
+       Single seamless container - no nested boxes
+       ============================================ */
+    
+    /* Header container - remove nested appearance */
     #applicationModal .application-header {
       margin-bottom: 0.75rem;
-      border-radius: 6px;
+      padding: 0;
+      border: none;
+      box-shadow: none;
+      background: transparent;
+      border-radius: 0;
+      flex-shrink: 0;
     }
     
+    /* Ensure modal body scrolls as a whole */
+    #applicationModal .modal-body {
+      overflow-y: auto !important;
+      display: block !important;
+      padding: 0.75rem;
+      padding-bottom: 70px; /* Space for FAB */
+    }
+
+    /* Disable internal scrolling for sections */
+    #applicationModal .application-sections {
+      overflow: visible !important;
+      height: auto !important;
+      flex: none !important;
+      display: block !important;
+    }
+    
+    /* Top section - this IS the visible container */
     #applicationModal .application-header-top {
       padding: 0.625rem 0.875rem;
+      background: #f8fafc;
+      border-radius: 6px 6px 0 0;
+      border: 1px solid #e5e7eb;
+      border-bottom: none;
     }
     
+    /* Main row - horizontal layout, tight gaps */
     #applicationModal .application-header-main {
+      display: flex;
+      flex-direction: row;
+      flex-wrap: wrap;
+      align-items: center;
       gap: 1rem;
+      row-gap: 0.375rem;
     }
     
-    #applicationModal .application-header .value-text {
-      font-size: 0.875rem;
+    /* Info sections - simple flex */
+    #applicationModal .app-id-section,
+    #applicationModal .app-date-section {
+      display: flex;
+      flex-direction: column;
+      gap: 0.0625rem;
     }
     
+    /* Status section - push to end */
+    #applicationModal .app-status-section {
+      margin-left: auto;
+      flex-shrink: 0;
+    }
+    
+    /* Status badge - compact */
+    #applicationModal .application-header .status-badge {
+      padding: 0.3125rem 0.625rem;
+      font-size: 0.625rem;
+    }
+    
+    /* Labels - smaller on mobile */
     #applicationModal .application-header .label-text {
       font-size: 0.5625rem;
     }
     
+    /* Values - compact but readable */
+    #applicationModal .application-header .value-text {
+      font-size: 0.8125rem;
+    }
+    
+    /* Bottom meta section - complete the single container */
     #applicationModal .application-header-bottom {
       padding: 0.375rem 0.875rem;
+      background: #f1f5f9;
+      border: 1px solid #e5e7eb;
+      border-top: 1px solid #e5e7eb;
+      border-radius: 0 0 6px 6px;
     }
     
     #applicationModal .application-header .status-meta-text {
-      font-size: 0.625rem;
-    }
-    
-    /* Hide text on History button, show only icon */
-    #applicationModal .modal-header #historyBtn {
-      padding: 8px;
-      min-width: 40px;
-      min-height: 40px;
-    }
-    
-    #applicationModal .modal-header #historyBtn svg {
-      width: 14px;
-      height: 14px;
+      font-size: 0.5625rem;
     }
     
     /* Make fullscreen the default behavior on very small screens */
@@ -5366,13 +5832,13 @@ style.textContent = `
     }
     
     #applicationModal.fullscreen .modal-body {
-      max-height: calc(100vh - 120px) !important;
+      flex: 1 !important;
+      max-height: none !important;
     }
   }
   
   /* Improve touch interactions */
   @media (hover: none) and (pointer: coarse) {
-    #historyBtn,
     #applicationModal .modal-footer button {
       min-height: 44px;
       min-width: 44px;
@@ -5424,6 +5890,77 @@ document.getElementById('applicationModal')?.addEventListener('hidden.bs.modal',
     fullscreenBtn.setAttribute('title', 'Toggle Fullscreen');
   }
 });
+
+// Auto-fullscreen on mobile and tablet when modal opens
+document.getElementById('applicationModal')?.addEventListener('show.bs.modal', function () {
+  // Enable fullscreen automatically on mobile/tablet (viewport width <= 768px)
+  if (window.innerWidth <= 768) {
+    this.classList.add('fullscreen');
+  }
+});
+
+// Toggle fullscreen function for the edit history modal
+function toggleHistoryFullscreen() {
+  const modal = document.getElementById('editHistoryModal');
+  if (!modal) return;
+
+  const fullscreenBtn = document.getElementById('historyFullscreenBtn');
+  if (!fullscreenBtn) return;
+
+  const fullscreenIcon = fullscreenBtn.querySelector('.fullscreen-icon');
+  const exitFullscreenIcon = fullscreenBtn.querySelector('.exit-fullscreen-icon');
+  if (!fullscreenIcon || !exitFullscreenIcon) return;
+
+  if (modal.classList.contains('fullscreen')) {
+    // Exit fullscreen
+    modal.classList.remove('fullscreen');
+    fullscreenIcon.style.display = 'inline';
+    exitFullscreenIcon.style.display = 'none';
+    fullscreenBtn.setAttribute('title', 'Toggle Fullscreen');
+  } else {
+    // Enter fullscreen
+    modal.classList.add('fullscreen');
+    fullscreenIcon.style.display = 'none';
+    exitFullscreenIcon.style.display = 'inline';
+    fullscreenBtn.setAttribute('title', 'Exit Fullscreen');
+  }
+}
+
+// Reset fullscreen when history modal is closed
+document.getElementById('editHistoryModal')?.addEventListener('hidden.bs.modal', function () {
+  this.classList.remove('fullscreen');
+  const fullscreenBtn = document.getElementById('historyFullscreenBtn');
+  if (fullscreenBtn) {
+    const fullscreenIcon = fullscreenBtn.querySelector('.fullscreen-icon');
+    const exitFullscreenIcon = fullscreenBtn.querySelector('.exit-fullscreen-icon');
+    if (fullscreenIcon && exitFullscreenIcon) {
+      fullscreenIcon.style.display = 'inline';
+      exitFullscreenIcon.style.display = 'none';
+      fullscreenBtn.setAttribute('title', 'Toggle Fullscreen');
+    }
+  }
+});
+
+// Auto-fullscreen on mobile and tablet when history modal opens
+document.getElementById('editHistoryModal')?.addEventListener('show.bs.modal', function () {
+  // Enable fullscreen automatically on mobile/tablet (viewport width <= 768px)
+  if (window.innerWidth <= 768) {
+    this.classList.add('fullscreen');
+  }
+});
+
+// Auto-fullscreen on mobile and tablet when editReasonModal opens
+document.getElementById('editReasonModal')?.addEventListener('show.bs.modal', function () {
+  if (window.innerWidth <= 768) {
+    this.classList.add('fullscreen');
+  }
+});
+
+document.getElementById('editReasonModal')?.addEventListener('hidden.bs.modal', function () {
+  this.classList.remove('fullscreen');
+});
+
+
 
 // Mobile menu functionality
 document.addEventListener('DOMContentLoaded', function () {

@@ -407,6 +407,9 @@
   opacity: 0.8;
   padding: 8px;
   margin: 0;
+  width: 16px;
+  height: 16px;
+  background-size: 16px;
 }
 
 .modal-header .btn-close:hover {
@@ -773,7 +776,7 @@
   gap: 0.125rem;
 }
 
-/* Box-like appearance ONLY for incomplete modal */
+/* Box-like appearance ONLY for incomplete modal - RESTORED */
 #incompleteRegistrationModal .app-id-section,
 #incompleteRegistrationModal .app-date-section,
 #incompleteRegistrationModal .app-name-section,
@@ -782,13 +785,33 @@
 #incompleteRegistrationModal .app-phone-section,
 #incompleteRegistrationModal .app-section-section {
   gap: 0.0625rem;
-  padding: 0.375rem 0.625rem;
+  padding: 0.375rem 0.625rem !important;
   border: 1px solid #e2e8f0;
   border-radius: 4px;
   background: #fafbfc;
   flex: 0 1 auto;
   min-width: 0;
   box-shadow: 0 1px 1px rgba(0, 0, 0, 0.03);
+  /* Ensure inner boxes stand out against white outer bg */
+  z-index: 1;
+}
+
+/* Restore OUTER container but remove INTERMEDIATE clutter */
+#incompleteRegistrationModal .application-header {
+  /* Inherit standard .application-header styles (white bg, border) */
+  margin-bottom: 0.75rem !important;
+}
+
+#incompleteRegistrationModal .application-header-top {
+  border: none !important;
+  background: transparent !important;
+  padding: 0.5rem !important;
+}
+
+#incompleteRegistrationModal .header-info-group {
+  border-bottom: none !important;
+  padding-bottom: 0 !important;
+  margin-bottom: 0 !important;
 }
 
 .app-status-section {
@@ -854,17 +877,16 @@
 
 /* Status badge and info now inline in main header - styles above */
 
-/* Optimize modal body for maximum content space */
+/* Optimize modal body for maximum content space - NON-STICKY HEADER VERSION */
 #applicationModal .modal-body {
   padding: 1rem;
   padding-bottom: 0 !important;
-  /* Remove gap before modal-footer */
-  display: flex;
-  flex-direction: column;
+  display: block;
+  /* changed from flex to block to allow full scrolling */
+  overflow-y: auto;
+  /* scroll happens here now */
   min-height: 0;
-  /* Allow flex shrinking */
   gap: 0 !important;
-  /* Remove flexbox gaps */
 }
 
 /* Remove gap between modal-body and modal-footer */
@@ -880,21 +902,21 @@
   padding: 1rem;
   padding-bottom: 0 !important;
   /* Remove gap before modal-footer */
-  display: flex;
-  flex-direction: column;
+  display: block;
+  overflow-y: auto;
   min-height: 0;
   gap: 0 !important;
-  /* Remove flexbox gaps */
 }
 
 /* Application sections get all available space */
 .application-sections {
-  flex: 1 1 auto;
-  overflow-y: auto;
+  flex: none;
+  /* changed from 1 1 auto */
+  overflow: visible;
+  /* changed from overflow-y: auto */
+  height: auto;
   display: flex;
   gap: 1.5rem;
-  min-height: 0;
-  /* Critical for flex scrolling */
   /* Override Bootstrap row margins to align with header */
   margin-left: 0 !important;
   margin-right: 0 !important;
@@ -2046,20 +2068,20 @@ body.modal-open {
 }
 
 #editHistoryModal .modal-title {
-  font-size: 1.25rem;
-  font-weight: 600;
+  font-size: 1.1rem;
+  font-weight: 500;
   color: #fff;
   display: flex;
   align-items: center;
-  gap: 0.75rem;
+  gap: 0.5rem;
 }
 
 #editHistoryModal .application-id-badge {
   background-color: #fff;
   color: #333;
-  padding: 0.25rem 0.75rem;
+  padding: 0.2rem 0.6rem;
   border-radius: 50px;
-  font-size: 0.875rem;
+  font-size: 0.75rem;
   font-weight: 500;
 }
 
@@ -2067,7 +2089,17 @@ body.modal-open {
   padding: 1.5rem;
   overflow-y: auto;
   flex: 1;
+  display: flex;
+  flex-direction: column;
+  min-height: 400px;
 }
+
+#editHistoryContent {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+}
+
 
 #editHistoryModal .modal-body::-webkit-scrollbar {
   width: 8px;
@@ -2088,166 +2120,16 @@ body.modal-open {
 }
 
 #editHistoryModal .modal-footer {
-  padding: 1rem 1.5rem;
+  padding: 0.75rem 1rem;
   border-top: 1px solid rgba(0, 0, 0, 0.08);
   background-color: #f8f9fa;
   border-radius: 0 0 12px 12px;
 }
 
-/* Edit History Timeline */
-.edit-history-timeline {
-  display: flex;
-  flex-direction: column;
-  gap: 1.25rem;
-  width: 100%;
-  position: relative;
-}
 
-.edit-history-timeline::before {
-  content: "";
-  position: absolute;
-  left: 24px;
-  top: 0;
-  bottom: 0;
-  width: 2px;
-  background-color: #e9ecef;
-  z-index: 0;
-}
 
 /* History Card Styles */
-.history-card {
-  position: relative;
-  background-color: white;
-  border-radius: 10px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
-  border: 1px solid #e9ecef;
-  padding: 1.25rem;
-  margin-left: 2.5rem;
-  transition: all 0.2s ease;
-  z-index: 1;
-}
 
-.history-card::before {
-  content: "";
-  position: absolute;
-  left: -2.5rem;
-  top: 1.5rem;
-  width: 16px;
-  height: 16px;
-  border-radius: 50%;
-  background-color: var(--primary-color);
-  border: 3px solid white;
-  box-shadow: 0 0 0 2px rgba(var(--primary-color-rgb), 0.3);
-  z-index: 2;
-}
-
-.history-card:hover {
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-  transform: translateY(-2px);
-}
-
-.history-card-header {
-  margin-bottom: 1rem;
-  border-bottom: 1px solid #f0f0f0;
-  padding-bottom: 0.75rem;
-}
-
-.history-meta {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 0.5rem;
-  flex-wrap: wrap;
-  gap: 0.5rem;
-}
-
-.history-timestamp {
-  display: flex;
-  align-items: center;
-  color: #6c757d;
-  font-size: 0.875rem;
-}
-
-.history-user {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  font-size: 0.875rem;
-}
-
-.user-name {
-  font-weight: 500;
-  color: #495057;
-}
-
-.user-role {
-  font-size: 0.7rem;
-  padding: 0.15rem 0.5rem;
-  border-radius: 50px;
-}
-
-.field-name {
-  font-size: 1.1rem;
-  color: #212529;
-}
-
-.history-card-body {
-  display: flex;
-  flex-direction: column;
-  gap: 1rem;
-}
-
-.value-comparison {
-  display: flex;
-  align-items: center;
-  gap: 1rem;
-  flex-wrap: wrap;
-}
-
-.previous-value,
-.new-value {
-  flex: 1;
-  min-width: 200px;
-  background-color: #f8f9fa;
-  border-radius: 8px;
-  padding: 0.75rem;
-  border: 1px solid #e9ecef;
-}
-
-.value-label {
-  font-size: 0.8rem;
-  font-weight: 600;
-  color: #6c757d;
-  margin-bottom: 0.5rem;
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
-}
-
-.value-content {
-  word-break: break-word;
-  font-family: var(--bs-font-monospace);
-  font-size: 0.9rem;
-  padding: 0.5rem;
-  background-color: white;
-  border-radius: 4px;
-  border: 1px solid #e9ecef;
-  min-height: 2.5rem;
-  display: flex;
-  align-items: center;
-}
-
-.change-arrow {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: #6c757d;
-  padding: 0.5rem;
-  background-color: #f8f9fa;
-  border-radius: 50%;
-  width: 40px;
-  height: 40px;
-  flex-shrink: 0;
-}
 
 .edit-reason {
   margin-top: 0.5rem;
@@ -2279,6 +2161,68 @@ body.modal-open {
   font-size: 0.85rem;
 }
 
+/* Header info group wrapper for responsive stacking */
+.header-info-group {
+  display: flex;
+  gap: 1.5rem;
+  align-items: center;
+}
+
+/* Ensure header items align correctly */
+.application-header-main {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+}
+
+/* Responsive ID/Date stacking for small screens */
+@media (max-width: 400px) {
+  .header-info-group {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+    align-items: flex-start;
+  }
+
+  /* Reset gaps since we are using flex gap in the group */
+  .app-id-section,
+  .app-date-section {
+    margin: 0;
+  }
+}
+
+/* Responsive Font Size for Last Updated text */
+.status-meta-text {
+  /* Scales between 10px and 12px depending on viewport width */
+  font-size: clamp(0.625rem, 2.5vw, 0.75rem);
+  color: #64748b;
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+  flex-wrap: wrap;
+}
+
+/* Slim Modal Header */
+#applicationModal .modal-header {
+  padding: 0.5rem 1rem;
+  min-height: auto;
+  align-items: center;
+}
+
+/* Slim History Modal Header - match application modal */
+#editHistoryModal .modal-header {
+  padding: 0.5rem 1rem;
+  min-height: auto;
+  align-items: center;
+}
+
+/* Hide fullscreen button on history modal (auto-fullscreen on mobile/tablet still works) */
+#historyFullscreenBtn {
+  display: none !important;
+}
+
+
 .file-name::before {
   content: "";
   display: inline-block;
@@ -2300,29 +2244,7 @@ body.modal-open {
     height: calc(100vh - 1rem);
   }
 
-  .history-card {
-    margin-left: 2rem;
-    padding: 1rem;
-  }
 
-  .history-card::before {
-    left: -2rem;
-  }
-
-  .history-meta {
-    flex-direction: column;
-    align-items: flex-start;
-  }
-
-  .value-comparison {
-    flex-direction: column;
-  }
-
-  .change-arrow {
-    align-self: center;
-    margin: 0.5rem 0;
-    transform: rotate(90deg);
-  }
 }
 
 /* Edit Reason Modal Styles */
@@ -2396,14 +2318,18 @@ body.modal-open {
   border-bottom: 1px solid rgba(0, 0, 0, 0.1);
   border-top-left-radius: 0.5rem;
   border-top-right-radius: 0.5rem;
-  padding: 1rem 1.5rem;
+  padding: 0.5rem 1rem !important;
+  min-height: auto !important;
+  align-items: center !important;
 }
 
 #editReasonModal .modal-title {
   display: flex;
   align-items: center;
-  color: #212529;
-  font-weight: 600;
+  color: #fff;
+  font-weight: 500;
+  font-size: 1.1rem !important;
+  gap: 0.5rem;
 }
 
 #editReasonModal .modal-body {
@@ -2412,7 +2338,7 @@ body.modal-open {
 
 #editReasonModal .modal-footer {
   border-top: 1px solid rgba(0, 0, 0, 0.1);
-  padding: 1rem 1.5rem;
+  padding: 0.75rem 1rem !important;
 }
 
 #editReasonInput {
@@ -2465,6 +2391,32 @@ body.modal-open {
   }
 }
 
+
+/* Fullscreen Modal Styles - Override ID selectors with !important */
+.modal.fullscreen .modal-dialog {
+  max-width: none !important;
+  margin: 0 !important;
+  height: 100% !important;
+}
+
+.modal.fullscreen .modal-content {
+  height: 100% !important;
+  border: 0 !important;
+  border-radius: 0 !important;
+}
+
+.modal.fullscreen .modal-header {
+  border-radius: 0 !important;
+}
+
+.modal.fullscreen .modal-footer {
+  border-radius: 0 !important;
+}
+
+.modal.fullscreen .modal-body {
+  overflow-y: auto;
+}
+
 /* Toast Notification Styles */
 #successToast {
   min-width: 300px;
@@ -2472,6 +2424,145 @@ body.modal-open {
   border: none;
   border-radius: 0.5rem;
   overflow: hidden;
+}
+
+/* Global Fullscreen Modals on Mobile & Tablet */
+@media (max-width: 991.98px) {
+
+  .modal .modal-dialog,
+  #applicationModal .modal-dialog,
+  #editHistoryModal .modal-dialog,
+  #editReasonModal .modal-dialog,
+  #documentPreviewModal .modal-dialog,
+  #eventModal .modal-dialog,
+  #schemeModal .modal-dialog,
+  #newsModal .modal-dialog,
+  #addUserModal .modal-dialog,
+  #aiSuggestionsModal .modal-dialog,
+  #incompleteRegistrationModal .modal-dialog {
+    position: absolute !important;
+    top: 0 !important;
+    bottom: 0 !important;
+    left: 0 !important;
+    right: 0 !important;
+    max-width: none !important;
+    margin: 0 !important;
+    height: 100% !important;
+    min-height: 100% !important;
+  }
+
+  /* Slide-in Animation */
+  .modal.fade .modal-dialog,
+  #applicationModal.fade .modal-dialog,
+  #editHistoryModal.fade .modal-dialog,
+  #editReasonModal.fade .modal-dialog,
+  #documentPreviewModal.fade .modal-dialog,
+  #eventModal.fade .modal-dialog,
+  #schemeModal.fade .modal-dialog,
+  #newsModal.fade .modal-dialog,
+  #addUserModal.fade .modal-dialog,
+  #aiSuggestionsModal.fade .modal-dialog,
+  #sectionModal.fade .modal-dialog,
+  #fieldModal.fade .modal-dialog,
+  #incompleteRegistrationModal.fade .modal-dialog {
+    left: 100% !important;
+    right: auto !important;
+    width: 100vw !important;
+    transform: none !important;
+    transition: left 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94) !important;
+  }
+
+  .modal.fade {
+    opacity: 1 !important;
+    transition: opacity 0.3s linear !important;
+  }
+
+  .modal.show .modal-dialog,
+  #applicationModal.show .modal-dialog,
+  #editHistoryModal.show .modal-dialog,
+  #editReasonModal.show .modal-dialog,
+  #documentPreviewModal.show .modal-dialog,
+  #eventModal.show .modal-dialog,
+  #schemeModal.show .modal-dialog,
+  #newsModal.show .modal-dialog,
+  #addUserModal.show .modal-dialog,
+  #aiSuggestionsModal.show .modal-dialog,
+  #sectionModal.show .modal-dialog,
+  #fieldModal.show .modal-dialog,
+  #incompleteRegistrationModal.show .modal-dialog {
+    left: 0 !important;
+    right: auto !important;
+    width: 100vw !important;
+    transform: none !important;
+  }
+
+  .modal .modal-content,
+  #applicationModal .modal-content,
+  #editHistoryModal .modal-content,
+  #editReasonModal .modal-content,
+  #documentPreviewModal .modal-content,
+  #eventModal .modal-content,
+  #schemeModal .modal-content,
+  #newsModal .modal-content,
+  #addUserModal .modal-content,
+  #aiSuggestionsModal .modal-content,
+  #incompleteRegistrationModal .modal-content {
+    display: flex !important;
+    flex-direction: column !important;
+    height: 100vh !important;
+    max-height: none !important;
+    min-height: 100vh !important;
+    width: 100% !important;
+    border: 0 !important;
+    border-radius: 0 !important;
+  }
+
+  /* Ensure body has space for FAB */
+  #incompleteRegistrationModal .modal-body {
+    padding-bottom: 80px !important;
+  }
+
+  .modal .modal-header,
+  .modal .modal-footer,
+  #applicationModal .modal-header,
+  #applicationModal .modal-footer,
+  #editHistoryModal .modal-header,
+  #editHistoryModal .modal-footer,
+  #editReasonModal .modal-header,
+  #editReasonModal .modal-footer,
+  #documentPreviewModal .modal-header,
+  #documentPreviewModal .modal-footer,
+  #eventModal .modal-header,
+  #eventModal .modal-footer,
+  #schemeModal .modal-header,
+  #schemeModal .modal-footer,
+  #newsModal .modal-header,
+  #newsModal .modal-footer,
+  #addUserModal .modal-header,
+  #addUserModal .modal-footer,
+  #aiSuggestionsModal .modal-header,
+  #aiSuggestionsModal .modal-footer,
+  #deleteConfirmModal .modal-header,
+  #deleteConfirmModal .modal-footer {
+    border-radius: 0 !important;
+  }
+
+  /* Force modal body to take up available space */
+  .modal .modal-body,
+  #applicationModal .modal-body,
+  #editHistoryModal .modal-body,
+  #editReasonModal .modal-body,
+  #documentPreviewModal .modal-body,
+  #eventModal .modal-body,
+  #schemeModal .modal-body,
+  #newsModal .modal-body,
+  #addUserModal .modal-body,
+  #aiSuggestionsModal .modal-body {
+    flex: 1 1 auto !important;
+    max-height: none !important;
+    min-height: 0 !important;
+    height: auto !important;
+  }
 }
 
 #successToast .toast-header {
@@ -3776,44 +3867,87 @@ html body .clickable-row:active td {
     padding: 6px 10px;
     border-radius: 8px;
   }
+
+  /* Compact Application Header on Mobile */
+  .application-header {
+    margin-bottom: 0.5rem !important;
+  }
+
+  .application-header-top {
+    padding: 0.75rem !important;
+  }
+
+  .application-header-main {
+    display: grid !important;
+    grid-template-columns: repeat(2, 1fr) !important;
+    gap: 0.5rem !important;
+  }
+
+  #incompleteRegistrationModal .application-header-main {
+    grid-template-columns: repeat(2, 1fr) !important;
+  }
+
+  .header-info-group {
+    grid-column: 1 / -1;
+    display: grid !important;
+    grid-template-columns: 1fr 1fr;
+    gap: 0.5rem !important;
+    padding-bottom: 0.5rem;
+    margin-bottom: 0.5rem;
+    border-bottom: 1px solid #f0f0f0;
+  }
+
+  .app-id-section,
+  .app-date-section {
+    flex-direction: column !important;
+    align-items: flex-start !important;
+  }
+
+  /* Compact sections for incomplete modal */
+  #incompleteRegistrationModal .app-name-section,
+  #incompleteRegistrationModal .app-updated-section,
+  #incompleteRegistrationModal .app-email-section,
+  #incompleteRegistrationModal .app-phone-section,
+  #incompleteRegistrationModal .app-section-section {
+    width: 100% !important;
+    box-sizing: border-box !important;
+  }
+
+  /* Make email span full width if needed */
+  #incompleteRegistrationModal .app-email-section {
+    grid-column: 1 / -1;
+  }
+
+  .label-text {
+    font-size: 0.65rem !important;
+    color: #64748b !important;
+    text-transform: uppercase;
+    letter-spacing: 0.02em;
+  }
+
+  .value-text {
+    font-size: 0.85rem !important;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 100%;
+  }
+
+  /* Slim Modal Header on Mobile */
+  #incompleteRegistrationModal .modal-header,
+  #applicationModal .modal-header {
+    padding: 10px 15px !important;
+    min-height: 50px;
+  }
+
+  #incompleteRegistrationModal .modal-title,
+  #applicationModal .modal-title {
+    font-size: 1rem !important;
+  }
 }
 
 /* Modal Mobile Optimizations (All Pages) */
-@media (max-width: 768px) {
-  .modal-dialog {
-    max-width: 100%;
-    margin: 0;
-  }
-
-  .modal-content {
-    border-radius: 0;
-    min-height: 100vh;
-  }
-
-  .modal-body {
-    max-height: calc(100vh - 140px);
-    overflow-y: auto;
-  }
-
-  .modal-header {
-    padding: 1rem;
-  }
-
-  .modal-title {
-    font-size: 1.1rem;
-  }
-
-  .modal-footer {
-    padding: 1rem;
-    flex-direction: column-reverse;
-    gap: 0.5rem;
-  }
-
-  .modal-footer>* {
-    width: 100%;
-    margin: 0 !important;
-  }
-}
+/* Modal Mobile Optimizations removed - handled by global rule */
 
 /* Touch-friendly interactions */
 @media (hover: none) and (pointer: coarse) {
@@ -3891,4 +4025,11 @@ html body .clickable-row:active td {
   animation: shimmer 1.5s infinite;
   border-radius: 6px;
   margin-bottom: 10px;
+}
+
+/* Mobile Timestamp - Hide time on small screens */
+@media (max-width: 576px) {
+  .updated-time {
+    display: none !important;
+  }
 }

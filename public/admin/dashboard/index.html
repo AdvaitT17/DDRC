@@ -237,8 +237,31 @@
       background-color: #f9fafb;
       border: 1px solid #e5e7eb;
       border-radius: 10px;
-      padding: 1rem;
+      padding: 1rem !important;
       margin-top: 1.5rem;
+      display: flex !important;
+      align-items: center !important;
+    }
+
+    .consent-container .form-check {
+      margin: 0 !important;
+      padding: 0 !important;
+      display: flex !important;
+      align-items: center !important;
+      width: 100% !important;
+      min-height: auto !important;
+    }
+
+    .consent-container .form-check-input {
+      position: static !important;
+      margin: 0 0.75rem 0 0 !important;
+      float: none !important;
+      flex-shrink: 0 !important;
+    }
+
+    .consent-container .form-check-label {
+      margin-bottom: 0 !important;
+      cursor: pointer;
     }
 
     /* Button Styles */
@@ -323,19 +346,8 @@
 
     /* Responsive styles */
     @media (max-width: 768px) {
-      .edit-field-change {
-        grid-template-columns: 1fr;
-        grid-template-rows: auto auto auto;
-        gap: 0.5rem;
-        width: 100%;
-      }
 
-      .edit-arrow {
-        transform: rotate(90deg);
-        margin: 0.5rem 0;
-        justify-self: center;
-      }
-
+      /* Mobile styles kept horizontal as requested */
       .edit-summary-item {
         padding: 1rem;
         width: 100%;
@@ -462,62 +474,6 @@
       font-size: 0.9rem;
     }
 
-    /* Style for the history button in header - enhanced glass effect with rectangular shape */
-    #historyBtn {
-      font-size: 0.875rem;
-      padding: 0.625rem 1.25rem;
-      border-radius: 16px;
-      background-color: #ffffff0d;
-      backdrop-filter: blur(10px);
-      -webkit-backdrop-filter: blur(10px);
-      border: 1px solid rgba(255, 255, 255, 0.1);
-      color: white;
-      transition: all 0.2s ease;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-weight: 500;
-      min-width: 130px;
-      letter-spacing: 0.01em;
-      position: relative;
-      overflow: hidden;
-    }
-
-    /* Add subtle glow effect */
-    #historyBtn::after {
-      content: "";
-      position: absolute;
-      top: 0;
-      left: 0;
-      right: 0;
-      height: 1px;
-      background: linear-gradient(to right,
-          rgba(255, 255, 255, 0) 0%,
-          rgba(255, 255, 255, 0.3) 50%,
-          rgba(255, 255, 255, 0) 100%);
-    }
-
-    #historyBtn:hover {
-      background-color: rgba(0, 0, 0, 0);
-    }
-
-    #historyBtn:hover::before {
-      left: 150%;
-    }
-
-    #historyBtn:active {
-      transform: translateY(0);
-      background-color: rgba(0, 0, 0, 0);
-    }
-
-    #historyBtn svg {
-      margin-right: 0.5rem;
-      stroke-width: 2;
-      width: 16px;
-      height: 16px;
-      color: white;
-    }
-
     /* Enhanced Edit Response button with ripple animation */
     #editBtn {
       position: relative;
@@ -633,6 +589,251 @@
 
       .view-tab {
         padding: 0.5rem 0.75rem;
+      }
+    }
+
+    /* Floating Action Toolbar (FAB) - Fixed position in modal */
+    /* Floating Action Toolbar - Horizontal bar at bottom center */
+    .floating-action-toolbar {
+      position: fixed;
+      bottom: 20px;
+      left: 50%;
+      transform: translateX(-50%);
+      display: flex;
+      flex-direction: row;
+      gap: 6px;
+      /* Gap for spacing between buttons */
+      z-index: 1060;
+      background: rgba(255, 255, 255, 0.95);
+      backdrop-filter: blur(10px);
+      padding: 6px;
+      border-radius: 20px;
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15), 0 0 0 1px rgba(0, 0, 0, 0.05);
+      /* Width accounts for 4 buttons + gaps + padding */
+      width: 232px;
+      /* Allow badge to overflow outside */
+      overflow: visible;
+
+      /* Initial state: Hidden and slightly down */
+      opacity: 0;
+      transform: translate(-50%, 20px);
+      /* EXIT TRANSITION: Fast, no delay, so it vanishes before/during modal close */
+      transition: gap 0.35s ease, opacity 0.2s ease, transform 0.2s ease;
+    }
+
+    /* Show state when modal is open */
+    .modal.show .floating-action-toolbar {
+      opacity: 1;
+      transform: translate(-50%, 0);
+      /* ENTER TRANSITION: Delayed to wait for modal slide-in */
+      transition: gap 0.35s ease,
+        opacity 0.3s ease 0.3s,
+        transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275) 0.3s;
+    }
+
+    /* Remove gap on hover for seamless takeover */
+    .floating-action-toolbar:has(.fab-btn:hover) {
+      gap: 0;
+    }
+
+    .floating-action-toolbar::-webkit-scrollbar {
+      display: none;
+    }
+
+    .floating-action-toolbar .fab-btn {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex: 1;
+      /* Fill dock evenly */
+      height: 40px;
+      border-radius: 14px;
+      border: none;
+      cursor: pointer;
+      /* Spring-like easing with slight overshoot */
+      transition: all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+      position: relative;
+      /* CRITICAL: Allow badge to overflow - use !important to prevent override */
+      overflow: visible !important;
+      white-space: nowrap;
+      padding: 0;
+    }
+
+    .floating-action-toolbar .fab-btn svg {
+      width: 20px;
+      height: 20px;
+      flex-shrink: 0;
+      transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+    }
+
+    .floating-action-toolbar .fab-btn span {
+      max-width: 0;
+      opacity: 0;
+      overflow: hidden;
+      transition: max-width 0.4s cubic-bezier(0.34, 1.56, 0.64, 1),
+        opacity 0.25s ease-out 0.1s,
+        margin 0.3s ease;
+      font-size: 0.85rem;
+      font-weight: 500;
+      margin-left: 0;
+    }
+
+    /* TAKEOVER EFFECT: When hovering any button, others collapse */
+    .floating-action-toolbar:has(.fab-btn:hover) .fab-btn:not(:hover) {
+      width: 0;
+      min-width: 0;
+      padding: 0;
+      opacity: 0;
+      margin: 0;
+      overflow: hidden;
+    }
+
+    .floating-action-toolbar:has(.fab-btn:hover) .fab-btn:not(:hover) svg {
+      width: 0;
+      opacity: 0;
+    }
+
+    /* Hovered button expands to fill entire dock */
+    .floating-action-toolbar .fab-btn:hover {
+      width: 100%;
+      min-width: 100%;
+      flex-grow: 1;
+      justify-content: center;
+      border-radius: 14px;
+    }
+
+    .floating-action-toolbar .fab-btn:hover span {
+      max-width: 150px;
+      opacity: 1;
+      margin-left: 10px;
+    }
+
+    /* Hide pseudo-element tooltips */
+    .floating-action-toolbar .fab-btn::before {
+      display: none;
+    }
+
+    /* Badge for edit count */
+    .floating-action-toolbar .fab-btn .fab-badge {
+      position: absolute;
+      /* Half outside (10px) + half inside (10px) = 20px total height */
+      top: -10px;
+      right: -10px;
+      min-width: 20px;
+      height: 20px;
+      background: #fff;
+      /* Keep blue color to match primary button */
+      color: #4f46e5;
+      font-size: 0.7rem;
+      font-weight: 700;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.25);
+      z-index: 20;
+      border: 2px solid #4f46e5;
+      pointer-events: none;
+    }
+
+    /* Pulse animation for save button */
+    .floating-action-toolbar .fab-btn.pulse-animation {
+      animation: fabPulse 1.5s ease-in-out infinite;
+    }
+
+    @keyframes fabPulse {
+
+      0%,
+      100% {
+        box-shadow: 0 0 0 0 rgba(79, 70, 229, 0.4);
+      }
+
+      50% {
+        box-shadow: 0 0 0 8px rgba(79, 70, 229, 0);
+      }
+    }
+
+    /* Button colors */
+    .floating-action-toolbar .fab-btn.fab-primary {
+      background: #4f46e5;
+      color: #fff;
+    }
+
+    .floating-action-toolbar .fab-btn.fab-primary:hover {
+      background: #4338ca;
+    }
+
+    .floating-action-toolbar .fab-btn.fab-success {
+      background: #16a34a;
+      color: #fff;
+    }
+
+    .floating-action-toolbar .fab-btn.fab-success:hover {
+      background: #15803d;
+    }
+
+    .floating-action-toolbar .fab-btn.fab-danger {
+      background: #dc2626;
+      color: #fff;
+    }
+
+    .floating-action-toolbar .fab-btn.fab-danger:hover {
+      background: #b91c1c;
+    }
+
+    .floating-action-toolbar .fab-btn.fab-warning {
+      background: #d97706;
+      color: #fff;
+    }
+
+    .floating-action-toolbar .fab-btn.fab-warning:hover {
+      background: #b45309;
+    }
+
+    .floating-action-toolbar .fab-btn.fab-outline-danger {
+      background: #fff;
+      color: #dc2626;
+      border: 1px solid #fecaca;
+    }
+
+    .floating-action-toolbar .fab-btn.fab-outline-danger:hover {
+      background: #fef2f2;
+      border-color: #dc2626;
+    }
+
+    .floating-action-toolbar .fab-btn.fab-secondary {
+      background: #6b7280;
+      color: #fff;
+    }
+
+    .floating-action-toolbar .fab-btn.fab-secondary:hover {
+      background: #4b5563;
+    }
+
+    /* Hide old modal footer when FAB is used */
+    #applicationModal .modal-footer {
+      display: none !important;
+    }
+
+    /* Give modal body space for floating toolbar */
+    #applicationModal .modal-body {
+      padding-bottom: 70px;
+    }
+
+    /* In fullscreen mode, use flex layout to eliminate white space */
+    #applicationModal.fullscreen .modal-body {
+      flex: 1;
+      max-height: none !important;
+      min-height: 0;
+      padding-bottom: 70px;
+    }
+
+    /* On mobile, modal fills screen - adjust for FAB */
+    @media (max-width: 576px) {
+      #applicationModal .modal-body {
+        padding-bottom: 70px;
+        max-height: calc(100vh - 60px - 70px) !important;
+        /* header height - FAB space */
       }
     }
   </style>
@@ -964,13 +1165,13 @@
         <div class="modal-header d-flex justify-content-between align-items-center">
           <h5 class="modal-title">Application Details</h5>
           <div class="header-actions">
-            <button type="button" class="me-2" id="historyBtn" onclick="dashboardManager.viewEditHistory()">
+            <button type="button" class="me-2" id="historyBtn" onclick="dashboardManager.viewEditHistory()"
+              title="View History">
               <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none"
-                stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="me-1">
+                stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                 <circle cx="12" cy="12" r="10"></circle>
                 <polyline points="12 6 12 12 16 14"></polyline>
               </svg>
-              History
             </button>
             <button type="button" class="me-2" id="fullscreenBtn" onclick="toggleFullscreen()"
               title="Toggle Fullscreen">
@@ -994,13 +1195,15 @@
           <div class="application-header">
             <div class="application-header-top">
               <div class="application-header-main">
-                <div class="app-id-section">
-                  <span class="label-text">Application ID</span>
-                  <span class="value-text" id="modalApplicationId"></span>
-                </div>
-                <div class="app-date-section">
-                  <span class="label-text">Submitted</span>
-                  <span class="value-text" id="modalSubmissionDate"></span>
+                <div class="header-info-group">
+                  <div class="app-id-section">
+                    <span class="label-text">Application ID</span>
+                    <span class="value-text" id="modalApplicationId"></span>
+                  </div>
+                  <div class="app-date-section">
+                    <span class="label-text">Submitted</span>
+                    <span class="value-text" id="modalSubmissionDate"></span>
+                  </div>
                 </div>
                 <div class="app-status-section">
                   <span class="status-badge" id="modalStatus"></span>
@@ -1016,47 +1219,55 @@
           <div class="application-sections row" id="modalFormData">
             <!-- Will be populated by JavaScript -->
           </div>
-        </div>
-        <div class="modal-footer">
-          <div class="action-buttons">
-            <button type="button" class="btn btn-primary" id="editBtn" onclick="dashboardManager.toggleEditMode()">
-              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none"
+
+          <!-- Floating Action Toolbar -->
+          <div class="floating-action-toolbar" id="applicationFAB">
+            <button type="button" class="fab-btn fab-primary" id="editBtn" onclick="dashboardManager.toggleEditMode()">
+              <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none"
                 stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                 <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
                 <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path>
               </svg>
               <span id="editBtnText">Edit Responses</span>
             </button>
-            <button type="button" class="btn btn-success" id="approveBtn"
+            <button type="button" class="fab-btn fab-success" id="approveBtn"
               onclick="dashboardManager.updateStatus('approved')">
-              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none"
+              <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none"
                 stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                 <polyline points="20 6 9 17 4 12"></polyline>
               </svg>
-              Approve
+              <span>Approve</span>
             </button>
-            <button type="button" class="btn btn-danger" id="rejectBtn"
+            <button type="button" class="fab-btn fab-danger" id="rejectBtn"
               onclick="dashboardManager.updateStatus('rejected')">
-              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none"
+              <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none"
                 stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                 <line x1="18" y1="6" x2="6" y2="18"></line>
                 <line x1="6" y1="6" x2="18" y2="18"></line>
               </svg>
-              Reject
+              <span>Reject</span>
             </button>
-            <button type="button" class="btn btn-warning" id="undoBtn" onclick="dashboardManager.undoStatus()"
+            <button type="button" class="fab-btn fab-warning" id="undoBtn" onclick="dashboardManager.undoStatus()"
               style="display: none">
-              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none"
+              <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none"
                 stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                 <path d="M3 7v6h6"></path>
                 <path d="M21 17a9 9 0 00-9-9 9 9 0 00-6 2.3L3 13"></path>
               </svg>
-              Undo Decision
+              <span>Undo</span>
+            </button>
+            <button type="button" class="fab-btn fab-outline-danger" id="deleteUserBtn"
+              onclick="dashboardManager.showDeleteUserModalFromApplication()">
+              <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none"
+                stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <polyline points="3 6 5 6 21 6"></polyline>
+                <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
+                <line x1="10" y1="11" x2="10" y2="17"></line>
+                <line x1="14" y1="11" x2="14" y2="17"></line>
+              </svg>
+              <span>Delete User</span>
             </button>
           </div>
-          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
-            Close
-          </button>
         </div>
       </div>
     </div>
@@ -1066,22 +1277,34 @@
   <div class="modal fade" id="editHistoryModal" tabindex="-1">
     <div class="modal-dialog modal-dialog-centered modal-xl">
       <div class="modal-content">
-        <div class="modal-header">
+        <div class="modal-header d-flex justify-content-between align-items-center">
           <h5 class="modal-title">
             History
             <span class="application-id-badge" id="historyApplicationId"></span>
           </h5>
-          <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+          <div class="header-actions">
+            <button type="button" class="me-2" id="historyFullscreenBtn" onclick="toggleHistoryFullscreen()"
+              title="Toggle Fullscreen">
+              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none"
+                stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+                class="fullscreen-icon">
+                <path d="M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3m0 18h3a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3">
+                </path>
+              </svg>
+              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none"
+                stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+                class="exit-fullscreen-icon" style="display: none">
+                <path d="M8 3v3a2 2 0 0 1-2 2H3m18 0h-3a2 2 0 0 1-2-2V3m0 18v-3a2 2 0 0 1 2-2h3M3 16h3a2 2 0 0 1 2 2v3">
+                </path>
+              </svg>
+            </button>
+            <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+          </div>
         </div>
         <div class="modal-body">
           <div id="editHistoryContent">
             <!-- Will be populated by JavaScript -->
           </div>
-        </div>
-        <div class="modal-footer">
-          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
-            Close
-          </button>
         </div>
       </div>
     </div>
@@ -1093,8 +1316,8 @@
       <div class="modal-content">
         <div class="modal-header">
           <h5 class="modal-title">
-            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="none" stroke="currentColor"
-              stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="me-2">
+            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="none" stroke="currentColor"
+              stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
               <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
               <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path>
             </svg>
