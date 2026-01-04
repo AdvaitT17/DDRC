@@ -764,6 +764,7 @@
 }
 
 /* Individual info sections - basic styling */
+/* Global rule for inner sections - Stacked Label/Value */
 .app-id-section,
 .app-date-section,
 .app-name-section,
@@ -3882,25 +3883,22 @@ html body .clickable-row:active td {
   }
 
   /* Compact Application Header on Mobile */
-  .application-header {
+  /* Compact Application Header on Mobile - Scoped to Incomplete Registration ONLY */
+  #incompleteRegistrationModal .application-header {
     margin-bottom: 0.5rem !important;
   }
 
-  .application-header-top {
+  #incompleteRegistrationModal .application-header-top {
     padding: 0.75rem !important;
   }
 
-  .application-header-main {
+  #incompleteRegistrationModal .application-header-main {
     display: grid !important;
     grid-template-columns: repeat(2, 1fr) !important;
     gap: 0.5rem !important;
   }
 
-  #incompleteRegistrationModal .application-header-main {
-    grid-template-columns: repeat(2, 1fr) !important;
-  }
-
-  .header-info-group {
+  #incompleteRegistrationModal .header-info-group {
     grid-column: 1 / -1;
     display: grid !important;
     grid-template-columns: 1fr 1fr;
@@ -3910,8 +3908,8 @@ html body .clickable-row:active td {
     border-bottom: 1px solid #f0f0f0;
   }
 
-  .app-id-section,
-  .app-date-section {
+  #incompleteRegistrationModal .app-id-section,
+  #incompleteRegistrationModal .app-date-section {
     flex-direction: column !important;
     align-items: flex-start !important;
   }
@@ -3931,14 +3929,14 @@ html body .clickable-row:active td {
     grid-column: 1 / -1;
   }
 
-  .label-text {
+  #incompleteRegistrationModal .label-text {
     font-size: 0.65rem !important;
     color: #64748b !important;
     text-transform: uppercase;
     letter-spacing: 0.02em;
   }
 
-  .value-text {
+  #incompleteRegistrationModal .value-text {
     font-size: 0.85rem !important;
     white-space: nowrap;
     overflow: hidden;
@@ -3956,6 +3954,19 @@ html body .clickable-row:active td {
   #incompleteRegistrationModal .modal-title,
   #applicationModal .modal-title {
     font-size: 1rem !important;
+  }
+
+  /* Prevent wrapping in Application Viewer on mobile by tightening spacing */
+  #applicationModal .application-header-main {
+    gap: 0.35rem !important;
+  }
+
+  #applicationModal .value-text {
+    font-size: 0.85rem !important;
+  }
+
+  #applicationModal .label-text {
+    font-size: 0.65rem !important;
   }
 }
 
