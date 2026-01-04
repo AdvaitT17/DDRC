@@ -329,7 +329,7 @@ router.get("/incomplete-registrations", async (req, res) => {
       return {
         id: reg.id,
         userId: reg.user_id,
-        applicationId: reg.application_id || `TEMP-${reg.id}`,
+        applicationId: reg.application_id || `TEMP-REG-${reg.id}`,
         createdAt: reg.created_at,
         lastUpdated: reg.updated_at,
         email: reg.email,
@@ -364,7 +364,7 @@ router.get("/incomplete-registrations", async (req, res) => {
     const newUserPlaceholders = usersWithoutProgress.map((user) => ({
       id: null,
       userId: user.user_id,
-      applicationId: `TEMP-${user.user_id}`,
+      applicationId: `TEMP-USR-${user.user_id}`,
       createdAt: user.created_at,
       lastUpdated: user.created_at,
       email: user.email,
@@ -1834,4 +1834,224 @@ VALUES(?, 'equipment_update', ?, 'unknown', ?)`,
   }
 });
 
+// Get user info from application ID (for delete feature)
+router.get(
+  "/applications/:applicationId/user-info",
+  authenticateToken,
+  requireRole(["admin"]),
+  async (req, res) => {
+    try {
+      const { applicationId } = req.params;
+
+      const [result] = await pool.query(
+        `SELECT rp.user_id, ru.email, ru.phone, ru.username
+         FROM registration_progress rp
+         JOIN registered_users ru ON rp.user_id = ru.id
+         WHERE rp.application_id = ?`,
+        [applicationId]
+      );
+
+      if (result.length === 0) {
+        return res.status(404).json({ message: "Application not found" });
+      }
+
+      res.json(result[0]);
+    } catch (error) {
+      console.error("Error fetching user info:", error);
+      res.status(500).json({ message: "Error fetching user info", detail: error.message });
+    }
+  }
+);
+
+// ============================================
+// DELETE REGISTERED USER (Permanent Deletion)
+// ============================================
+// Removes user and ALL associated data including:
+// - registration_responses (form data)
+// - registration_progress (application records)
+// - equipment_requests
+// - uploaded files from storage
+// - action_logs related to the user
+// ============================================
+router.delete(
+  "/registered-users/:userId",
+  authenticateToken,
+  requireRole(["admin"]),
+  async (req, res) => {
+    const conn = await pool.getConnection();
+
+    try {
+      const userId = parseInt(req.params.userId);
+      const { confirm, reason } = req.body;
+
+      // Require explicit confirmation
+      if (!confirm) {
+        return res.status(400).json({
+          success: false,
+          message: "Deletion requires explicit confirmation. Send { confirm: true } in request body."
+        });
+      }
+
+      // Get user info before deletion for logging
+      const [user] = await conn.query(
+        "SELECT id, email, username, phone, created_at FROM registered_users WHERE id = ?",
+        [userId]
+      );
+
+      if (user.length === 0) {
+        conn.release();
+        return res.status(404).json({
+          success: false,
+          message: "User not found"
+        });
+      }
+
+      const userInfo = user[0];
+
+      // Start transaction
+      await conn.beginTransaction();
+
+      try {
+        // 1. Get all registration IDs for this user
+        const [registrations] = await conn.query(
+          "SELECT id, application_id FROM registration_progress WHERE user_id = ?",
+          [userId]
+        );
+
+        const registrationIds = registrations.map(r => r.id);
+        const applicationIds = registrations.map(r => r.application_id).filter(Boolean);
+
+        let filesDeleted = 0;
+        let responsesDeleted = 0;
+
+        // Get user's name from registration responses BEFORE deleting
+        let userName = userInfo.username || 'Unknown';
+        if (registrationIds.length > 0) {
+          const [nameResponse] = await conn.query(
+            `SELECT rr.value, ff.name as field_name
+             FROM registration_responses rr
+             JOIN form_fields ff ON rr.field_id = ff.id
+             WHERE rr.registration_id IN (?)
+             AND ff.name IN ('firstname', 'lastname')`,
+            [registrationIds]
+          );
+          const firstName = nameResponse.find(r => r.field_name === 'firstname')?.value || '';
+          const lastName = nameResponse.find(r => r.field_name === 'lastname')?.value || '';
+          if (firstName || lastName) {
+            userName = `${firstName} ${lastName}`.trim();
+          }
+        }
+
+        // 2. Get and delete uploaded files from registration_responses
+        if (registrationIds.length > 0) {
+          // Find all file paths in responses
+          const [fileResponses] = await conn.query(
+            `SELECT value FROM registration_responses 
+             WHERE registration_id IN (?) 
+             AND value LIKE 'forms/%'`,
+            [registrationIds]
+          );
+
+          // Delete each file from storage
+          for (const response of fileResponses) {
+            try {
+              await storageService.deleteFile(response.value);
+              filesDeleted++;
+            } catch (fileErr) {
+              console.warn(`Could not delete file ${response.value}:`, fileErr.message);
+              // Continue even if file deletion fails (file might already be gone)
+            }
+          }
+
+          // 3. Delete registration_responses
+          const [respResult] = await conn.query(
+            "DELETE FROM registration_responses WHERE registration_id IN (?)",
+            [registrationIds]
+          );
+          responsesDeleted = respResult.affectedRows;
+        }
+
+        // 4. Delete registration_progress
+        await conn.query(
+          "DELETE FROM registration_progress WHERE user_id = ?",
+          [userId]
+        );
+
+        // 5. Delete equipment_requests
+        await conn.query(
+          "DELETE FROM equipment_requests WHERE user_id = ?",
+          [userId]
+        );
+
+        // 6. Delete action_logs related to the user's applications
+        if (applicationIds.length > 0) {
+          await conn.query(
+            "DELETE FROM action_logs WHERE application_id IN (?)",
+            [applicationIds]
+          );
+        }
+
+        // 7. Delete the registered user
+        await conn.query(
+          "DELETE FROM registered_users WHERE id = ?",
+          [userId]
+        );
+
+        // 8. Log the deletion event (keep for audit trail)
+        await conn.query(
+          `INSERT INTO action_logs 
+           (user_id, action_type, application_id, edit_details) 
+           VALUES (?, 'user_deleted', ?, ?)`,
+          [
+            req.user.id,
+            applicationIds.length > 0 ? applicationIds[0] : `USER-${userId}`,
+            JSON.stringify({
+              deletedUserName: userName,
+              deletedUserEmail: userInfo.email,
+              deletedUserPhone: userInfo.phone || 'Not provided',
+              deletedUserCreatedAt: userInfo.created_at,
+              applicationIds: applicationIds,
+              filesDeleted: filesDeleted,
+              responsesDeleted: responsesDeleted,
+              reason: reason || "Not specified",
+              deletedAt: new Date().toISOString()
+            })
+          ]
+        );
+
+        // Commit transaction
+        await conn.commit();
+
+        res.json({
+          success: true,
+          message: "User and all associated data deleted permanently",
+          deletedData: {
+            userId: userId,
+            email: userInfo.email,
+            applicationIds: applicationIds,
+            filesDeleted: filesDeleted,
+            responsesDeleted: responsesDeleted
+          }
+        });
+
+      } catch (txError) {
+        // Rollback on any error
+        await conn.rollback();
+        throw txError;
+      }
+
+    } catch (error) {
+      console.error("Error deleting user:", error);
+      res.status(500).json({
+        success: false,
+        message: "Error deleting user",
+        detail: error.message
+      });
+    } finally {
+      conn.release();
+    }
+  }
+);
+
 module.exports = router;
+

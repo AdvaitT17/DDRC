@@ -21,9 +21,8 @@ class LogbookManager {
 
             </div>
             <div class="right-links">
-              <span id="userInfo">${
-                userInfo?.full_name || userInfo?.email || ""
-              }</span>
+              <span id="userInfo">${userInfo?.full_name || userInfo?.email || ""
+          }</span>
               <button id="logoutBtn" class="btn btn-link" onclick="AuthManager.logout()">Logout</button>
             </div>
           </div>
@@ -172,11 +171,11 @@ class LogbookManager {
 
       const response = await fetch(
         "/api/admin/logs?" +
-          new URLSearchParams({
-            actionType,
-            date,
-            userQuery,
-          }),
+        new URLSearchParams({
+          actionType,
+          date,
+          userQuery,
+        }),
         {
           headers: {
             Authorization: `Bearer ${AuthManager.getAuthToken()}`,
@@ -226,6 +225,7 @@ class LogbookManager {
       edit_incomplete: "Incomplete Edit",
       complete_registration: "Registration Completed",
       create_registration: "Registration Created",
+      user_deleted: "User Deleted",
     };
     return formats[type] || type;
   }
@@ -252,15 +252,13 @@ class LogbookManager {
     if (log.action_type === "edit_response") {
       try {
         const editDetails = JSON.parse(log.edit_details);
-        return `Edited field "${
-          editDetails.display_name
-        }" from "${this.truncateValue(
-          editDetails.previous_value
-        )}" to "${this.truncateValue(editDetails.new_value)}"${
-          editDetails.reason
+        return `Edited field "${editDetails.display_name
+          }" from "${this.truncateValue(
+            editDetails.previous_value
+          )}" to "${this.truncateValue(editDetails.new_value)}"${editDetails.reason
             ? ` (Reason: ${this.truncateValue(editDetails.reason)})`
             : ""
-        }`;
+          }`;
       } catch (e) {
         return "Edited application response";
       }
@@ -268,15 +266,13 @@ class LogbookManager {
     if (log.action_type === "edit_incomplete") {
       try {
         const editDetails = JSON.parse(log.edit_details);
-        return `Edited incomplete registration field "${
-          editDetails.display_name
-        }" from "${this.truncateValue(
-          editDetails.previous_value
-        )}" to "${this.truncateValue(editDetails.new_value)}"${
-          editDetails.reason
+        return `Edited incomplete registration field "${editDetails.display_name
+          }" from "${this.truncateValue(
+            editDetails.previous_value
+          )}" to "${this.truncateValue(editDetails.new_value)}"${editDetails.reason
             ? ` (Reason: ${this.truncateValue(editDetails.reason)})`
             : ""
-        }`;
+          }`;
       } catch (e) {
         return "Edited incomplete registration response";
       }
@@ -284,9 +280,8 @@ class LogbookManager {
     if (log.action_type === "complete_registration") {
       try {
         const editDetails = JSON.parse(log.edit_details);
-        return `Marked incomplete registration as complete${
-          editDetails.note ? `: ${editDetails.note}` : ""
-        }`;
+        return `Marked incomplete registration as complete${editDetails.note ? `: ${editDetails.note}` : ""
+          }`;
       } catch (e) {
         return "Marked incomplete registration as complete";
       }
@@ -294,11 +289,20 @@ class LogbookManager {
     if (log.action_type === "create_registration") {
       try {
         const editDetails = JSON.parse(log.edit_details);
-        return `Created new registration ${
-          editDetails.summary ? `: ${editDetails.summary}` : ""
-        }`;
+        return `Created new registration ${editDetails.summary ? `: ${editDetails.summary}` : ""
+          }`;
       } catch (e) {
         return "Created new registration";
+      }
+    }
+    if (log.action_type === "user_deleted") {
+      try {
+        const editDetails = JSON.parse(log.edit_details);
+        const name = editDetails.deletedUserName || editDetails.deletedUserEmail || "Unknown";
+        const reason = editDetails.reason || "Not specified";
+        return `Deleted user "${name}" - Reason: ${reason}`;
+      } catch (e) {
+        return "User deleted";
       }
     }
     return "-";
