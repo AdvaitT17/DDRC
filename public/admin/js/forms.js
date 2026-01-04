@@ -149,6 +149,7 @@ async function initializeFormManagement() {
     renderFormSections(sections);
 
     // Initialize event listeners
+    // Initialize event listeners - Guarded to prevent duplication
     initializeFormEventListeners();
   } catch (error) {
     console.error("Error initializing form management:", error);
@@ -156,9 +157,34 @@ async function initializeFormManagement() {
 }
 
 function initializeFormEventListeners() {
+  if (window.formListenersInitialized) return;
+  window.formListenersInitialized = true;
+
+  // Add robust scroll cleanup for Section Modal
+  const sectionModalEl = document.getElementById("sectionModal");
+  if (sectionModalEl) {
+    sectionModalEl.addEventListener('hidden.bs.modal', () => {
+      document.body.classList.remove('modal-open');
+      document.body.style.overflow = '';
+      document.body.style.paddingRight = '';
+    });
+  }
+
+  // Add robust scroll cleanup for Field Modal
+  const fieldModalEl = document.getElementById("fieldModal");
+  if (fieldModalEl) {
+    fieldModalEl.addEventListener('hidden.bs.modal', () => {
+      document.body.classList.remove('modal-open');
+      document.body.style.overflow = '';
+      document.body.style.paddingRight = '';
+    });
+  }
+
   // Add Section button
   document.getElementById("addSectionBtn").addEventListener("click", () => {
-    const modal = new bootstrap.Modal(document.getElementById("sectionModal"));
+    // Reset the form
+    document.getElementById("sectionName").value = "";
+    const modal = bootstrap.Modal.getOrCreateInstance(document.getElementById("sectionModal"));
     modal.show();
   });
 
@@ -413,15 +439,20 @@ async function saveSection() {
       throw new Error("Failed to create section");
     }
 
-    // Refresh sections
-    await initializeFormManagement();
-
-    // Close modal and reset form
-    const modal = bootstrap.Modal.getInstance(
-      document.getElementById("sectionModal")
-    );
+    // Close modal and reset form FIRST to clean up backdrop/scroll lock
+    const modalElement = document.getElementById("sectionModal");
+    const modal = bootstrap.Modal.getOrCreateInstance(modalElement);
     modal.hide();
+
+    // Explicitly remove modal-open class if it persists (fallback)
+    document.body.classList.remove('modal-open');
+    document.body.style.overflow = '';
+    document.body.style.paddingRight = '';
+
     document.getElementById("sectionName").value = "";
+
+    // Refresh sections AFTER closing modal
+    await initializeFormManagement();
   } catch (error) {
     alert("Failed to save section. Please try again.");
   }
@@ -578,7 +609,7 @@ async function saveField() {
     }
 
     // Close modal
-    bootstrap.Modal.getInstance(form).hide();
+    bootstrap.Modal.getOrCreateInstance(form).hide();
   } catch (error) {
     console.error("Error saving field:", error);
     alert("Failed to save field");
@@ -727,6 +758,12 @@ function resetFieldForm() {
     patternTestResult.innerHTML = "";
   }
 
+  // Clean up any conditional logic containers
+  const existingConditional = form.querySelector(".conditional-logic-container");
+  if (existingConditional) {
+    existingConditional.remove();
+  }
+
   // Show validation rules container for default "text" field type
   form.querySelector(".validation-rules-container").style.display = "block";
   form.querySelector(".number-range-container").style.display = "none";
@@ -754,6 +791,12 @@ function populateFieldForm(field) {
   optionsContainer.style.display = "none";
   fileSizeContainer.style.display = "none";
   nestedOptionsContainer.style.display = "none";
+
+  // Clean up any existing conditional logic containers
+  const existingConditional = form.querySelector(".conditional-logic-container");
+  if (existingConditional) {
+    existingConditional.remove();
+  }
 
   if (["select", "radio", "checkbox"].includes(field.field_type)) {
     optionsContainer.style.display = "block";
