@@ -100,7 +100,7 @@ class DashboardManager {
       if (tableBody) {
         tableBody.innerHTML = `
           <tr>
-            <td colspan="7" class="text-center py-4">
+            <td colspan="6" class="text-center py-4">
               <div class="skeleton-loader">
                 <div class="skeleton-table-row"></div>
                 <div class="skeleton-table-row"></div>
@@ -149,7 +149,7 @@ class DashboardManager {
       if (registrations.length === 0) {
         tableBody.innerHTML = `
           <tr>
-            <td colspan="7" class="text-center">
+            <td colspan="6" class="text-center">
               <div class="p-4">
                 <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="mb-3 text-muted">
                   <circle cx="12" cy="12" r="10"></circle>
@@ -161,36 +161,64 @@ class DashboardManager {
             </td>
           </tr>
         `;
+        // Also clear mobile cards
+        const mobileContainer = document.getElementById("mobileRegistrationsContainer");
+        if (mobileContainer) {
+          mobileContainer.innerHTML = `
+            <div class="mobile-cards-empty">
+              <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <circle cx="12" cy="12" r="10"></circle>
+                <line x1="12" y1="8" x2="12" y2="12"></line>
+                <line x1="12" y1="16" x2="12.01" y2="16"></line>
+              </svg>
+              <p>No partial registrations found.</p>
+            </div>
+          `;
+        }
         return;
       }
 
       tableBody.innerHTML = registrations
         .map(
-          (reg) => `
-          <tr class="clickable-row" onclick="dashboardManager.viewIncompleteRegistration('${reg.id !== null ? reg.id : reg.userId
-            }')">
-            <td data-label="ID">${reg.applicationId}</td>
-            <td data-label="Name">${reg.applicantName || "Not specified"}</td>
-            <td data-label="Email">${reg.email}</td>
-            <td data-label="Phone">${reg.phone || "Not provided"}</td>
-            <td data-label="Last Updated">${new Date(
-              reg.lastUpdated
-            ).toLocaleDateString()}</td>
-            <td data-label="Inactive">${this.formatInactiveTime(
-              reg.inactive
-            )}</td>
-            <td data-label="Current Section">${reg.currentSection}</td>
-          </tr>
-        `
+          (reg) => {
+            // Determine status based on inactivity
+            let status = 'pending';
+            if (reg.inactive >= 168) status = 'rejected'; // 7+ days
+            else if (reg.inactive >= 48) status = 'under_review'; // 2+ days
+
+            return `
+            <tr class="clickable-row" data-status="${status}" onclick="dashboardManager.viewIncompleteRegistration('${reg.id !== null ? reg.id : reg.userId
+              }')">
+              <td data-label="ID">${reg.applicationId}</td>
+              <td data-label="Name">${reg.applicantName || "Not specified"}</td>
+              <td data-label="Email">${reg.email}</td>
+              <td data-label="Phone">${reg.phone || "Not provided"}</td>
+              <td data-label="Last Updated">${new Date(
+                reg.lastUpdated
+              ).toLocaleDateString()}</td>
+              <td data-label="Inactive">${this.formatInactiveTime(
+                reg.inactive
+              )}</td>
+            </tr>
+          `;
+          }
         )
         .join("");
+
+      // Render mobile cards
+      const mobileContainer = document.getElementById("mobileRegistrationsContainer");
+      if (mobileContainer) {
+        mobileContainer.innerHTML = registrations
+          .map((reg) => this.renderMobileRegistrationCard(reg))
+          .join("");
+      }
     } catch (error) {
       console.error("Error loading incomplete registrations:", error);
       const tableBody = document.getElementById("incompleteRegistrationsList");
       if (tableBody) {
         tableBody.innerHTML = `
           <tr>
-            <td colspan="7" class="text-center py-4 text-danger">
+            <td colspan="6" class="text-center py-4 text-danger">
               <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="mb-3">
                 <circle cx="12" cy="12" r="10"/>
                 <line x1="12" y1="8" x2="12" y2="12"/>
@@ -215,6 +243,52 @@ class DashboardManager {
       const days = Math.floor(hours / 24);
       return `${days} day${days === 1 ? "" : "s"}`;
     }
+  }
+
+  /**
+   * Render a single registration as a mobile card (Enhanced Design)
+   */
+  renderMobileRegistrationCard(reg) {
+    // Title case the applicant name
+    const formattedName = (reg.applicantName || 'Not specified')
+      .split(' ')
+      .map(word => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
+      .join(' ');
+
+    const inactiveTime = this.formatInactiveTime(reg.inactive);
+    const lastUpdated = new Date(reg.lastUpdated).toLocaleDateString('en-US', {
+      month: 'short',
+      day: 'numeric',
+      year: 'numeric'
+    });
+
+    // Determine status based on inactivity
+    let status = 'pending';
+    if (reg.inactive >= 168) { // 7+ days
+      status = 'rejected'; // Red - critical
+    } else if (reg.inactive >= 48) { // 2+ days
+      status = 'under_review'; // Blue - warning
+    }
+
+    const regId = reg.id !== null ? reg.id : reg.userId;
+
+    return `
+      <div class="mobile-app-card" data-status="${status}" onclick="dashboardManager.viewIncompleteRegistration('${regId}')">
+        <div class="card-content">
+          <div class="card-row-main">
+            <span class="card-name">${formattedName}</span>
+            <span class="card-id">${reg.applicationId}</span>
+          </div>
+          <div class="card-row-meta">
+            <span class="card-disability">${lastUpdated}</span>
+            <span class="card-location">${inactiveTime}</span>
+          </div>
+          <div class="card-row-footer">
+            <span class="card-status-badge ${status}">Inactive ${inactiveTime}</span>
+          </div>
+        </div>
+      </div>
+    `;
   }
 
   // Add this method to initialize the incomplete registrations section with filter
@@ -1263,7 +1337,7 @@ class DashboardManager {
       tbody.innerHTML = applications
         .map(
           (app) => `
-          <tr class="clickable-row" onclick="dashboardManager.viewApplication('${app.applicationId
+          <tr class="clickable-row" data-status="${app.status || 'pending'}" onclick="dashboardManager.viewApplication('${app.applicationId
             }')">
             <td data-label="Application ID" class="text-nowrap">${app.applicationId}</td>
             <td data-label="Applicant Name" class="text-nowrap">${app.applicantName}</td>
@@ -1280,6 +1354,14 @@ class DashboardManager {
         `
         )
         .join("");
+
+      // Render mobile cards
+      const mobileContainer = document.getElementById("mobileCardsContainer");
+      if (mobileContainer) {
+        mobileContainer.innerHTML = applications
+          .map((app) => this.renderMobileCard(app, displayLevel))
+          .join("");
+      }
     } catch (error) {
       console.error("Error:", error);
       const tbody = document.getElementById("recentApplications");
@@ -1297,6 +1379,54 @@ class DashboardManager {
         </tr>
       `;
     }
+  }
+
+  /**
+   * Render a single application as a mobile card (Enhanced Design)
+   */
+  renderMobileCard(app, displayLevel = 1) {
+    let location = this.parseLocationDisplay(app.location, displayLevel);
+
+    // Abbreviate long location names for mobile display
+    const abbreviations = {
+      'Brihanmumbai Municipal Corporation': 'BMC',
+      'Municipal Corporation': 'MC'
+    };
+
+    for (const [full, abbr] of Object.entries(abbreviations)) {
+      if (location.includes(full)) {
+        location = location.replace(full, abbr);
+        break;
+      }
+    }
+
+    const disabilityType = app.disabilityType || 'Not specified';
+    const status = app.status || 'pending';
+    const statusLabel = this.formatStatus ? this.formatStatus(status) : status.replace('_', ' ');
+
+    // Title case the applicant name for better emphasis
+    const formattedName = app.applicantName
+      .split(' ')
+      .map(word => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
+      .join(' ');
+
+    return `
+      <div class="mobile-app-card" data-status="${status}" onclick="dashboardManager.viewApplication('${app.applicationId}')">
+        <div class="card-content">
+          <div class="card-row-main">
+            <span class="card-name">${formattedName}</span>
+            <span class="card-id">${app.applicationId}</span>
+          </div>
+          <div class="card-row-meta">
+            <span class="card-disability">${disabilityType}</span>
+            <span class="card-location">${location}</span>
+          </div>
+          <div class="card-row-footer">
+            <span class="card-status-badge ${status}">${statusLabel}</span>
+          </div>
+        </div>
+      </div>
+    `;
   }
 
   async viewApplication(applicationId) {
@@ -3853,7 +3983,7 @@ class DashboardManager {
           }">${this.formatStatus(app.status || "pending")}</span></td>`;
 
         return `
-        <tr class="clickable-row" onclick="dashboardManager.viewApplication('${app.applicationId
+        <tr class="clickable-row" data-status="${app.status || 'pending'}" onclick="dashboardManager.viewApplication('${app.applicationId
           }')">
           <td data-label="Application ID" class="text-nowrap">${app.applicationId}</td>
           <td data-label="Applicant Name" class="text-nowrap">${app.applicantName}</td>
@@ -3874,6 +4004,14 @@ class DashboardManager {
 
     // Set the HTML content
     tbody.innerHTML = rowsHtml;
+
+    // Render mobile cards for pagination
+    const mobileContainer = document.getElementById("mobileCardsContainer");
+    if (mobileContainer) {
+      mobileContainer.innerHTML = currentPageApplications
+        .map((app) => this.renderMobileCard(app, displayLevel))
+        .join("");
+    }
 
     // Verify status badges rendered correctly
     this.verifyStatusBadges();

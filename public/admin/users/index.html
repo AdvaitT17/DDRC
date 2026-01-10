@@ -33,6 +33,8 @@
         <a href="/admin/forms">Form Management</a>
         <a href="/admin/news">News</a>
         <a href="/admin/events/">Events</a>
+        <a href="/admin/schemes">Schemes</a>
+        <a href="/admin/media/">Media</a>
         <a href="/admin/logbook">Logs</a>
         <a href="/admin/users" class="active">Users</a>
       </div>
@@ -84,23 +86,30 @@
 
       <!-- Users Table -->
       <div class="content-card">
-        <div class="table-responsive">
-          <table class="table users-table">
-            <thead>
-              <tr>
-                <th>Name</th>
-                <th>Username</th>
-                <th>Email</th>
-                <th class="text-center">Role</th>
-                <th class="text-center">Status</th>
-                <th>Last Login</th>
-                <th>Actions</th>
-              </tr>
-            </thead>
-            <tbody id="usersTableBody">
-              <!-- Will be populated by JavaScript -->
-            </tbody>
-          </table>
+        <!-- Mobile List Wrapper for responsive switching -->
+        <div class="mobile-list-wrapper">
+          <div class="table-responsive">
+            <table class="table users-table">
+              <thead>
+                <tr>
+                  <th>Name</th>
+                  <th>Username</th>
+                  <th>Email</th>
+                  <th class="text-center">Role</th>
+                  <th class="text-center">Status</th>
+                  <th>Last Login</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody id="usersTableBody">
+                <!-- Will be populated by JavaScript -->
+              </tbody>
+            </table>
+          </div>
+          <!-- Mobile Cards Container -->
+          <div class="mobile-cards-container" id="mobileUsersContainer">
+            <!-- Cards will be rendered by JavaScript -->
+          </div>
         </div>
       </div>
     </div>

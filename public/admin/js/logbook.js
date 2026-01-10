@@ -192,8 +192,109 @@ class LogbookManager {
     }
   }
 
+  /**
+   * Render a single log entry as a mobile card
+   */
+  renderMobileLogCard(log, index) {
+    const timestamp = new Date(log.performed_at);
+    const dateStr = timestamp.toLocaleDateString('en-US', {
+      month: 'short',
+      day: 'numeric'
+    });
+    const timeStr = timestamp.toLocaleTimeString('en-US', {
+      hour: '2-digit',
+      minute: '2-digit'
+    });
+
+    const actionLabel = this.formatActionType(log.action_type);
+
+    // Determine accent color based on action type
+    let dataStatus = 'pending';
+    switch (log.action_type) {
+      case 'approve':
+      case 'approved':
+      case 'complete_registration':
+        dataStatus = 'approved';
+        break;
+      case 'rejected':
+      case 'user_deleted':
+        dataStatus = 'rejected';
+        break;
+      case 'review':
+      case 'edit_response':
+      case 'edit_incomplete':
+        dataStatus = 'under_review';
+        break;
+      default:
+        dataStatus = 'pending';
+    }
+
+    // Get details
+    const details = this.formatDetails(log);
+    const hasDetails = details && details !== '-';
+
+    return `
+      <div class="mobile-app-card ${hasDetails ? 'has-details' : ''}" data-status="${dataStatus}" onclick="logbookManager.toggleLogDetails(${index})">
+        <div class="card-content">
+          <div class="card-row-main">
+            <span class="card-name">${log.user_name}</span>
+            <span class="card-id">${dateStr} ${timeStr}</span>
+          </div>
+          <div class="card-row-meta">
+            <span class="card-disability">${log.application_id || 'System Action'}</span>
+            ${hasDetails ? '<span class="card-expand-hint">Tap for details</span>' : ''}
+          </div>
+          <div class="card-row-footer">
+            <span class="card-status-badge ${log.action_type}">${actionLabel}</span>
+          </div>
+          ${hasDetails ? `
+          <div class="card-details-section" id="logDetails${index}">
+            <div class="card-details-content">${details}</div>
+          </div>
+          ` : ''}
+        </div>
+      </div>
+    `;
+  }
+
+  /**
+   * Toggle log details expansion
+   */
+  toggleLogDetails(index) {
+    const detailsEl = document.getElementById(`logDetails${index}`);
+    if (!detailsEl) return;
+
+    const card = detailsEl.closest('.mobile-app-card');
+    card.classList.toggle('expanded');
+  }
+
   renderLogs(logs) {
     const tbody = document.getElementById("logsTableBody");
+    const mobileContainer = document.getElementById("mobileLogsContainer");
+
+    if (logs.length === 0) {
+      tbody.innerHTML = `
+        <tr>
+          <td colspan="5" class="text-center text-muted py-4">
+            No logs found matching the current filters.
+          </td>
+        </tr>
+      `;
+      if (mobileContainer) {
+        mobileContainer.innerHTML = `
+          <div class="mobile-cards-empty">
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <circle cx="12" cy="12" r="10"></circle>
+              <line x1="12" y1="8" x2="12" y2="12"></line>
+              <line x1="12" y1="16" x2="12.01" y2="16"></line>
+            </svg>
+            <p>No logs found.</p>
+          </div>
+        `;
+      }
+      return;
+    }
+
     tbody.innerHTML = logs
       .map(
         (log) => `
@@ -211,6 +312,13 @@ class LogbookManager {
     `
       )
       .join("");
+
+    // Render mobile cards
+    if (mobileContainer) {
+      mobileContainer.innerHTML = logs
+        .map((log, index) => this.renderMobileLogCard(log, index))
+        .join("");
+    }
   }
 
   formatActionType(type) {

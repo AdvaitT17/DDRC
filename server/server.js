@@ -33,6 +33,7 @@ const userRoutes = require("./routes/userRoutes");
 const contactRoutes = require("./routes/contactRoutes");
 const translationRoutes = require("./routes/translationRoutes");
 const schemeRoutes = require("./routes/schemeRoutes");
+const mediaRoutes = require("./routes/mediaRoutes");
 const storageService = require("./services/storageService");
 
 const app = express();
@@ -235,6 +236,25 @@ app.get("/uploads/events/:filename", async (req, res) => {
   }
 });
 
+// Serve media gallery images publicly without authentication
+app.get("/uploads/media/:filename", async (req, res) => {
+  try {
+    const filePath = `media/${req.params.filename}`;
+    const fileInfo = await storageService.getFileInfo(filePath);
+
+    if (!fileInfo) {
+      return res.status(404).sendFile(path.join(__dirname, "../public/error.html"));
+    }
+
+    res.setHeader("Content-Type", fileInfo.contentType);
+    const stream = await storageService.getFileStream(filePath);
+    stream.pipe(res);
+  } catch (error) {
+    console.error("Error serving media file:", error);
+    res.status(404).sendFile(path.join(__dirname, "../public/error.html"));
+  }
+});
+
 // Serve user-submitted files with authentication
 app.use("/uploads/forms", async (req, res, next) => {
   try {
@@ -403,6 +423,7 @@ app.use("/api/contact", contactRoutes);
 app.use("/api/equipment", require("./routes/equipmentRoutes"));
 app.use("/api/translate", translationRoutes);
 app.use("/api/schemes", schemeRoutes);
+app.use("/api/media", mediaRoutes);
 
 // HTML Routes - make sure these come after API routes
 app.get(

@@ -336,24 +336,20 @@ class ReportsManager {
     if (configDetails) {
       configDetails.innerHTML = `
         <div class="mb-2">
-          <strong>Row Variable:</strong> ${
-            this.currentReportConfig.rowVariableName
-          }
+          <strong>Row Variable:</strong> ${this.currentReportConfig.rowVariableName
+        }
         </div>
         <div class="mb-2">
-          <strong>Column Variable:</strong> ${
-            this.currentReportConfig.columnVariableName
-          }
+          <strong>Column Variable:</strong> ${this.currentReportConfig.columnVariableName
+        }
         </div>
         <div class="mb-2">
-          <strong>Aggregation Type:</strong> ${
-            this.currentReportConfig.aggregationType
-          }
+          <strong>Aggregation Type:</strong> ${this.currentReportConfig.aggregationType
+        }
         </div>
         <div>
-          <strong>Filters:</strong> ${
-            this.currentReportConfig.filters.length || 0
-          } applied
+          <strong>Filters:</strong> ${this.currentReportConfig.filters.length || 0
+        } applied
         </div>
       `;
     }
@@ -558,15 +554,13 @@ class ReportsManager {
       categoryHeader.innerHTML = `
         <div class="d-flex align-items-center justify-content-between">
           <h4 class="category-title mb-0">
-            ${
-              category === "General"
-                ? `<i class="bi bi-grid me-2"></i>`
-                : `<i class="bi bi-folder2-open me-2"></i>`
-            }
+            ${category === "General"
+          ? `<i class="bi bi-grid me-2"></i>`
+          : `<i class="bi bi-folder2-open me-2"></i>`
+        }
             ${category}
-            <span class="badge rounded-pill ms-2">${
-              categoryReports.length
-            } report${categoryReports.length !== 1 ? "s" : ""}</span>
+            <span class="badge rounded-pill ms-2">${categoryReports.length
+        } report${categoryReports.length !== 1 ? "s" : ""}</span>
           </h4>
           <button class="btn btn-sm btn-outline-secondary category-collapse-btn" type="button" data-category="${category}">
             <i class="bi bi-chevron-down"></i>
@@ -615,13 +609,13 @@ class ReportsManager {
         reportCard.innerHTML = `
           <div class="card-body d-flex flex-column">
             <div class="d-flex justify-content-between align-items-start mb-3 flex-wrap">
-              <h5 class="card-title mb-2 me-2" title="${report.name}">${
-          report.name
-        }</h5>
+              <h5 class="card-title mb-2 me-2" title="${report.name}">${report.name
+          }</h5>
               <span class="badge bg-light text-dark border">${formattedDate}</span>
             </div>
             
-            <div class="mb-3">
+            <!-- Desktop version with badges -->
+            <div class="mb-3 report-var-desktop">
               <div class="d-flex align-items-center flex-wrap mb-3">
                 <span class="variable-label me-2">Row:</span>
                 <span class="badge bg-primary text-white" title="${rowVarName}">${rowVarName}</span>
@@ -639,6 +633,28 @@ class ReportsManager {
               </div>
             </div>
             
+            <!-- Mobile version with icons -->
+            <div class="mb-3 report-var-mobile">
+              <div class="d-flex align-items-start mb-2">
+                <i class="bi bi-table text-primary me-2" style="font-size: 1rem; margin-top: 2px;"></i>
+                <div>
+                  <span class="variable-label text-muted" style="font-size: 0.75rem;">Row</span>
+                  <div class="variable-value" title="${rowVarName}">${rowVarName}</div>
+                </div>
+              </div>
+              <div class="d-flex align-items-start mb-2">
+                <i class="bi bi-bar-chart text-primary me-2" style="font-size: 1rem; margin-top: 2px;"></i>
+                <div>
+                  <span class="variable-label text-muted" style="font-size: 0.75rem;">Column</span>
+                  <div class="variable-value" title="${colVarName}">${colVarName}</div>
+                </div>
+              </div>
+              <div class="d-flex align-items-center">
+                <i class="bi bi-funnel text-secondary me-2" style="font-size: 1rem;"></i>
+                <span class="filter-text text-muted">${filterCount} filter${filterCount !== 1 ? "s" : ""} applied</span>
+              </div>
+            </div>
+            
             <div class="d-flex align-items-center mb-3">
               <span class="variable-label me-2">Created by:</span>
               <span class="creator-text">
@@ -649,26 +665,23 @@ class ReportsManager {
             <div class="mt-auto">
               <div class="d-flex flex-wrap">
                 <div class="btn-group mb-2 me-2">
-                  <button class="btn btn-primary load-report-btn" data-report-id="${
-                    report.id
-                  }">
+                  <button class="btn btn-primary load-report-btn" data-report-id="${report.id
+          }">
                     <i class="bi bi-cloud-download me-1"></i> Load
                   </button>
-                  <button class="btn btn-info view-report-btn" data-report-id="${
-                    report.id
-                  }">
+                  <button class="btn btn-info view-report-btn" data-report-id="${report.id
+          }">
                     <i class="bi bi-fullscreen me-1"></i> View
                   </button>
                 </div>
-                ${
-                  report.user_id === AuthManager.getUserInfo().id
-                    ? `
+                ${report.user_id === AuthManager.getUserInfo().id
+            ? `
                 <button class="btn btn-outline-danger delete-report-btn mb-2" data-report-id="${report.id}">
                   <i class="bi bi-trash"></i>
                 </button>
                 `
-                    : ""
-                }
+            : ""
+          }
               </div>
             </div>
           </div>
@@ -2159,8 +2172,7 @@ class ReportsManager {
           values: savedFilter.values || [savedFilter.value],
           displayText:
             savedFilter.displayText ||
-            `${savedFilter.fieldName || savedFilter.fieldId} ${
-              savedFilter.operator
+            `${savedFilter.fieldName || savedFilter.fieldId} ${savedFilter.operator
             }`,
         };
 
@@ -2445,16 +2457,16 @@ class ReportsManager {
           const levelOptions =
             typeof level.options === "string"
               ? level.options.split("\n").map((line) => {
-                  const [parent, children] = line
-                    .split(":")
-                    .map((part) => part.trim());
-                  return {
-                    parent,
-                    children: children
-                      ? children.split(",").map((child) => child.trim())
-                      : [],
-                  };
-                })
+                const [parent, children] = line
+                  .split(":")
+                  .map((part) => part.trim());
+                return {
+                  parent,
+                  children: children
+                    ? children.split(",").map((child) => child.trim())
+                    : [],
+                };
+              })
               : level.options;
 
           for (const opt of levelOptions) {
@@ -2647,6 +2659,111 @@ class ReportsManager {
     // Append table HTML to the note
     this.crossTabTable.innerHTML += tableHtml;
     this.crossTabTable.style.display = "table";
+
+    // === Generate Mobile Card View ===
+    let mobileCardsHtml = '<div class="mobile-crosstab-cards">';
+
+    // Abbreviation mapping for mobile display
+    const abbreviations = {
+      'Brihanmumbai Municipal Corporation': 'BMC',
+      'Municipal Corporation': 'MC'
+    };
+
+    // Helper to abbreviate long names for mobile
+    const abbreviateForMobile = (text) => {
+      let result = text;
+      for (const [full, abbr] of Object.entries(abbreviations)) {
+        if (result.includes(full)) {
+          result = result.replace(full, abbr);
+        }
+      }
+      return result;
+    };
+
+    // Add data row cards
+    data.rowLabels.forEach((rowLabel, rowIndex) => {
+      let rowTotal = data.rowTotals[rowIndex];
+      if (aggregationType.startsWith("percent")) {
+        rowTotal = rowTotal.toFixed(1) + "%";
+      }
+
+      const mobileRowLabel = abbreviateForMobile(rowLabel);
+
+      mobileCardsHtml += `
+        <div class="crosstab-card">
+          <div class="crosstab-card-header">
+            <div class="row-label-container">
+              <span class="row-label">${mobileRowLabel}</span>
+              <span class="row-total-subtitle">Total: ${rowTotal}</span>
+            </div>
+          </div>
+          <div class="crosstab-card-body">
+      `;
+
+      // Add column values
+      data.data[rowIndex].forEach((cellValue, colIndex) => {
+        let formattedValue = cellValue;
+        if (aggregationType.startsWith("percent")) {
+          formattedValue = cellValue.toFixed(1) + "%";
+        }
+        const mobileColLabel = abbreviateForMobile(data.columnLabels[colIndex]);
+        mobileCardsHtml += `
+          <div class="crosstab-item">
+            <span class="col-label">${mobileColLabel}</span>
+            <span class="value">${formattedValue}</span>
+          </div>
+        `;
+      });
+
+      mobileCardsHtml += `
+          </div>
+        </div>
+      `;
+    });
+
+    // Add Grand Total card
+    let grandTotalDisplay = data.grandTotal;
+    if (aggregationType.startsWith("percent")) {
+      grandTotalDisplay = "100.0%";
+    }
+
+    mobileCardsHtml += `
+      <div class="crosstab-card grand-total">
+        <div class="crosstab-card-header">
+          <span class="row-label">Grand Total</span>
+          <span class="row-total">${grandTotalDisplay}</span>
+        </div>
+        <div class="crosstab-card-body">
+    `;
+
+    // Add column totals
+    data.columnTotals.forEach((colTotal, colIndex) => {
+      let formattedTotal = colTotal;
+      if (aggregationType.startsWith("percent")) {
+        formattedTotal = colTotal.toFixed(1) + "%";
+      }
+      const mobileColLabel = abbreviateForMobile(data.columnLabels[colIndex]);
+      mobileCardsHtml += `
+        <div class="crosstab-item">
+          <span class="col-label">${mobileColLabel}</span>
+          <span class="value">${formattedTotal}</span>
+        </div>
+      `;
+    });
+
+    mobileCardsHtml += `
+        </div>
+      </div>
+    </div>`;
+
+    // Insert mobile cards after the table
+    const crossTabContainer = this.crossTabTable.parentElement;
+    let existingMobileCards = crossTabContainer.querySelector('.mobile-crosstab-cards');
+    if (existingMobileCards) {
+      existingMobileCards.remove();
+    }
+    crossTabContainer.insertAdjacentHTML('beforeend', mobileCardsHtml);
+
     this.reportLoading.style.display = "none";
 
     // Check if we need to setup nested-select filters
@@ -3337,9 +3454,8 @@ class ReportsManager {
         // Store variable type (row or column) to handle filtering properly
         variableType: variableType,
         // Include a hash to track if we're applying the same filter multiple times
-        filterHash: `${fieldId}-${
-          deepestSelectedLevel + 1
-        }-${selectedValues.join("-")}`,
+        filterHash: `${fieldId}-${deepestSelectedLevel + 1
+          }-${selectedValues.join("-")}`,
       };
 
       // Only regenerate if the filter has changed
@@ -3659,8 +3775,33 @@ class ReportsManager {
       'input[name="aggregationType"]:checked'
     ).value;
 
+    // Check if we're on mobile/tablet
+    const isMobile = window.innerWidth <= 768;
+
+    // Abbreviation mapping for mobile display
+    const abbreviations = {
+      'Brihanmumbai Municipal Corporation': 'BMC',
+      'Municipal Corporation': 'MC'
+    };
+
+    // Helper to abbreviate long names for mobile
+    const abbreviateForMobile = (text) => {
+      if (!isMobile) return text;
+      let result = text;
+      for (const [full, abbr] of Object.entries(abbreviations)) {
+        if (result.includes(full)) {
+          result = result.replace(full, abbr);
+        }
+      }
+      return result;
+    };
+
+    // Apply abbreviations to labels for mobile
+    const chartRowLabels = data.rowLabels.map(abbreviateForMobile);
+    const chartColumnLabels = data.columnLabels.map(abbreviateForMobile);
+
     // Create datasets
-    const datasets = data.columnLabels.map((label, colIndex) => {
+    const datasets = chartColumnLabels.map((label, colIndex) => {
       return {
         label: label,
         data: data.rowLabels.map(
@@ -3673,7 +3814,7 @@ class ReportsManager {
     this.chart = new Chart(ctx, {
       type: "bar",
       data: {
-        labels: data.rowLabels,
+        labels: chartRowLabels,
         datasets: datasets,
       },
       options: {
@@ -3701,11 +3842,35 @@ class ReportsManager {
   createPieChart(ctx) {
     const data = this.reportData;
 
+    // Check if we're on mobile/tablet
+    const isMobile = window.innerWidth <= 768;
+
+    // Abbreviation mapping for mobile display
+    const abbreviations = {
+      'Brihanmumbai Municipal Corporation': 'BMC',
+      'Municipal Corporation': 'MC'
+    };
+
+    // Helper to abbreviate long names for mobile
+    const abbreviateForMobile = (text) => {
+      if (!isMobile) return text;
+      let result = text;
+      for (const [full, abbr] of Object.entries(abbreviations)) {
+        if (result.includes(full)) {
+          result = result.replace(full, abbr);
+        }
+      }
+      return result;
+    };
+
+    // Apply abbreviations to labels for mobile
+    const chartRowLabels = data.rowLabels.map(abbreviateForMobile);
+
     // For pie chart, we'll use row totals
     this.chart = new Chart(ctx, {
       type: "pie",
       data: {
-        labels: data.rowLabels,
+        labels: chartRowLabels,
         datasets: [
           {
             data: data.rowTotals,
@@ -3729,6 +3894,31 @@ class ReportsManager {
 
   createHeatmap(ctx) {
     const data = this.reportData;
+
+    // Check if we're on mobile/tablet
+    const isMobile = window.innerWidth <= 768;
+
+    // Abbreviation mapping for mobile display
+    const abbreviations = {
+      'Brihanmumbai Municipal Corporation': 'BMC',
+      'Municipal Corporation': 'MC'
+    };
+
+    // Helper to abbreviate long names for mobile
+    const abbreviateForMobile = (text) => {
+      if (!isMobile) return text;
+      let result = text;
+      for (const [full, abbr] of Object.entries(abbreviations)) {
+        if (result.includes(full)) {
+          result = result.replace(full, abbr);
+        }
+      }
+      return result;
+    };
+
+    // Apply abbreviations to labels for mobile
+    const chartRowLabels = data.rowLabels.map(abbreviateForMobile);
+    const chartColumnLabels = data.columnLabels.map(abbreviateForMobile);
 
     // For a heatmap, we need to transform the data into a format the matrix chart can use
     const heatmapData = [];
@@ -3800,15 +3990,15 @@ class ReportsManager {
       // Interpolate between the two colors
       const r = Math.round(
         parseInt(startRgba[1]) +
-          rangePosition * (parseInt(endRgba[1]) - parseInt(startRgba[1]))
+        rangePosition * (parseInt(endRgba[1]) - parseInt(startRgba[1]))
       );
       const g = Math.round(
         parseInt(startRgba[2]) +
-          rangePosition * (parseInt(endRgba[2]) - parseInt(startRgba[2]))
+        rangePosition * (parseInt(endRgba[2]) - parseInt(startRgba[2]))
       );
       const b = Math.round(
         parseInt(startRgba[3]) +
-          rangePosition * (parseInt(endRgba[3]) - parseInt(startRgba[3]))
+        rangePosition * (parseInt(endRgba[3]) - parseInt(startRgba[3]))
       );
       const a =
         parseFloat(startRgba[4]) +
@@ -3911,7 +4101,7 @@ class ReportsManager {
         scales: {
           x: {
             type: "category",
-            labels: data.columnLabels,
+            labels: chartColumnLabels,
             offset: true,
             ticks: {
               display: true,
@@ -3922,7 +4112,7 @@ class ReportsManager {
           },
           y: {
             type: "category",
-            labels: data.rowLabels,
+            labels: chartRowLabels,
             offset: true,
             reverse: true,
             ticks: {
@@ -3987,7 +4177,7 @@ class ReportsManager {
     if (!colField) {
       const colSelectedOption =
         this.columnVariableSelect.options[
-          this.columnVariableSelect.selectedIndex
+        this.columnVariableSelect.selectedIndex
         ];
       if (colSelectedOption && colSelectedOption.text) {
         colVarName = colSelectedOption.text;
@@ -4946,7 +5136,7 @@ class ReportsManager {
     if (!colField) {
       const colSelectedOption =
         this.columnVariableSelect.options[
-          this.columnVariableSelect.selectedIndex
+        this.columnVariableSelect.selectedIndex
         ];
       if (colSelectedOption && colSelectedOption.text) {
         colVarName = colSelectedOption.text;
@@ -4976,10 +5166,9 @@ class ReportsManager {
       <div class="report-meta">
         <p><strong>Row Variable:</strong> ${rowVarName}</p>
         <p><strong>Column Variable:</strong> ${colVarName}</p>
-        <p><strong>Aggregation Type:</strong> ${
-          document.querySelector('input[name="aggregationType"]:checked')
-            .nextElementSibling.textContent
-        }</p>
+        <p><strong>Aggregation Type:</strong> ${document.querySelector('input[name="aggregationType"]:checked')
+        .nextElementSibling.textContent
+      }</p>
         <p><strong>Date Generated:</strong> ${new Date().toLocaleString()}</p>
       </div>
     `);
@@ -5588,19 +5777,16 @@ class ReportsManager {
                 </p>
             </div>
             <div class="btn-group card-actions">
-                <button class="btn btn-sm btn-primary load-report-btn" data-id="${
-                  report.id
-                }">
+                <button class="btn btn-sm btn-primary load-report-btn" data-id="${report.id
+      }">
                     <i class="bi bi-arrow-clockwise"></i> Load Report
                 </button>
-                <button class="btn btn-sm btn-info view-report-btn" data-id="${
-                  report.id
-                }">
+                <button class="btn btn-sm btn-info view-report-btn" data-id="${report.id
+      }">
                     <i class="bi bi-fullscreen"></i> View
                 </button>
-                <button class="btn btn-sm btn-danger delete-report-btn" data-id="${
-                  report.id
-                }">
+                <button class="btn btn-sm btn-danger delete-report-btn" data-id="${report.id
+      }">
                     <i class="bi bi-trash"></i> Delete
                 </button>
             </div>

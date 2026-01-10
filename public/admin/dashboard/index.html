@@ -863,6 +863,7 @@
         <a href="/admin/news">News</a>
         <a href="/admin/events/">Events</a>
         <a href="/admin/schemes/">Schemes</a>
+        <a href="/admin/media/">Media</a>
         <a href="/admin/logbook">Logs</a>
         <a href="/admin/users">Users</a>
       </div>
@@ -999,21 +1000,28 @@
             <h2>Awaiting Review</h2>
             <a href="/admin/applications" class="btn btn-primary btn-sm" id="awaitingReviewViewAll">View All</a>
           </div>
-          <div class="table-responsive">
-            <table class="table mobile-list">
-              <thead>
-                <tr>
-                  <th class="text-nowrap">Application ID</th>
-                  <th class="text-nowrap">Applicant Name</th>
-                  <th class="text-nowrap">Submission Date</th>
-                  <th>Type of Disability</th>
-                  <th>Location</th>
-                </tr>
-              </thead>
-              <tbody id="recentApplications">
-                <!-- Will be populated by JavaScript -->
-              </tbody>
-            </table>
+          <!-- Mobile List Wrapper for responsive switching -->
+          <div class="mobile-list-wrapper">
+            <div class="table-responsive">
+              <table class="table mobile-list">
+                <thead>
+                  <tr>
+                    <th class="text-nowrap">Application ID</th>
+                    <th class="text-nowrap">Applicant Name</th>
+                    <th class="text-nowrap">Submission Date</th>
+                    <th>Type of Disability</th>
+                    <th>Location</th>
+                  </tr>
+                </thead>
+                <tbody id="recentApplications">
+                  <!-- Will be populated by JavaScript -->
+                </tbody>
+              </table>
+            </div>
+            <!-- Mobile Cards Container -->
+            <div class="mobile-cards-container" id="mobileCardsContainer">
+              <!-- Cards will be rendered by JavaScript -->
+            </div>
           </div>
         </div>
 
@@ -1022,23 +1030,29 @@
           <div class="card-header d-flex justify-content-between align-items-center">
             <h2 data-label="Partial Registrations">Partial Registrations</h2>
           </div>
-          <div class="table-responsive">
-            <table class="table mobile-list">
-              <thead>
-                <tr>
-                  <th>ID</th>
-                  <th>Name</th>
-                  <th>Email</th>
-                  <th>Phone</th>
-                  <th>Last Updated</th>
-                  <th>Inactive For</th>
-                  <th>Current Section</th>
-                </tr>
-              </thead>
-              <tbody id="incompleteRegistrationsList">
-                <!-- Will be populated by JavaScript -->
-              </tbody>
-            </table>
+          <!-- Mobile List Wrapper for responsive switching -->
+          <div class="mobile-list-wrapper">
+            <div class="table-responsive">
+              <table class="table mobile-list">
+                <thead>
+                  <tr>
+                    <th>ID</th>
+                    <th>Name</th>
+                    <th>Email</th>
+                    <th>Phone</th>
+                    <th>Last Updated</th>
+                    <th>Inactive For</th>
+                  </tr>
+                </thead>
+                <tbody id="incompleteRegistrationsList">
+                  <!-- Will be populated by JavaScript -->
+                </tbody>
+              </table>
+            </div>
+            <!-- Mobile Cards Container -->
+            <div class="mobile-cards-container" id="mobileRegistrationsContainer">
+              <!-- Cards will be rendered by JavaScript -->
+            </div>
           </div>
         </div>
       </div>
@@ -1094,21 +1108,28 @@
             </div>
           </div>
 
-          <div class="table-responsive">
-            <table class="table mobile-list">
-              <thead>
-                <tr>
-                  <th class="text-nowrap">Applicant</th>
-                  <th>Equipment Type</th>
-                  <th class="text-nowrap">Requested Date</th>
-                  <th>Source</th>
-                  <th>Status</th>
-                </tr>
-              </thead>
-              <tbody id="requestsTableBody">
-                <!-- Will be populated by JavaScript -->
-              </tbody>
-            </table>
+          <!-- Mobile List Wrapper for responsive switching -->
+          <div class="mobile-list-wrapper">
+            <div class="table-responsive">
+              <table class="table mobile-list">
+                <thead>
+                  <tr>
+                    <th class="text-nowrap">Applicant</th>
+                    <th>Equipment Type</th>
+                    <th class="text-nowrap">Requested Date</th>
+                    <th>Source</th>
+                    <th>Status</th>
+                  </tr>
+                </thead>
+                <tbody id="requestsTableBody">
+                  <!-- Will be populated by JavaScript -->
+                </tbody>
+              </table>
+            </div>
+            <!-- Mobile Cards Container -->
+            <div class="mobile-cards-container" id="mobileEquipmentContainer">
+              <!-- Cards will be rendered by JavaScript -->
+            </div>
           </div>
         </div>
       </div>
@@ -1480,7 +1501,6 @@
         }, SCAN_TIMEOUT_MS);
       });
 
-      console.log('Hardware QR scanner listener active');
     })();
   </script>
 </body>

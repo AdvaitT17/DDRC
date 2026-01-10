@@ -1971,15 +1971,21 @@ router.delete(
           responsesDeleted = respResult.affectedRows;
         }
 
-        // 4. Delete registration_progress
+        // 4. Delete equipment_requests FIRST (has FK to registration_progress)
+        if (registrationIds.length > 0) {
+          await conn.query(
+            "DELETE FROM equipment_requests WHERE registration_id IN (?)",
+            [registrationIds]
+          );
+        }
         await conn.query(
-          "DELETE FROM registration_progress WHERE user_id = ?",
+          "DELETE FROM equipment_requests WHERE user_id = ?",
           [userId]
         );
 
-        // 5. Delete equipment_requests
+        // 5. Delete registration_progress (after equipment_requests)
         await conn.query(
-          "DELETE FROM equipment_requests WHERE user_id = ?",
+          "DELETE FROM registration_progress WHERE user_id = ?",
           [userId]
         );
 
