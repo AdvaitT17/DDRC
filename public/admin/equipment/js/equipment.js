@@ -104,8 +104,75 @@ function renderStats(requests) {
     `;
 }
 
+/**
+ * Render a single equipment request as a mobile card
+ */
+function renderMobileEquipmentCard(req, index) {
+    // HTML escape utility
+    function escapeHtml(unsafe) {
+        if (!unsafe) return '';
+        return String(unsafe)
+            .replace(/&/g, "&amp;")
+            .replace(/</g, "&lt;")
+            .replace(/>/g, "&gt;")
+            .replace(/"/g, "&quot;")
+            .replace(/'/g, "&#039;");
+    }
+
+    // Construct full name
+    const firstName = escapeHtml(req.first_name || '');
+    const lastName = escapeHtml(req.last_name || '');
+    const fullName = `${firstName} ${lastName}`.trim() || escapeHtml(req.applicant_username || 'Unknown');
+
+    // Title case the name
+    const formattedName = fullName
+        .split(' ')
+        .map(word => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
+        .join(' ');
+
+    const equipmentType = escapeHtml(req.equipment_type) || 'Not specified';
+    const requestDate = new Date(req.requested_at).toLocaleDateString('en-US', {
+        month: 'short',
+        day: 'numeric',
+        year: 'numeric'
+    });
+
+    const status = (req.status || 'pending').toLowerCase();
+    const statusLabel = status.replace('_', ' ').toUpperCase();
+
+    // Determine status class for accent bar
+    let dataStatus = 'pending';
+    switch (status) {
+        case 'pending': dataStatus = 'pending'; break;
+        case 'processing': dataStatus = 'under_review'; break;
+        case 'provided': dataStatus = 'approved'; break;
+        case 'rejected': dataStatus = 'rejected'; break;
+        case 'not_available': dataStatus = 'rejected'; break;
+    }
+
+    return `
+      <div class="mobile-app-card" data-status="${dataStatus}" onclick="openStatusModal(${index})">
+        <div class="card-content">
+          <div class="card-row-main">
+            <span class="card-name">${formattedName}</span>
+            <span class="card-id">${requestDate}</span>
+          </div>
+          <div class="card-row-meta">
+            <span class="card-disability">${equipmentType}</span>
+            <span class="card-location">${req.source === 'registration' ? 'Registration' : 'Follow-up'}</span>
+          </div>
+          <div class="card-row-footer">
+            <span class="card-status-badge ${status}">${statusLabel}</span>
+          </div>
+        </div>
+      </div>
+    `;
+}
+
 function renderRequests(requests) {
     const tbody = document.getElementById("requestsTableBody");
+    const mobileContainer = document.getElementById("mobileEquipmentContainer");
+
     if (!tbody) return;
 
     if (requests.length === 0) {
@@ -116,6 +183,19 @@ function renderRequests(requests) {
                 </td>
             </tr>
         `;
+        // Also clear mobile cards
+        if (mobileContainer) {
+            mobileContainer.innerHTML = `
+                <div class="mobile-cards-empty">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <circle cx="12" cy="12" r="10"></circle>
+                        <line x1="12" y1="8" x2="12" y2="12"></line>
+                        <line x1="12" y1="16" x2="12.01" y2="16"></line>
+                    </svg>
+                    <p>No equipment requests found.</p>
+                </div>
+            `;
+        }
         return;
     }
 
@@ -167,6 +247,13 @@ function renderRequests(requests) {
             </td>
         </tr>
     `}).join("");
+
+    // Render mobile cards
+    if (mobileContainer) {
+        mobileContainer.innerHTML = requests
+            .map((req, index) => renderMobileEquipmentCard(req, index))
+            .join("");
+    }
 }
 
 function filterData() {

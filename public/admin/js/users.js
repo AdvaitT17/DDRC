@@ -20,9 +20,8 @@ class UserManager {
               <a href="/admin/users" class="active">Users</a>
             </div>
             <div class="right-links">
-              <span id="userInfo">${
-                userInfo?.full_name || userInfo?.email || ""
-              }</span>
+              <span id="userInfo">${userInfo?.full_name || userInfo?.email || ""
+          }</span>
               <button id="logoutBtn" class="btn btn-link" onclick="AuthManager.logout()">Logout</button>
             </div>
           </div>
@@ -137,8 +136,91 @@ class UserManager {
     }
   }
 
+  /**
+   * Render a single user as a mobile card
+   */
+  renderMobileUserCard(user, index) {
+    const lastLogin = user.last_login
+      ? new Date(user.last_login).toLocaleDateString('en-US', {
+        month: 'short',
+        day: 'numeric',
+        year: 'numeric'
+      })
+      : 'Never';
+
+    const dataStatus = user.is_active ? 'approved' : 'rejected';
+    const statusLabel = user.is_active ? 'Active' : 'Inactive';
+    const roleLabel = user.role === 'admin' ? 'Admin' : 'Staff';
+
+    return `
+      <div class="mobile-app-card has-details" data-status="${dataStatus}" onclick="userManager.toggleUserCardDetails(${index})">
+        <div class="card-content">
+          <div class="card-row-main">
+            <span class="card-name">${user.full_name}</span>
+            <span class="card-status-badge ${user.role}">${roleLabel}</span>
+          </div>
+          <div class="card-row-meta">
+            <span class="card-disability">@${user.username}</span>
+            <span class="card-expand-hint">Tap for details</span>
+          </div>
+          <div class="card-row-footer">
+            <span class="card-status-badge ${user.is_active ? 'approved' : 'rejected'}">${statusLabel}</span>
+          </div>
+          <div class="card-details-section" id="userDetails${index}">
+            <div class="card-details-content">
+              <div class="user-detail-row"><strong>Email:</strong> ${user.email}</div>
+              <div class="user-detail-row"><strong>Last Login:</strong> ${lastLogin}</div>
+              <div class="user-action-row">
+                <button class="btn btn-sm btn-${user.is_active ? 'danger' : 'success'}" 
+                        onclick="event.stopPropagation(); userManager.toggleUserStatus(${user.id}, ${!user.is_active})">
+                  ${user.is_active ? 'Deactivate' : 'Activate'}
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    `;
+  }
+
+  /**
+   * Toggle user card details expansion
+   */
+  toggleUserCardDetails(index) {
+    const detailsEl = document.getElementById(`userDetails${index}`);
+    if (!detailsEl) return;
+
+    const card = detailsEl.closest('.mobile-app-card');
+    card.classList.toggle('expanded');
+  }
+
   renderUsers(users) {
     const tbody = document.getElementById("usersTableBody");
+    const mobileContainer = document.getElementById("mobileUsersContainer");
+
+    if (users.length === 0) {
+      tbody.innerHTML = `
+        <tr>
+          <td colspan="7" class="text-center text-muted py-4">
+            No users found.
+          </td>
+        </tr>
+      `;
+      if (mobileContainer) {
+        mobileContainer.innerHTML = `
+          <div class="mobile-cards-empty">
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <circle cx="12" cy="12" r="10"></circle>
+              <line x1="12" y1="8" x2="12" y2="12"></line>
+              <line x1="12" y1="16" x2="12.01" y2="16"></line>
+            </svg>
+            <p>No users found.</p>
+          </div>
+        `;
+      }
+      return;
+    }
+
     tbody.innerHTML = users
       .map(
         (user) => `
@@ -156,16 +238,14 @@ class UserManager {
               ${user.is_active ? "Active" : "Inactive"}
             </span>
           </td>
-          <td data-label="Last Login">${
-            user.last_login
-              ? new Date(user.last_login).toLocaleString()
-              : "Never"
+          <td data-label="Last Login">${user.last_login
+            ? new Date(user.last_login).toLocaleString()
+            : "Never"
           }</td>
           <td data-label="Actions">
             <div class="action-buttons">
-              <button class="btn btn-sm btn-${
-                user.is_active ? "danger" : "success"
-              }" onclick="userManager.toggleUserStatus(${user.id}, ${!user.is_active})">
+              <button class="btn btn-sm btn-${user.is_active ? "danger" : "success"
+          }" onclick="userManager.toggleUserStatus(${user.id}, ${!user.is_active})">
                 ${user.is_active ? "Deactivate" : "Activate"}
               </button>
             </div>
@@ -174,6 +254,13 @@ class UserManager {
       `
       )
       .join("");
+
+    // Render mobile cards
+    if (mobileContainer) {
+      mobileContainer.innerHTML = users
+        .map((user, index) => this.renderMobileUserCard(user, index))
+        .join("");
+    }
   }
 
   async addUser() {

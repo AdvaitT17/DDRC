@@ -439,6 +439,7 @@
         <a href="/admin/news/">News</a>
         <a href="/admin/events/" class="active">Events</a>
         <a href="/admin/schemes/">Schemes</a>
+        <a href="/admin/media/">Media</a>
         <a href="/admin/logbook/">Logs</a>
         <a href="/admin/users/">Users</a>
       </div>
@@ -481,29 +482,36 @@
 
       <!-- Events Table -->
       <div class="content-card">
-        <div class="table-responsive">
-          <table class="table" id="eventsTable">
-            <thead>
-              <tr class="table-light">
-                <th>Date</th>
-                <th>Title</th>
-                <th>Description</th>
-                <th>Image</th>
-                <th>Actions</th>
-              </tr>
-            </thead>
-            <tbody id="eventsTableBody">
-              <tr>
-                <td colspan="5">
-                  <div class="loading-spinner">
-                    <div class="spinner-border text-primary" role="status">
-                      <span class="visually-hidden">Loading...</span>
+        <!-- Mobile List Wrapper for responsive switching -->
+        <div class="mobile-list-wrapper">
+          <div class="table-responsive">
+            <table class="table" id="eventsTable">
+              <thead>
+                <tr class="table-light">
+                  <th>Date</th>
+                  <th>Title</th>
+                  <th>Description</th>
+                  <th>Image</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody id="eventsTableBody">
+                <tr>
+                  <td colspan="5">
+                    <div class="loading-spinner">
+                      <div class="spinner-border text-primary" role="status">
+                        <span class="visually-hidden">Loading...</span>
+                      </div>
                     </div>
-                  </div>
-                </td>
-              </tr>
-            </tbody>
-          </table>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+          <!-- Mobile Cards Container -->
+          <div class="mobile-cards-container" id="mobileEventsContainer">
+            <!-- Cards will be rendered by JavaScript -->
+          </div>
         </div>
       </div>
     </div>
@@ -821,6 +829,57 @@
         : "none";
     }
 
+    // Render a single event as a mobile card
+    function renderMobileEventCard(event, index) {
+      const dateStr = new Date(event.event_date).toLocaleDateString('en-US', {
+        month: 'short',
+        day: 'numeric',
+        year: 'numeric'
+      });
+
+      const imageHtml = event.image_path
+        ? `<img src="${event.image_path}" alt="Event" style="width: 50px; height: 35px; object-fit: cover; border-radius: 4px;">`
+        : '';
+
+      return `
+        <div class="mobile-app-card has-details" data-status="pending" onclick="toggleEventCardDetails(${index})">
+          <div class="card-content">
+            <div style="display: flex; justify-content: space-between; align-items: flex-start; gap: 10px; margin-bottom: 8px;">
+              <span class="card-name" style="margin: 0;">${event.title}</span>
+              <div style="display: flex; flex-direction: column; align-items: flex-end; gap: 8px; flex-shrink: 0;">
+                <span class="card-id" style="margin: 0;">${dateStr}</span>
+                ${imageHtml}
+              </div>
+            </div>
+            
+            <div class="card-row-footer">
+               <span class="card-expand-hint">Tap for details</span>
+            </div>
+            <div class="card-details-section" id="eventDetails${index}">
+              <div class="card-details-content">
+                ${event.image_path ? `<div class="mb-2"><img src="${event.image_path}" alt="Full Event Image" style="width: 100%; max-height: 150px; object-fit: cover; border-radius: 4px;"></div>` : ''}
+                <div class="news-full-description">${event.description}</div>
+                ${event.body ? `<div class="event-body-text mt-2 text-muted small">${event.body}</div>` : ''}
+                <div class="user-action-row">
+                  <button class="btn btn-sm btn-primary edit-event-btn" onclick="event.stopPropagation(); editEvent(${event.id})">Edit</button>
+                  <button class="btn btn-sm btn-danger delete-event-btn" onclick="event.stopPropagation(); currentEventId = ${event.id}; deleteConfirmModal.show();">Delete</button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      `;
+    }
+
+    // Toggle event card details expansion
+    function toggleEventCardDetails(index) {
+      const detailsEl = document.getElementById(`eventDetails${index}`);
+      if (!detailsEl) return;
+
+      const card = detailsEl.closest('.mobile-app-card');
+      card.classList.toggle('expanded');
+    }
+
     // Load events from API
     async function loadEvents() {
       try {
@@ -843,6 +902,7 @@
 
         const data = await response.json();
         const tbody = document.getElementById("eventsTableBody");
+        const mobileContainer = document.getElementById("mobileEventsContainer");
 
         if (data.success && data.events && data.events.length > 0) {
           tbody.innerHTML = "";
@@ -882,6 +942,13 @@
               deleteConfirmModal.show();
             });
           });
+
+          // Render mobile cards
+          if (mobileContainer) {
+            mobileContainer.innerHTML = data.events
+              .map((event, index) => renderMobileEventCard(event, index))
+              .join("");
+          }
         } else {
           tbody.innerHTML = `
               <tr>
@@ -890,6 +957,19 @@
                 </td>
               </tr>
             `;
+
+          if (mobileContainer) {
+            mobileContainer.innerHTML = `
+              <div class="mobile-cards-empty">
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <circle cx="12" cy="12" r="10"></circle>
+                  <line x1="12" y1="8" x2="12" y2="12"></line>
+                  <line x1="12" y1="16" x2="12.01" y2="16"></line>
+                </svg>
+                <p>No events found.</p>
+              </div>
+            `;
+          }
         }
       } catch (error) {
         console.error("Error loading events:", error);

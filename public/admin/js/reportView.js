@@ -184,9 +184,8 @@ class MatrixController extends Chart.DatasetController {
         const value = parsed.v;
 
         ctx.fillStyle = dataset.color || options.borderColor;
-        ctx.font = `${dataset.valueFont?.size || 12}px ${
-          dataset.valueFont?.family || "Arial"
-        }`;
+        ctx.font = `${dataset.valueFont?.size || 12}px ${dataset.valueFont?.family || "Arial"
+          }`;
         ctx.textAlign = "center";
         ctx.textBaseline = "middle";
         ctx.fillText(value, x + width / 2, y + height / 2);
@@ -409,61 +408,66 @@ class ReportView {
 
   updateMetadata(report) {
     const config = report.config;
+    const isMobile = window.innerWidth <= 768;
 
     this.reportMetadata.innerHTML = "";
+    this.reportMetadata.classList.add("metadata-accordion-active");
 
-    // Add row variable info
-    const rowVarItem = document.createElement("div");
-    rowVarItem.className = "metadata-item";
-    rowVarItem.innerHTML = `
-      <span class="metadata-label">Row Variable</span>
-      <span class="metadata-value">${
-        config.rowVariableName || "Not selected"
-      }</span>
+    // Use accordion layout for both mobile and desktop
+    this.reportMetadata.innerHTML = `
+      <div class="metadata-accordion ${isMobile ? 'mobile' : 'desktop'}">
+        <div class="metadata-accordion-header" id="metadataToggle">
+          <span class="metadata-toggle-title">
+            <i class="bi bi-info-circle me-2"></i>Report Details
+          </span>
+          <i class="bi bi-chevron-down metadata-chevron"></i>
+        </div>
+        <div class="metadata-accordion-body" id="metadataBody">
+          <!-- Variables Group -->
+          <div class="metadata-group">
+            <div class="metadata-group-title">Variables</div>
+            <div class="metadata-inline-item">
+              <span class="metadata-inline-label">Row:</span>
+              <span class="metadata-inline-value">${config.rowVariableName || "Not selected"}</span>
+            </div>
+            <div class="metadata-inline-item">
+              <span class="metadata-inline-label">Column:</span>
+              <span class="metadata-inline-value">${config.columnVariableName || "Not selected"}</span>
+            </div>
+          </div>
+          
+          <!-- Stats Grid -->
+          <div class="metadata-stats-grid ${isMobile ? 'grid-2' : 'grid-4'}">
+            <div class="metadata-stat">
+              <span class="metadata-stat-label">Aggregation</span>
+              <span class="metadata-stat-value">${this.formatAggregationType(config.aggregationType)}</span>
+            </div>
+            <div class="metadata-stat">
+              <span class="metadata-stat-label">Filters</span>
+              <span class="metadata-stat-value">${config.filters?.length || 0}</span>
+            </div>
+            <div class="metadata-stat">
+              <span class="metadata-stat-label">Created</span>
+              <span class="metadata-stat-value">${new Date(report.created_at).toLocaleDateString()}</span>
+            </div>
+            <div class="metadata-stat">
+              <span class="metadata-stat-label">Updated</span>
+              <span class="metadata-stat-value">${new Date(report.updated_at).toLocaleDateString()}</span>
+            </div>
+          </div>
+        </div>
+      </div>
     `;
-    this.reportMetadata.appendChild(rowVarItem);
 
-    // Add column variable info
-    const colVarItem = document.createElement("div");
-    colVarItem.className = "metadata-item";
-    colVarItem.innerHTML = `
-      <span class="metadata-label">Column Variable</span>
-      <span class="metadata-value">${
-        config.columnVariableName || "Not selected"
-      }</span>
-    `;
-    this.reportMetadata.appendChild(colVarItem);
+    // Add toggle functionality
+    const toggleHeader = this.reportMetadata.querySelector("#metadataToggle");
+    const body = this.reportMetadata.querySelector("#metadataBody");
+    const chevron = this.reportMetadata.querySelector(".metadata-chevron");
 
-    // Add aggregation type info
-    const aggTypeItem = document.createElement("div");
-    aggTypeItem.className = "metadata-item";
-    aggTypeItem.innerHTML = `
-      <span class="metadata-label">Aggregation Type</span>
-      <span class="metadata-value">${this.formatAggregationType(
-        config.aggregationType
-      )}</span>
-    `;
-    this.reportMetadata.appendChild(aggTypeItem);
-
-    // Add filter count info
-    const filterCountItem = document.createElement("div");
-    filterCountItem.className = "metadata-item";
-    filterCountItem.innerHTML = `
-      <span class="metadata-label">Applied Filters</span>
-      <span class="metadata-value">${config.filters?.length || 0} filters</span>
-    `;
-    this.reportMetadata.appendChild(filterCountItem);
-
-    // Add created date info
-    const createdItem = document.createElement("div");
-    createdItem.className = "metadata-item";
-    createdItem.innerHTML = `
-      <span class="metadata-label">Created</span>
-      <span class="metadata-value">${new Date(
-        report.created_at
-      ).toLocaleDateString()}</span>
-    `;
-    this.reportMetadata.appendChild(createdItem);
+    toggleHeader.addEventListener("click", () => {
+      body.classList.toggle("collapsed");
+      chevron.classList.toggle("rotated");
+    });
   }
 
   updateFiltersSection(report) {
@@ -1031,7 +1035,7 @@ class ReportView {
         if (typeof field.options === "string") {
           try {
             levelsStructure = JSON.parse(field.options);
-          } catch (e) {}
+          } catch (e) { }
         } else {
           levelsStructure = field.options;
         }
@@ -1069,9 +1073,9 @@ class ReportView {
         const optionLabel =
           typeof option === "object"
             ? option.label ||
-              option.name ||
-              option.value ||
-              JSON.stringify(option)
+            option.name ||
+            option.value ||
+            JSON.stringify(option)
             : option;
 
         if (optionLabel && !existingRowLabels.has(optionLabel)) {
@@ -1106,9 +1110,9 @@ class ReportView {
         const optionLabel =
           typeof option === "object"
             ? option.label ||
-              option.name ||
-              option.value ||
-              JSON.stringify(option)
+            option.name ||
+            option.value ||
+            JSON.stringify(option)
             : option;
 
         if (optionLabel && !existingColumnLabels.has(optionLabel)) {
@@ -1299,6 +1303,114 @@ class ReportView {
     tbody.appendChild(totalsRow);
     this.crossTabTable.appendChild(tbody);
 
+    // === Generate Mobile Card View ===
+    const mobileAggregationType = document.querySelector(
+      'input[name="aggregationType"]:checked'
+    ).value;
+
+    // Abbreviation mapping for mobile display
+    const abbreviations = {
+      'Brihanmumbai Municipal Corporation': 'BMC',
+      'Municipal Corporation': 'MC'
+    };
+
+    // Helper to abbreviate long names for mobile
+    const abbreviateForMobile = (text) => {
+      let result = text;
+      for (const [full, abbr] of Object.entries(abbreviations)) {
+        if (result.includes(full)) {
+          result = result.replace(full, abbr);
+        }
+      }
+      return result;
+    };
+
+    let mobileCardsHtml = '<div class="mobile-crosstab-cards">';
+
+    // Add data row cards
+    data.rowLabels.forEach((rowLabel, rowIndex) => {
+      let rowTotal = data.rowTotals[rowIndex];
+      if (mobileAggregationType === "percent_total") {
+        rowTotal = rowTotal.toFixed(1) + "%";
+      }
+
+      const mobileRowLabel = abbreviateForMobile(rowLabel);
+
+      mobileCardsHtml += `
+        <div class="crosstab-card">
+          <div class="crosstab-card-header">
+            <div class="row-label-container">
+              <span class="row-label">${mobileRowLabel}</span>
+              <span class="row-total-subtitle">Total: ${rowTotal}</span>
+            </div>
+          </div>
+          <div class="crosstab-card-body">
+      `;
+
+      // Add column values
+      data.data[rowIndex].forEach((cellValue, colIndex) => {
+        let formattedValue = cellValue;
+        if (mobileAggregationType === "percent_total") {
+          formattedValue = cellValue.toFixed(1) + "%";
+        }
+        const mobileColLabel = abbreviateForMobile(data.columnLabels[colIndex]);
+        mobileCardsHtml += `
+          <div class="crosstab-item">
+            <span class="col-label">${mobileColLabel}</span>
+            <span class="value">${formattedValue}</span>
+          </div>
+        `;
+      });
+
+      mobileCardsHtml += `
+          </div>
+        </div>
+      `;
+    });
+
+    // Add Grand Total card
+    let grandTotalDisplay = data.grandTotal;
+    if (mobileAggregationType === "percent_total") {
+      grandTotalDisplay = "100.0%";
+    }
+
+    mobileCardsHtml += `
+      <div class="crosstab-card grand-total">
+        <div class="crosstab-card-header">
+          <span class="row-label">Grand Total</span>
+          <span class="row-total">${grandTotalDisplay}</span>
+        </div>
+        <div class="crosstab-card-body">
+    `;
+
+    // Add column totals
+    data.columnTotals.forEach((colTotal, colIndex) => {
+      let formattedTotal = colTotal;
+      if (mobileAggregationType === "percent_total") {
+        formattedTotal = colTotal.toFixed(1) + "%";
+      }
+      const mobileColLabel = abbreviateForMobile(data.columnLabels[colIndex]);
+      mobileCardsHtml += `
+        <div class="crosstab-item">
+          <span class="col-label">${mobileColLabel}</span>
+          <span class="value">${formattedTotal}</span>
+        </div>
+      `;
+    });
+
+    mobileCardsHtml += `
+        </div>
+      </div>
+    </div>`;
+
+    // Insert mobile cards after the table
+    const crossTabContainer = this.crossTabTable.parentElement;
+    let existingMobileCards = crossTabContainer.querySelector('.mobile-crosstab-cards');
+    if (existingMobileCards) {
+      existingMobileCards.remove();
+    }
+    crossTabContainer.insertAdjacentHTML('beforeend', mobileCardsHtml);
+
     // We don't need to call setupNestedSelectFilters here
     // It's now called only once in generateReportVisualization
   }
@@ -1361,8 +1473,33 @@ class ReportView {
       'input[name="aggregationType"]:checked'
     ).value;
 
+    // Check if we're on mobile/tablet
+    const isMobile = window.innerWidth <= 768;
+
+    // Abbreviation mapping for mobile display
+    const abbreviations = {
+      'Brihanmumbai Municipal Corporation': 'BMC',
+      'Municipal Corporation': 'MC'
+    };
+
+    // Helper to abbreviate long names for mobile
+    const abbreviateForMobile = (text) => {
+      if (!isMobile) return text;
+      let result = text;
+      for (const [full, abbr] of Object.entries(abbreviations)) {
+        if (result.includes(full)) {
+          result = result.replace(full, abbr);
+        }
+      }
+      return result;
+    };
+
+    // Apply abbreviations to labels for mobile
+    const chartRowLabels = data.rowLabels.map(abbreviateForMobile);
+    const chartColumnLabels = data.columnLabels.map(abbreviateForMobile);
+
     // Create datasets for each column
-    const datasets = data.columnLabels.map((label, colIndex) => {
+    const datasets = chartColumnLabels.map((label, colIndex) => {
       return {
         label: label,
         data: data.rowLabels.map(
@@ -1375,7 +1512,7 @@ class ReportView {
     this.chart = new Chart(ctx, {
       type: "bar",
       data: {
-        labels: data.rowLabels,
+        labels: chartRowLabels,
         datasets: datasets,
       },
       options: {
@@ -1401,11 +1538,35 @@ class ReportView {
   }
 
   createPieChart(ctx, data) {
+    // Check if we're on mobile/tablet
+    const isMobile = window.innerWidth <= 768;
+
+    // Abbreviation mapping for mobile display
+    const abbreviations = {
+      'Brihanmumbai Municipal Corporation': 'BMC',
+      'Municipal Corporation': 'MC'
+    };
+
+    // Helper to abbreviate long names for mobile
+    const abbreviateForMobile = (text) => {
+      if (!isMobile) return text;
+      let result = text;
+      for (const [full, abbr] of Object.entries(abbreviations)) {
+        if (result.includes(full)) {
+          result = result.replace(full, abbr);
+        }
+      }
+      return result;
+    };
+
+    // Apply abbreviations to labels for mobile
+    const chartRowLabels = data.rowLabels.map(abbreviateForMobile);
+
     // For pie chart, we'll use row totals
     this.chart = new Chart(ctx, {
       type: "pie",
       data: {
-        labels: data.rowLabels,
+        labels: chartRowLabels,
         datasets: [
           {
             data: data.rowTotals,
@@ -1428,6 +1589,31 @@ class ReportView {
   }
 
   createHeatmap(ctx, data) {
+    // Check if we're on mobile/tablet
+    const isMobile = window.innerWidth <= 768;
+
+    // Abbreviation mapping for mobile display
+    const abbreviations = {
+      'Brihanmumbai Municipal Corporation': 'BMC',
+      'Municipal Corporation': 'MC'
+    };
+
+    // Helper to abbreviate long names for mobile
+    const abbreviateForMobile = (text) => {
+      if (!isMobile) return text;
+      let result = text;
+      for (const [full, abbr] of Object.entries(abbreviations)) {
+        if (result.includes(full)) {
+          result = result.replace(full, abbr);
+        }
+      }
+      return result;
+    };
+
+    // Apply abbreviations to labels for mobile
+    const chartRowLabels = data.rowLabels.map(abbreviateForMobile);
+    const chartColumnLabels = data.columnLabels.map(abbreviateForMobile);
+
     // For a heatmap, we need to transform the data into a format the matrix chart can use
     const heatmapData = [];
 
@@ -1523,7 +1709,7 @@ class ReportView {
         scales: {
           x: {
             type: "category",
-            labels: data.columnLabels,
+            labels: chartColumnLabels,
             offset: true,
             ticks: {
               display: true,
@@ -1534,7 +1720,7 @@ class ReportView {
           },
           y: {
             type: "category",
-            labels: data.rowLabels,
+            labels: chartRowLabels,
             offset: true,
             reverse: true,
             ticks: {
@@ -1761,17 +1947,17 @@ class ReportView {
         // Format dates as DD-MM-YYYY for display
         const startDate = new Date(this.timeFilter.startDate);
         const endDate = new Date(this.timeFilter.endDate);
-        
+
         const formatDateDDMMYYYY = (date) => {
           const day = date.getDate().toString().padStart(2, '0');
           const month = (date.getMonth() + 1).toString().padStart(2, '0');
           const year = date.getFullYear();
           return `${day}-${month}-${year}`;
         };
-        
+
         const formattedStartDate = formatDateDDMMYYYY(startDate);
         const formattedEndDate = formatDateDDMMYYYY(endDate);
-        
+
         filterMessage += `${formattedStartDate} to ${formattedEndDate}`;
         break;
       }
@@ -2773,25 +2959,22 @@ class ReportView {
               border-collapse: collapse; 
               margin-bottom: 20px;
               box-shadow: 0 1px 3px rgba(0,0,0,0.1);
-              font-size: ${
-                isVeryWideTable ? "9px" : isWideTable ? "10px" : "12px"
-              };
+              font-size: ${isVeryWideTable ? "9px" : isWideTable ? "10px" : "12px"
+      };
             }
             
             th, td { 
               border: 1px solid #ddd; 
-              padding: ${
-                isVeryWideTable ? "4px" : isWideTable ? "5px" : "8px"
-              }; 
+              padding: ${isVeryWideTable ? "4px" : isWideTable ? "5px" : "8px"
+      }; 
               text-align: left;
               word-break: break-word;
-              ${
-                isVeryWideTable
-                  ? "max-width: 4cm;"
-                  : isWideTable
-                  ? "max-width: 5cm;"
-                  : ""
-              }
+              ${isVeryWideTable
+        ? "max-width: 4cm;"
+        : isWideTable
+          ? "max-width: 5cm;"
+          : ""
+      }
             }
             
             th { 
@@ -2976,9 +3159,8 @@ class ReportView {
             <img src="/images/ddrc-logo.png" alt="DDRC Logo" class="header-logo-right" />
           </div>
           
-          <h2 class="report-title">${
-            this.reportData.name || "Cross-Tabulation Analysis Report"
-          }</h2>
+          <h2 class="report-title">${this.reportData.name || "Cross-Tabulation Analysis Report"
+      }</h2>
     `);
 
     // Add report metadata
@@ -2996,20 +3178,18 @@ class ReportView {
 
     printWindow.document.write(`
       <div class="report-meta">
-        <p><strong>Report Name:</strong> ${
-          this.reportData.name || "Untitled Report"
-        }</p>
+        <p><strong>Report Name:</strong> ${this.reportData.name || "Untitled Report"
+      }</p>
         <p><strong>Row Variable:</strong> ${rowVarName}</p>
         <p><strong>Column Variable:</strong> ${colVarName}</p>
         <p><strong>Aggregation Type:</strong> ${this.formatAggregationType(
-          this.reportData.config.aggregationType || "count"
-        )}</p>
+        this.reportData.config.aggregationType || "count"
+      )}</p>
         <p><strong>Date Generated:</strong> ${new Date().toLocaleString()}</p>
-        ${
-          this.showFullTableView
-            ? `<p><strong>Display Mode:</strong> Show All Options <span class="show-all-options-badge">FULL VIEW</span></p>`
-            : ""
-        }
+        ${this.showFullTableView
+        ? `<p><strong>Display Mode:</strong> Show All Options <span class="show-all-options-badge">FULL VIEW</span></p>`
+        : ""
+      }
       </div>
     `);
 
@@ -3139,16 +3319,14 @@ class ReportView {
     // Add print notes
     printWindow.document.write(`
       <div class="print-note">
-        ${
-          this.showFullTableView
-            ? '<i class="bi bi-info-circle"></i> Note: Entries with zero values are displayed in light gray italic text.<br>'
-            : ""
-        }
-        ${
-          isVeryWideTable
-            ? '<i class="bi bi-exclamation-triangle"></i> Some content may be truncated due to space limitations. Hover over cells to see full text.'
-            : ""
-        }
+        ${this.showFullTableView
+        ? '<i class="bi bi-info-circle"></i> Note: Entries with zero values are displayed in light gray italic text.<br>'
+        : ""
+      }
+        ${isVeryWideTable
+        ? '<i class="bi bi-exclamation-triangle"></i> Some content may be truncated due to space limitations. Hover over cells to see full text.'
+        : ""
+      }
       </div>
     `);
 
@@ -3584,9 +3762,8 @@ class ReportView {
       // Add default option
       const defaultOption = document.createElement("option");
       defaultOption.value = "default";
-      defaultOption.textContent = `Select ${
-        levelInfo.name || `Level ${index + 1}`
-      }`;
+      defaultOption.textContent = `Select ${levelInfo.name || `Level ${index + 1}`
+        }`;
       select.appendChild(defaultOption);
 
       // Disable all selects after the first one initially
@@ -3800,7 +3977,7 @@ class ReportView {
         if (typeof field.options === "string") {
           try {
             levelsStructure = JSON.parse(field.options);
-          } catch (e) {}
+          } catch (e) { }
         } else {
           levelsStructure = field.options;
         }
@@ -4431,9 +4608,8 @@ class ReportView {
         notificationStatus.innerHTML = `
           <div class="alert alert-danger">
             <i class="bi bi-exclamation-triangle-fill me-2"></i>
-            Error loading notification status: ${
-              error.message || "Unknown error"
-            }
+            Error loading notification status: ${error.message || "Unknown error"
+          }
           </div>
         `;
       }
@@ -4503,7 +4679,7 @@ class ReportView {
     const year = date.getFullYear();
     return `${day}-${month}-${year}`;
   }
-  
+
   /**
    * Helper method to format date as YYYY-MM-DD (for API)
    */
@@ -4532,7 +4708,7 @@ class ReportView {
         // If modal exists, remove it first to avoid duplicates
         dateRangeModal.remove();
       }
-      
+
       // Create a fresh modal
       dateRangeModal = document.createElement("div");
       dateRangeModal.id = "dateRangeModal";
@@ -4541,7 +4717,7 @@ class ReportView {
       dateRangeModal.setAttribute("role", "dialog");
       dateRangeModal.setAttribute("aria-labelledby", "dateRangeModalLabel");
       dateRangeModal.setAttribute("aria-hidden", "true");
-      
+
       // Simplified HTML structure with inline styles to ensure visibility
       dateRangeModal.innerHTML = `
         <div class="modal-dialog" role="document">
@@ -4592,20 +4768,20 @@ class ReportView {
           </div>
         </div>
       `;
-      
+
       // Append the modal to the body
       document.body.appendChild(dateRangeModal);
-      
+
       // Initialize the modal
       const modal = new bootstrap.Modal(dateRangeModal);
-      
+
       // Function to update the displayed date range
       const updateDisplayedDateRange = () => {
         const dateRangeType = document.getElementById("dateRangeType").value;
         const displayElement = document.getElementById("displayDateRange");
         const today = new Date();
         let rangeText = "";
-        
+
         switch (dateRangeType) {
           case "currentMonth": {
             const firstDay = new Date(today.getFullYear(), today.getMonth(), 1);
@@ -4622,7 +4798,7 @@ class ReportView {
             const currentQuarter = Math.floor(today.getMonth() / 3);
             const previousQuarter = currentQuarter - 1 >= 0 ? currentQuarter - 1 : 3;
             const year = previousQuarter === 3 ? today.getFullYear() - 1 : today.getFullYear();
-            
+
             const firstDay = new Date(year, previousQuarter * 3, 1);
             const lastDay = new Date(year, previousQuarter * 3 + 3, 0);
             rangeText = `${this.formatDateDDMMYYYY(firstDay)} to ${this.formatDateDDMMYYYY(lastDay)}`;
@@ -4637,7 +4813,7 @@ class ReportView {
           case "custom": {
             const startDate = document.getElementById("startDate").valueAsDate;
             const endDate = document.getElementById("endDate").valueAsDate;
-            
+
             if (startDate && endDate) {
               rangeText = `${this.formatDateDDMMYYYY(startDate)} to ${this.formatDateDDMMYYYY(endDate)}`;
             } else {
@@ -4646,98 +4822,98 @@ class ReportView {
             break;
           }
         }
-        
+
         displayElement.textContent = rangeText;
       };
-      
+
       // Set up event listeners
       document.getElementById("dateRangeType").addEventListener("change", (e) => {
         const customFields = document.getElementById("customDateFields");
-        
+
         if (e.target.value === "custom") {
           customFields.style.display = "block";
-          
+
           // Set default dates for custom range
           const today = new Date();
           const firstDayOfMonth = new Date(today.getFullYear(), today.getMonth(), 1);
-          
+
           document.getElementById("startDate").valueAsDate = firstDayOfMonth;
           document.getElementById("endDate").valueAsDate = today;
         } else {
           customFields.style.display = "none";
         }
-        
+
         updateDisplayedDateRange();
       });
-      
+
       document.getElementById("startDate").addEventListener("change", updateDisplayedDateRange);
       document.getElementById("endDate").addEventListener("change", updateDisplayedDateRange);
-      
+
       // Set up confirm button
       document.getElementById("confirmSendBtn").addEventListener("click", async () => {
         // Get date range
         const dateRangeType = document.getElementById("dateRangeType").value;
         let startDate, endDate;
         const today = new Date();
-        
+
         switch (dateRangeType) {
           case "currentMonth":
             // First day of current month to today
             startDate = new Date(today.getFullYear(), today.getMonth(), 1);
             endDate = today;
             break;
-            
+
           case "previousMonth":
             // First and last day of previous month (full calendar month)
             startDate = new Date(today.getFullYear(), today.getMonth() - 1, 1);
             endDate = new Date(today.getFullYear(), today.getMonth(), 0);
             break;
-            
+
           case "lastQuarter":
             // Calculate the previous quarter
             const currentQuarter = Math.floor(today.getMonth() / 3);
             const previousQuarter = currentQuarter - 1 >= 0 ? currentQuarter - 1 : 3;
             const year = previousQuarter === 3 ? today.getFullYear() - 1 : today.getFullYear();
-            
+
             // First day of previous quarter
             startDate = new Date(year, previousQuarter * 3, 1);
             // Last day of previous quarter
             endDate = new Date(year, previousQuarter * 3 + 3, 0);
             break;
-            
+
           case "lastYear":
             // First day to last day of previous year (full calendar year)
             startDate = new Date(today.getFullYear() - 1, 0, 1);
             endDate = new Date(today.getFullYear() - 1, 11, 31);
             break;
-            
+
           case "custom":
             // Use the values from date inputs
             startDate = document.getElementById("startDate").valueAsDate;
             endDate = document.getElementById("endDate").valueAsDate;
-            
+
             if (!startDate || !endDate) {
               this.showToast("Error", "Please select both start and end dates", "danger");
               return;
             }
-            
+
             if (startDate > endDate) {
               this.showToast("Error", "Start date cannot be after end date", "danger");
               return;
             }
             break;
         }
-        
+
         // Format dates as YYYY-MM-DD for API
         const formattedStartDate = this.formatDateYYYYMMDD(startDate);
         const formattedEndDate = this.formatDateYYYYMMDD(endDate);
-        
+
         // Dismiss the modal
         modal.hide();
-        
+
         // Show loading
         this.showLoading();
-        
+
         // Send the report with the selected date range
         try {
           const response = await fetch(
@@ -4756,15 +4932,15 @@ class ReportView {
               }),
             }
           );
-          
+
           // Hide loading
           this.hideLoading();
-          
+
           if (!response.ok) {
             const error = await response.json();
             throw new Error(error.message || "Failed to send report");
           }
-          
+
           this.showToast(
             "Report Sent",
             "The report has been sent to all recipients!",
@@ -4775,10 +4951,10 @@ class ReportView {
           this.showToast("Error", error.message, "danger");
         }
       });
-      
+
       // Initialize the displayed date range
       updateDisplayedDateRange();
-      
+
       // Show the modal
       modal.show();
     } catch (error) {
@@ -4794,7 +4970,7 @@ class ReportView {
     const year = date.getFullYear();
     return `${day}-${month}-${year}`;
   }
-  
+
   // Helper method to format date as YYYY-MM-DD (for API)
   formatDateYYYYMMDD(date) {
     const day = date.getDate().toString().padStart(2, '0');

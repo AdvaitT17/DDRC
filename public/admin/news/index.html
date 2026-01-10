@@ -144,6 +144,7 @@
         <a href="/admin/news/" class="active">News</a>
         <a href="/admin/events/">Events</a>
         <a href="/admin/schemes/">Schemes</a>
+        <a href="/admin/media/">Media</a>
         <a href="/admin/logbook/">Logs</a>
         <a href="/admin/users/">Users</a>
       </div>
@@ -188,29 +189,36 @@
 
       <!-- News Table -->
       <div class="content-card">
-        <div class="table-responsive">
-          <table class="table" id="newsTable">
-            <thead>
-              <tr class="table-light">
-                <th>Date</th>
-                <th>Title</th>
-                <th>Description</th>
-                <th>File</th>
-                <th>Actions</th>
-              </tr>
-            </thead>
-            <tbody id="newsTableBody">
-              <tr>
-                <td colspan="5">
-                  <div class="loading-spinner">
-                    <div class="spinner-border text-primary" role="status">
-                      <span class="visually-hidden">Loading...</span>
+        <!-- Mobile List Wrapper for responsive switching -->
+        <div class="mobile-list-wrapper">
+          <div class="table-responsive">
+            <table class="table" id="newsTable">
+              <thead>
+                <tr class="table-light">
+                  <th>Date</th>
+                  <th>Title</th>
+                  <th>Description</th>
+                  <th>File</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody id="newsTableBody">
+                <tr>
+                  <td colspan="5">
+                    <div class="loading-spinner">
+                      <div class="spinner-border text-primary" role="status">
+                        <span class="visually-hidden">Loading...</span>
+                      </div>
                     </div>
-                  </div>
-                </td>
-              </tr>
-            </tbody>
-          </table>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+          <!-- Mobile Cards Container -->
+          <div class="mobile-cards-container" id="mobileNewsContainer">
+            <!-- Cards will be rendered by JavaScript -->
+          </div>
         </div>
       </div>
     </div>
@@ -369,6 +377,57 @@
         .addEventListener("hidden.bs.modal", resetNewsForm);
     }
 
+    // Render a single news item as a mobile card
+    function renderMobileNewsCard(news, index) {
+      const dateStr = new Date(news.published_date).toLocaleDateString('en-US', {
+        month: 'short',
+        day: 'numeric',
+        year: 'numeric'
+      });
+
+      const shortDesc = news.description.length > 50
+        ? news.description.substring(0, 50) + '...'
+        : news.description;
+
+      return `
+        <div class="mobile-app-card has-details" data-status="pending" onclick="toggleNewsCardDetails(${index})">
+          <div class="card-content">
+            <div class="card-row-main">
+              <span class="card-name">${news.title}</span>
+              <span class="card-id">${dateStr}</span>
+            </div>
+            <div class="card-row-meta">
+              <span class="card-disability">${shortDesc}</span>
+              <span class="card-expand-hint">Tap for details</span>
+            </div>
+            <div class="card-row-footer">
+              ${news.file_path
+          ? `<a href="${news.file_path}" target="_blank" class="btn btn-sm btn-outline-primary" onclick="event.stopPropagation()">View File</a>`
+          : '<span class="text-muted" style="font-size:0.8rem;">No file</span>'}
+            </div>
+            <div class="card-details-section" id="newsDetails${index}">
+              <div class="card-details-content">
+                <div class="news-full-description">${news.description}</div>
+                <div class="user-action-row">
+                  <button class="btn btn-sm btn-primary edit-news-btn" onclick="event.stopPropagation(); editNews(${news.id})">Edit</button>
+                  <button class="btn btn-sm btn-danger delete-news-btn" onclick="event.stopPropagation(); currentNewsId = ${news.id}; deleteConfirmModal.show();">Delete</button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      `;
+    }
+
+    // Toggle news card details expansion
+    function toggleNewsCardDetails(index) {
+      const detailsEl = document.getElementById(`newsDetails${index}`);
+      if (!detailsEl) return;
+
+      const card = detailsEl.closest('.mobile-app-card');
+      card.classList.toggle('expanded');
+    }
+
     // Load news from API
     async function loadNews() {
       try {
@@ -389,6 +448,7 @@
 
         const data = await response.json();
         const tbody = document.getElementById("newsTableBody");
+        const mobileContainer = document.getElementById("mobileNewsContainer");
 
         if (data.success && data.news && data.news.length > 0) {
           tbody.innerHTML = "";
@@ -428,6 +488,13 @@
               deleteConfirmModal.show();
             });
           });
+
+          // Render mobile cards
+          if (mobileContainer) {
+            mobileContainer.innerHTML = data.news
+              .map((news, index) => renderMobileNewsCard(news, index))
+              .join("");
+          }
         } else {
           tbody.innerHTML = `
               <tr>
@@ -436,6 +503,18 @@
                 </td>
               </tr>
             `;
+          if (mobileContainer) {
+            mobileContainer.innerHTML = `
+              <div class="mobile-cards-empty">
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <circle cx="12" cy="12" r="10"></circle>
+                  <line x1="12" y1="8" x2="12" y2="12"></line>
+                  <line x1="12" y1="16" x2="12.01" y2="16"></line>
+                </svg>
+                <p>No news items found.</p>
+              </div>
+            `;
+          }
         }
       } catch (error) {
         console.error("Error loading news:", error);

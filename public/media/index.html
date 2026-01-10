@@ -43,59 +43,10 @@
 
                 <!-- Gallery Grid -->
                 <div class="gallery-grid" id="galleryGrid">
-                    <div class="gallery-item gallery-placeholder">
-                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
-                            <rect x="3" y="3" width="18" height="18" rx="2" />
-                            <circle cx="8.5" cy="8.5" r="1.5" />
-                            <path d="M21 15l-5-5L5 21" />
-                        </svg>
-                        <h3>Coming Soon</h3>
-                        <p>Photos from DDRC events</p>
-                    </div>
-                    <div class="gallery-item gallery-placeholder">
-                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
-                            <rect x="3" y="3" width="18" height="18" rx="2" />
-                            <circle cx="8.5" cy="8.5" r="1.5" />
-                            <path d="M21 15l-5-5L5 21" />
-                        </svg>
-                        <h3>Coming Soon</h3>
-                        <p>Medical camp photos</p>
-                    </div>
-                    <div class="gallery-item gallery-placeholder">
-                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
-                            <rect x="3" y="3" width="18" height="18" rx="2" />
-                            <circle cx="8.5" cy="8.5" r="1.5" />
-                            <path d="M21 15l-5-5L5 21" />
-                        </svg>
-                        <h3>Coming Soon</h3>
-                        <p>Activity photographs</p>
-                    </div>
-                    <div class="gallery-item gallery-placeholder">
-                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
-                            <rect x="3" y="3" width="18" height="18" rx="2" />
-                            <circle cx="8.5" cy="8.5" r="1.5" />
-                            <path d="M21 15l-5-5L5 21" />
-                        </svg>
-                        <h3>Coming Soon</h3>
-                        <p>Awareness programs</p>
-                    </div>
-                    <div class="gallery-item gallery-placeholder">
-                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
-                            <rect x="3" y="3" width="18" height="18" rx="2" />
-                            <circle cx="8.5" cy="8.5" r="1.5" />
-                            <path d="M21 15l-5-5L5 21" />
-                        </svg>
-                        <h3>Coming Soon</h3>
-                        <p>Training sessions</p>
-                    </div>
-                    <div class="gallery-item gallery-placeholder">
-                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
-                            <rect x="3" y="3" width="18" height="18" rx="2" />
-                            <circle cx="8.5" cy="8.5" r="1.5" />
-                            <path d="M21 15l-5-5L5 21" />
-                        </svg>
-                        <h3>Coming Soon</h3>
-                        <p>Community outreach</p>
+                    <div class="gallery-loading">
+                        <div class="spinner-border text-primary" role="status">
+                            <span class="visually-hidden">Loading...</span>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -103,10 +54,54 @@
     </main>
 
     <!-- Lightbox Modal -->
-    <div class="lightbox-modal" id="lightboxModal" role="dialog" aria-modal="true">
-        <div class="lightbox-content">
-            <button class="lightbox-close" onclick="closeLightbox()" aria-label="Close">&times;</button>
-            <img src="" alt="" id="lightboxImage" />
+    <div class="lightbox-overlay" id="lightboxModal" role="dialog" aria-modal="true">
+        <div class="lightbox-container">
+            <div class="lightbox-header">
+                <div class="lightbox-counter" id="lightboxCounter">1 / 1</div>
+                <div class="lightbox-controls">
+                    <button class="lightbox-btn" id="lightboxZoom" aria-label="Zoom">
+                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="24" height="24" fill="none"
+                            stroke="currentColor" stroke-width="2">
+                            <path d="M15 3h6v6M9 21H3v-6M21 3l-7 7M3 21l7-7"></path>
+                        </svg>
+                    </button>
+                    <button class="lightbox-btn" id="lightboxFullscreen" aria-label="Fullscreen">
+                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="24" height="24" fill="none"
+                            stroke="currentColor" stroke-width="2">
+                            <path
+                                d="M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3m0 18h3a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3">
+                            </path>
+                        </svg>
+                    </button>
+                    <button class="lightbox-btn" id="lightboxClose" aria-label="Close">
+                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="24" height="24" fill="none"
+                            stroke="currentColor" stroke-width="2">
+                            <line x1="18" y1="6" x2="6" y2="18"></line>
+                            <line x1="6" y1="6" x2="18" y2="18"></line>
+                        </svg>
+                    </button>
+                </div>
+            </div>
+            <div class="lightbox-content">
+                <button class="lightbox-nav lightbox-prev" id="lightboxPrev" aria-label="Previous">
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="24" height="24" fill="none"
+                        stroke="currentColor" stroke-width="2">
+                        <polyline points="15 18 9 12 15 6"></polyline>
+                    </svg>
+                </button>
+
+                <div class="lightbox-media-container" id="lightboxMediaContainer">
+                    <!-- Media will be injected here -->
+                    <img src="" alt="" id="lightboxImage" class="lightbox-image" />
+                </div>
+
+                <button class="lightbox-nav lightbox-next" id="lightboxNext" aria-label="Next">
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="24" height="24" fill="none"
+                        stroke="currentColor" stroke-width="2">
+                        <polyline points="9 18 15 12 9 6"></polyline>
+                    </svg>
+                </button>
+            </div>
             <div class="lightbox-caption" id="lightboxCaption"></div>
         </div>
     </div>
@@ -119,34 +114,321 @@
     <script src="/js/components/footer.js"></script>
     <script src="/js/accessibility.js"></script>
     <script>
-        // Category tab functionality
-        document.querySelectorAll('.category-tab').forEach(tab => {
-            tab.addEventListener('click', () => {
-                document.querySelectorAll('.category-tab').forEach(t => {
-                    t.classList.remove('active');
-                    t.setAttribute('aria-selected', 'false');
-                });
-                tab.classList.add('active');
-                tab.setAttribute('aria-selected', 'true');
-            });
+        let currentCategory = 'all';
+        let allMedia = []; // Store all media items for lightbox navigation
+
+        // Lightbox variables
+        let lightbox;
+        let lightboxMediaContainer;
+        let lightboxImage;
+        let lightboxCaption;
+        let lightboxCounter;
+        let lightboxPrev;
+        let lightboxNext;
+        let lightboxClose;
+        let lightboxZoom;
+        let lightboxFullscreen;
+        let currentMediaIndex = 0;
+        let isZoomed = false;
+        let dragStartX = 0;
+        let dragStartY = 0;
+        let currentTranslateX = 0;
+        let currentTranslateY = 0;
+        let isDragging = false;
+
+        // Load media on page load
+        document.addEventListener('DOMContentLoaded', async () => {
+            initLightbox();
+            await loadGallery();
+            setupCategoryTabs();
         });
 
-        // Lightbox
-        function openLightbox(src, caption) {
-            const modal = document.getElementById('lightboxModal');
-            document.getElementById('lightboxImage').src = src;
-            document.getElementById('lightboxCaption').textContent = caption;
-            modal.classList.add('active');
+        function initLightbox() {
+            lightbox = document.getElementById("lightboxModal");
+            lightboxMediaContainer = document.getElementById("lightboxMediaContainer");
+            lightboxImage = document.getElementById("lightboxImage");
+            lightboxCaption = document.getElementById("lightboxCaption");
+            lightboxCounter = document.getElementById("lightboxCounter");
+            lightboxPrev = document.getElementById("lightboxPrev");
+            lightboxNext = document.getElementById("lightboxNext");
+            lightboxClose = document.getElementById("lightboxClose");
+            lightboxZoom = document.getElementById("lightboxZoom");
+            lightboxFullscreen = document.getElementById("lightboxFullscreen");
+
+            // Event Listeners
+            lightboxClose.addEventListener("click", closeLightbox);
+            lightboxPrev.addEventListener("click", showPreviousMedia);
+            lightboxNext.addEventListener("click", showNextMedia);
+            lightboxZoom.addEventListener("click", toggleZoom);
+            lightboxFullscreen.addEventListener("click", toggleFullscreen);
+
+            // Keyboard navigation
+            document.addEventListener("keydown", handleKeyDown);
+
+            // Zoom drag events
+            const img = document.getElementById("lightboxImage");
+            img.addEventListener("mousedown", handleDragStart);
+            document.addEventListener("mousemove", handleDragMove);
+            document.addEventListener("mouseup", handleDragEnd);
+
+            // Prevent scrolling when lightbox is open
+            lightbox.addEventListener("wheel", (e) => {
+                if (lightbox.classList.contains("active")) e.preventDefault();
+            }, { passive: false });
+        }
+
+        // Setup category tab functionality
+        function setupCategoryTabs() {
+            document.querySelectorAll('.category-tab').forEach(tab => {
+                tab.addEventListener('click', async () => {
+                    document.querySelectorAll('.category-tab').forEach(t => {
+                        t.classList.remove('active');
+                        t.setAttribute('aria-selected', 'false');
+                    });
+                    tab.classList.add('active');
+                    tab.setAttribute('aria-selected', 'true');
+                    currentCategory = tab.dataset.category;
+                    await loadGallery();
+                });
+            });
+        }
+
+        // Load gallery from API
+        async function loadGallery() {
+            const grid = document.getElementById('galleryGrid');
+            grid.innerHTML = `
+                <div class="gallery-loading">
+                    <div class="spinner-border text-primary" role="status">
+                        <span class="visually-hidden">Loading...</span>
+                    </div>
+                </div>
+            `;
+
+            try {
+                let url = '/api/media';
+                if (currentCategory !== 'all') {
+                    url += `?category=${currentCategory}`;
+                }
+
+                const response = await fetch(url);
+                const data = await response.json();
+
+                if (data.success && data.media && data.media.length > 0) {
+                    allMedia = data.media; // Store for lightbox
+
+                    grid.innerHTML = data.media.map((item, index) => {
+                        const mediaType = item.media_type || 'image';
+                        let content = '';
+
+                        if (mediaType === 'video') {
+                            content = `
+                                <div class="video-thumbnail">
+                                    <video src="${item.file_path}" muted></video>
+                                    <div class="play-overlay"></div>
+                                </div>
+                            `;
+                        } else {
+                            content = `<img src="${item.file_path}" alt="${item.title}" loading="lazy" />`;
+                        }
+
+                        return `
+                            <div class="gallery-item" onclick="openLightbox(${index})">
+                                ${content}
+                                <div class="gallery-item-overlay">
+                                    <h3>${item.title}</h3>
+                                    ${item.description ? `<p>${item.description}</p>` : ''}
+                                </div>
+                            </div>
+                        `;
+                    }).join('');
+                } else {
+                    allMedia = [];
+                    grid.innerHTML = `
+                        <div class="gallery-item gallery-placeholder">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                                <rect x="3" y="3" width="18" height="18" rx="2" />
+                                <circle cx="8.5" cy="8.5" r="1.5" />
+                                <path d="M21 15l-5-5L5 21" />
+                            </svg>
+                            <h3>No Photos Yet</h3>
+                            <p>Check back soon for updates</p>
+                        </div>
+                    `;
+                }
+            } catch (error) {
+                console.error('Error loading gallery:', error);
+                grid.innerHTML = `<p class="text-center w-100">Error loading media gallery.</p>`;
+            }
+        }
+
+
+
+        // --- Lightbox Functions ---
+
+        function openLightbox(index) {
+            if (!allMedia.length || !allMedia[index]) return;
+            currentMediaIndex = index;
+            updateLightboxContent();
+            // Use display flex class or style
+            lightbox.classList.add('active'); // CSS handles display:flex when active
             document.body.style.overflow = 'hidden';
+
+            // Re-ensure display property matches
+            // (Assuming CSS sets display:none by default and .active sets display:flex)
+            lightbox.style.display = 'flex';
         }
 
         function closeLightbox() {
-            document.getElementById('lightboxModal').classList.remove('active');
+            lightbox.classList.remove('active');
+            lightbox.style.display = 'none';
             document.body.style.overflow = '';
+
+            // Allow time for fade out before clearing content (stops video)
+            setTimeout(() => {
+                // Stop any playing video
+                const videoWrapper = lightboxMediaContainer.querySelector('.lightbox-video-wrapper');
+                if (videoWrapper) videoWrapper.innerHTML = '';
+
+                // Reset zoom
+                isZoomed = false;
+                if (lightboxImage) {
+                    lightboxImage.classList.remove("zoomed");
+                    lightboxImage.style.transform = "scale(1)";
+                }
+            }, 300);
         }
 
-        document.addEventListener('keydown', e => { if (e.key === 'Escape') closeLightbox(); });
-        document.getElementById('lightboxModal').addEventListener('click', e => { if (e.target === e.currentTarget) closeLightbox(); });
+        function updateLightboxContent() {
+            const item = allMedia[currentMediaIndex];
+            const mediaType = item.media_type || 'image';
+
+            // Reset container content
+            lightboxMediaContainer.innerHTML = '';
+            // Reset Zoom variables
+            isZoomed = false;
+            currentTranslateX = 0;
+            currentTranslateY = 0;
+
+            if (mediaType === 'video') {
+                lightboxMediaContainer.innerHTML = `
+                    <div class="lightbox-video-wrapper">
+                        <video src="${item.file_path}" controls autoplay></video>
+                    </div>
+                `;
+                lightboxZoom.style.display = 'none';
+            } else {
+                // Image
+                const img = document.createElement('img');
+                img.src = item.file_path;
+                img.alt = item.title;
+                img.className = 'lightbox-image';
+                img.id = 'lightboxImage';
+                lightboxMediaContainer.appendChild(img);
+
+                // Re-attach drag events for new image element
+                img.addEventListener("mousedown", handleDragStart);
+
+                // Re-assign global var
+                lightboxImage = img;
+                lightboxZoom.style.display = 'flex';
+            }
+
+            lightboxCaption.textContent = item.title;
+            lightboxCounter.textContent = `${currentMediaIndex + 1} / ${allMedia.length}`;
+
+            // Update nav visibility
+            lightboxPrev.style.visibility = allMedia.length > 1 ? "visible" : "hidden";
+            lightboxNext.style.visibility = allMedia.length > 1 ? "visible" : "hidden";
+        }
+
+        function showNextMedia() {
+            if (currentMediaIndex < allMedia.length - 1) {
+                currentMediaIndex++;
+            } else {
+                currentMediaIndex = 0; // Loop back
+            }
+            updateLightboxContent();
+        }
+
+        function showPreviousMedia() {
+            if (currentMediaIndex > 0) {
+                currentMediaIndex--;
+            } else {
+                currentMediaIndex = allMedia.length - 1; // Loop to end
+            }
+            updateLightboxContent();
+        }
+
+        function toggleZoom() {
+            if (!lightboxImage) return; // Only works for images
+            isZoomed = !isZoomed;
+            if (isZoomed) {
+                lightboxImage.classList.add("zoomed");
+                lightboxImage.style.transform = "scale(2)";
+                lightboxImage.style.cursor = "move";
+            } else {
+                lightboxImage.classList.remove("zoomed");
+                lightboxImage.style.transform = "scale(1)";
+                lightboxImage.style.translate = "0px 0px";
+                lightboxImage.style.cursor = "";
+                currentTranslateX = 0;
+                currentTranslateY = 0;
+            }
+        }
+
+        function toggleFullscreen() {
+            if (!document.fullscreenElement) {
+                lightbox.requestFullscreen().catch(err => {
+                    console.error(`Error enabling fullscreen: ${err.message}`);
+                });
+            } else {
+                document.exitFullscreen();
+            }
+        }
+
+        function handleKeyDown(e) {
+            if (!lightbox.classList.contains('active')) return;
+            switch (e.key) {
+                case "Escape": closeLightbox(); break;
+                case "ArrowLeft": showPreviousMedia(); break;
+                case "ArrowRight": showNextMedia(); break;
+                case "f": toggleFullscreen(); break;
+                case "+": toggleZoom(); break;
+                case "-": toggleZoom(); break;
+            }
+        }
+
+        // Drag Logic for Zoomed Image
+        function handleDragStart(e) {
+            if (!isZoomed || !lightboxImage) return;
+            isDragging = true;
+            dragStartX = e.clientX;
+            dragStartY = e.clientY;
+            lightboxImage.classList.add("grabbing");
+            e.preventDefault();
+        }
+
+        function handleDragMove(e) {
+            if (!isDragging || !isZoomed) return;
+            const moveX = e.clientX - dragStartX;
+            const moveY = e.clientY - dragStartY;
+            const translateX = currentTranslateX + moveX;
+            const translateY = currentTranslateY + moveY;
+            lightboxImage.style.translate = `${translateX}px ${translateY}px`;
+        }
+
+        function handleDragEnd() {
+            if (!isDragging) return;
+            isDragging = false;
+            if (lightboxImage) {
+                lightboxImage.classList.remove("grabbing");
+                const match = lightboxImage.style.translate.match(/(-?[\d.]+)px (-?[\d.]+)px/);
+                if (match) {
+                    currentTranslateX = parseFloat(match[1]);
+                    currentTranslateY = parseFloat(match[2]);
+                }
+            }
+        }
     </script>
 </body>
 

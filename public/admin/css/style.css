@@ -17,6 +17,8 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
+  gap: 10px;
+  overflow-x: auto;
 }
 
 .admin-top-bar a {
@@ -35,6 +37,9 @@
   display: flex;
   align-items: center;
   gap: 20px;
+  flex-wrap: nowrap;
+  white-space: nowrap;
+  flex-shrink: 0;
 }
 
 #userInfo {
@@ -79,6 +84,15 @@
 .admin-top-bar .left-links {
   display: flex;
   gap: 10px;
+  flex-wrap: nowrap;
+  overflow-x: auto;
+  flex-shrink: 1;
+  min-width: 0;
+}
+
+.admin-top-bar .left-links a {
+  white-space: nowrap;
+  flex-shrink: 0;
 }
 
 #userInfo {
@@ -4168,4 +4182,639 @@ html body .clickable-row:active td {
   .updated-time {
     display: none !important;
   }
+}
+
+/* ========================================
+   Enhanced Desktop Table Styling
+   ======================================== */
+
+/* Dashboard Table Enhancements */
+.content-card .table {
+  margin-bottom: 0;
+  border-collapse: separate;
+  border-spacing: 0;
+}
+
+/* Better header styling */
+.content-card .table thead th {
+  background: #f8fafc;
+  font-weight: 600;
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: #64748b;
+  padding: 14px 16px;
+  border-bottom: 2px solid #e2e8f0;
+  white-space: nowrap;
+}
+
+/* Better cell padding and spacing */
+.content-card .table tbody td {
+  padding: 16px;
+  vertical-align: middle;
+  border-bottom: 1px solid #f1f5f9;
+  font-size: 0.875rem;
+  color: #334155;
+  transition: all 0.15s ease;
+}
+
+/* Alternating row colors (Zebra stripes) */
+.content-card .table tbody tr:nth-child(even) td {
+  background-color: #fafbfc;
+}
+
+.content-card .table tbody tr:nth-child(odd) td {
+  background-color: #ffffff;
+}
+
+/* Enhanced clickable row styling */
+.content-card .table tbody tr.clickable-row {
+  cursor: pointer;
+  position: relative;
+}
+
+/* Left accent bar on hover */
+.content-card .table tbody tr.clickable-row td:first-child {
+  position: relative;
+}
+
+.content-card .table tbody tr.clickable-row td:first-child::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  width: 4px;
+  background: transparent;
+  transition: background-color 0.15s ease;
+}
+
+.content-card .table tbody tr.clickable-row:hover td:first-child::before {
+  background: var(--primary-color, #1a237e);
+}
+
+/* Hover effect for all cells */
+.content-card .table tbody tr.clickable-row:hover td {
+  background-color: #f1f5f9 !important;
+}
+
+/* Active/click effect */
+.content-card .table tbody tr.clickable-row:active td {
+  background-color: #e2e8f0 !important;
+}
+
+/* Typography: Consistent normal styling for all cells */
+.content-card .table tbody td {
+  font-weight: 500;
+  color: #334155;
+}
+
+/* Last row remove border */
+.content-card .table tbody tr:last-child td {
+  border-bottom: none;
+}
+
+/* ========================================
+   Mobile Application Cards (Enhanced Design)
+   ======================================== */
+
+/* Container for mobile cards */
+.mobile-cards-container {
+  display: none;
+  flex-direction: column;
+  padding: 0;
+}
+
+/* Individual card - Enhanced Left Accent Design */
+.mobile-app-card {
+  display: flex;
+  align-items: center;
+  background: transparent;
+  padding: 18px 12px 18px 16px;
+  cursor: pointer;
+  transition: background-color 0.15s ease;
+  -webkit-tap-highlight-color: transparent;
+  border-bottom: 1px solid #e5e7eb;
+  border-left: 4px solid var(--primary-color, #1a237e);
+  position: relative;
+  min-height: 80px;
+  /* Better touch target */
+}
+
+.mobile-app-card:first-child {
+  border-top: 1px solid #e5e7eb;
+}
+
+.mobile-app-card:hover {
+  background-color: #f8fafc;
+}
+
+.mobile-app-card:active {
+  background-color: #f1f5f9;
+}
+
+/* Status-colored accent bars */
+.mobile-app-card[data-status="pending"] {
+  border-left-color: #f59e0b;
+}
+
+.mobile-app-card[data-status="under_review"] {
+  border-left-color: #3b82f6;
+}
+
+.mobile-app-card[data-status="approved"] {
+  border-left-color: #10b981;
+}
+
+.mobile-app-card[data-status="rejected"] {
+  border-left-color: #ef4444;
+}
+
+/* Card content wrapper */
+.card-content {
+  flex: 1;
+  min-width: 0;
+  /* Enable text truncation */
+}
+
+/* Main row: Name + ID */
+.card-row-main {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 10px;
+  margin-bottom: 6px;
+}
+
+.card-name {
+  font-weight: 700;
+  font-size: 0.95rem;
+  color: #1e293b;
+  flex: 1;
+  line-height: 1.3;
+  /* Text truncation for long names */
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  white-space: normal;
+  overflow: hidden;
+}
+
+.card-id {
+  font-size: 0.65rem;
+  font-family: 'SF Mono', 'Monaco', 'Inconsolata', monospace;
+  color: #64748b;
+  background: #f1f5f9;
+  padding: 2px 6px;
+  border-radius: 3px;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+/* Meta row: Disability + Location */
+.card-row-meta {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 12px;
+  margin-bottom: 8px;
+}
+
+.card-disability,
+.card-date {
+  font-size: 0.8rem;
+  color: #64748b;
+  line-height: 1.35;
+  flex: 1;
+  /* Text truncation for long disability types */
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.card-location {
+  font-size: 0.8rem;
+  text-align: right;
+  flex-shrink: 0;
+  color: #94a3b8;
+}
+
+/* Footer row: Status badge */
+.card-row-footer {
+  display: flex;
+  align-items: center;
+}
+
+/* Status badge on card */
+.card-status-badge {
+  display: inline-block;
+  font-size: 0.65rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  padding: 3px 8px;
+  border-radius: 3px;
+}
+
+.card-status-badge.pending {
+  background: #fef3c7;
+  color: #92400e;
+}
+
+.card-status-badge.under_review {
+  background: #dbeafe;
+  color: #1e40af;
+}
+
+.card-status-badge.approved {
+  background: #d1fae5;
+  color: #065f46;
+}
+
+.card-status-badge.rejected {
+  background: #fee2e2;
+  color: #991b1b;
+}
+
+.card-status-badge.processing {
+  background: #e0f2fe;
+  color: #0369a1;
+}
+
+.card-status-badge.provided {
+  background: #d1fae5;
+  color: #065f46;
+}
+
+.card-status-badge.not_available {
+  background: #e5e7eb;
+  color: #374151;
+}
+
+/* Logbook action-type badges */
+.card-status-badge.approve,
+.card-status-badge.approved,
+.card-status-badge.complete_registration {
+  background: #d1fae5;
+  color: #065f46;
+}
+
+.card-status-badge.rejected,
+.card-status-badge.user_deleted {
+  background: #fee2e2;
+  color: #991b1b;
+}
+
+.card-status-badge.review,
+.card-status-badge.edit_response,
+.card-status-badge.edit_incomplete {
+  background: #dbeafe;
+  color: #1e40af;
+}
+
+.card-status-badge.add_user,
+.card-status-badge.toggle_user,
+.card-status-badge.create_registration {
+  background: #fef3c7;
+  color: #92400e;
+}
+
+.card-status-badge.undo {
+  background: #fce7f3;
+  color: #9d174d;
+}
+
+/* Chevron indicator */
+.card-chevron {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #cbd5e1;
+  margin-left: 8px;
+  flex-shrink: 0;
+  transition: color 0.15s ease, transform 0.15s ease;
+}
+
+.mobile-app-card:hover .card-chevron {
+  color: #94a3b8;
+  transform: translateX(2px);
+}
+
+/* Remove divider - using border-bottom on card instead */
+.card-divider {
+  display: none;
+}
+
+/* Empty state for cards */
+.mobile-cards-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 40px 20px;
+  color: #9ca3af;
+  text-align: center;
+}
+
+.mobile-cards-empty svg {
+  margin-bottom: 12px;
+  opacity: 0.5;
+}
+
+.mobile-cards-empty p {
+  margin: 0;
+  font-size: 0.9rem;
+}
+
+/* Expandable details for log cards */
+.card-expand-hint {
+  font-size: 0.7rem;
+  color: #94a3b8;
+  font-style: italic;
+}
+
+.card-details-section {
+  max-height: 0;
+  overflow: hidden;
+  transition: max-height 0.3s ease, padding 0.3s ease, margin 0.3s ease;
+  margin-top: 0;
+  padding-top: 0;
+  border-top: none;
+}
+
+.mobile-app-card.expanded .card-details-section {
+  max-height: 2000px;
+  margin-top: 10px;
+  padding-top: 10px;
+  border-top: 1px solid #e2e8f0;
+}
+
+.event-body-text {
+  font-size: 0.8rem;
+  line-height: 1.5;
+  color: #64748b;
+  margin-top: 8px;
+  padding: 8px;
+  background: #f8fafc;
+  border-radius: 4px;
+  border: 1px solid #f1f5f9;
+}
+
+.card-details-content {
+  font-size: 0.8rem;
+  color: #475569;
+  line-height: 1.5;
+  word-break: break-word;
+}
+
+.mobile-app-card.has-details {
+  cursor: pointer;
+}
+
+.mobile-app-card.has-details .card-expand-hint {
+  transition: opacity 0.2s ease;
+}
+
+.mobile-app-card.expanded .card-expand-hint {
+  opacity: 0.5;
+}
+
+/* Role badges for user cards */
+.card-status-badge.admin {
+  background: #ede9fe;
+  color: #6d28d9;
+}
+
+.card-status-badge.staff {
+  background: #e0f2fe;
+  color: #0369a1;
+}
+
+/* User detail rows in expanded cards */
+.user-detail-row {
+  margin-bottom: 6px;
+  font-size: 0.85rem;
+}
+
+.user-detail-row strong {
+  color: #475569;
+}
+
+.user-action-row {
+  margin-top: 10px;
+  padding-top: 10px;
+  border-top: 1px dashed #e2e8f0;
+  display: flex;
+  gap: 8px;
+}
+
+/* News full description in expanded cards */
+.news-full-description {
+  font-size: 0.85rem;
+  line-height: 1.6;
+  color: #374151;
+  margin-bottom: 10px;
+}
+
+/* Show cards on mobile, hide table */
+@media (max-width: 768px) {
+
+  /* Hide table on mobile */
+  .mobile-list-wrapper .table-responsive {
+    display: none;
+  }
+
+  /* Show cards container on mobile */
+  .mobile-list-wrapper .mobile-cards-container {
+    display: flex;
+  }
+}
+
+/* Reports Page Mobile Improvements */
+@media (max-width: 768px) {
+
+  /* Stack Filter Controls */
+  .filter-controls .d-flex,
+  .filter-control-group .d-flex {
+    flex-direction: column !important;
+    align-items: stretch !important;
+    gap: 10px;
+  }
+
+  .filter-controls .d-flex>*,
+  .filter-control-group .d-flex>* {
+    width: 100% !important;
+    margin-right: 0 !important;
+    margin-bottom: 5px;
+  }
+
+  /* Action Buttons */
+  #enhanced-filterActionButtons {
+    margin-top: 15px !important;
+    width: 100%;
+    display: flex !important;
+    flex-direction: row !important;
+    /* Keep buttons side-by-side but full width */
+    gap: 10px;
+  }
+
+  #enhanced-filterActionButtons .btn {
+    flex: 1;
+  }
+
+  /* Ensure nested selects stack */
+  .nested-select-filter .row {
+    margin-left: 0;
+    margin-right: 0;
+  }
+
+  .nested-select-filter .col-md-3 {
+    padding-left: 0;
+    padding-right: 0;
+    margin-bottom: 10px;
+    width: 100%;
+  }
+
+  /* Cross-tab table sticky headers improvements */
+  .cross-tab-table th {
+    z-index: 20;
+  }
+
+  .cross-tab-table th.row-header {
+    z-index: 25;
+    /* Higher than top headers */
+  }
+}
+
+
+
+/* Media Item Styles - Fix for Edit/Delete Buttons */
+.media-item {
+  position: relative;
+  border-radius: 8px;
+  overflow: hidden;
+  background: #f8f9fa;
+  min-height: 200px;
+  display: flex;
+  flex-direction: column;
+}
+
+.media-item video,
+.media-item img {
+  width: 100%;
+  aspect-ratio: 16/9;
+  object-fit: cover;
+  display: block;
+}
+
+.media-item-actions {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  display: flex;
+  gap: 5px;
+  z-index: 20;
+  /* Ensure above video/image */
+  opacity: 0;
+  transition: opacity 0.2s ease;
+}
+
+.media-item:hover .media-item-actions {
+  opacity: 1;
+}
+
+.media-item-actions .btn {
+  padding: 0.25rem 0.5rem;
+  font-size: 0.75rem;
+  z-index: 21;
+  /* Clickable */
+}
+
+/* Ensure actions are visible on touch devices or if focused */
+.media-item:focus-within .media-item-actions {
+  opacity: 1;
+}
+
+/* Fix for video eating clicks */
+.media-item video {
+  pointer-events: none;
+  /* Disable video interaction in list view so clicking item works if needed, but buttons work */
+}
+
+.media-type-badge {
+  position: absolute;
+  top: 10px;
+  left: 10px;
+  background: rgba(0, 0, 0, 0.7);
+  color: white;
+  padding: 2px 8px;
+  border-radius: 4px;
+  font-size: 0.75rem;
+  z-index: 15;
+}
+
+.featured-badge {
+  background: #f59e0b;
+  color: white;
+  padding: 2px 8px;
+  border-radius: 4px;
+  font-size: 0.75rem;
+  font-weight: 500;
+  display: inline-block;
+  pointer-events: none;
+}
+
+.alert-soft-primary {
+  background-color: #ecf2ff;
+  color: #0d47a1;
+  border-radius: 12px;
+}
+
+/* Media Badges Overlay */
+.media-badges-overlay {
+  position: absolute;
+  top: 10px;
+  left: 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  z-index: 20;
+  pointer-events: none;
+  align-items: flex-start;
+}
+
+.media-badge {
+  background: rgba(0, 0, 0, 0.7);
+  backdrop-filter: blur(2px);
+  color: white;
+  padding: 2px 8px;
+  border-radius: 4px;
+  font-size: 0.75rem;
+  font-weight: 500;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.media-badge.featured {
+  /* Keep featured orange if desired, but user asked for transparent black styling recovery. 
+       Actually, featured was orange before. I'll keep it orange to distinguish? 
+       No, "previous badge styling transparent black" probably refers to the general aesthetic they liked.
+       I will make Video/Category transparent black. Featured might stay highlighted or be black too. 
+       Safest is to make Feature orange and others black, OR all black.
+       I'll comment out the specific colors and use the definition above. 
+    */
+  background: #f59e0b;
+  /* Keeping Featured distinctive as it was originally */
+}
+
+.media-badge.category {
+  background: rgba(0, 0, 0, 0.7);
+}
+
+.media-badge.video {
+  background: rgba(0, 0, 0, 0.85);
+  color: #fca5a5;
+  border: 1px solid rgba(239, 68, 68, 0.3);
 }

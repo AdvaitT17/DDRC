@@ -33,6 +33,8 @@
         <a href="/admin/forms">Form Management</a>
         <a href="/admin/news">News</a>
         <a href="/admin/events/">Events</a>
+        <a href="/admin/schemes">Schemes</a>
+        <a href="/admin/media/">Media</a>
         <a href="/admin/logbook" class="active">Logs</a>
         <a href="/admin/users">Users</a>
       </div>
@@ -105,21 +107,28 @@
 
       <!-- Logs Table -->
       <div class="content-card">
-        <div class="table-responsive">
-          <table class="table logbook-table">
-            <thead>
-              <tr class="table-light">
-                <th>Timestamp</th>
-                <th>Staff</th>
-                <th>Action</th>
-                <th>Application ID</th>
-                <th>Details</th>
-              </tr>
-            </thead>
-            <tbody id="logsTableBody">
-              <!-- Will be populated by JavaScript -->
-            </tbody>
-          </table>
+        <!-- Mobile List Wrapper for responsive switching -->
+        <div class="mobile-list-wrapper">
+          <div class="table-responsive">
+            <table class="table logbook-table">
+              <thead>
+                <tr class="table-light">
+                  <th>Timestamp</th>
+                  <th>Staff</th>
+                  <th>Action</th>
+                  <th>Application ID</th>
+                  <th>Details</th>
+                </tr>
+              </thead>
+              <tbody id="logsTableBody">
+                <!-- Will be populated by JavaScript -->
+              </tbody>
+            </table>
+          </div>
+          <!-- Mobile Cards Container -->
+          <div class="mobile-cards-container" id="mobileLogsContainer">
+            <!-- Cards will be rendered by JavaScript -->
+          </div>
         </div>
       </div>
     </div>
