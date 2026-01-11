@@ -33,15 +33,22 @@ async function generateApplicationPDF(applicationData, profileData) {
     }
 
     // Convert disabled photo to base64 if available
-    let disabledPhotoBase64 = '';
-    console.log('PDF Generator - disabledPhoto path:', applicationData.disabledPhoto);
-    if (applicationData.disabledPhoto && fs.existsSync(applicationData.disabledPhoto)) {
-        const ext = path.extname(applicationData.disabledPhoto).toLowerCase();
-        const mimeType = ext === '.png' ? 'image/png' : 'image/jpeg';
-        disabledPhotoBase64 = `data:${mimeType};base64,${fs.readFileSync(applicationData.disabledPhoto).toString('base64')}`;
-        console.log('PDF Generator - Photo converted to base64, length:', disabledPhotoBase64.length);
+    let disabledPhotoBase64 = applicationData.photoBase64 || '';
+
+    if (!disabledPhotoBase64 && applicationData.disabledPhoto) {
+        console.log('PDF Generator - disabledPhoto path provided:', applicationData.disabledPhoto);
+        if (fs.existsSync(applicationData.disabledPhoto)) {
+            const ext = path.extname(applicationData.disabledPhoto).toLowerCase();
+            const mimeType = ext === '.png' ? 'image/png' : 'image/jpeg';
+            disabledPhotoBase64 = `data:${mimeType};base64,${fs.readFileSync(applicationData.disabledPhoto).toString('base64')}`;
+            console.log('PDF Generator - Photo converted to base64 from file, length:', disabledPhotoBase64.length);
+        } else {
+            console.log('PDF Generator - Photo file not found at path');
+        }
+    } else if (disabledPhotoBase64) {
+        console.log('PDF Generator - Using provided photoBase64, length:', disabledPhotoBase64.length);
     } else {
-        console.log('PDF Generator - Photo file not found or path is null');
+        console.log('PDF Generator - No photo provided');
     }
 
     // Helper functions
@@ -416,10 +423,12 @@ async function generateApplicationPDF(applicationData, profileData) {
         <span>Generated: ${new Date().toLocaleDateString('en-IN')}</span>
     </div>
     
-    ${disabledPhotoBase64 ? `
     <div class="applicant-card">
         <div class="applicant-photo">
-            <img src="${disabledPhotoBase64}" alt="Applicant Photo">
+            ${disabledPhotoBase64
+            ? `<img src="${disabledPhotoBase64}" alt="Applicant Photo">`
+            : `<div style="width: 70px; height: 85px; background: #f0f0f0; border: 2px solid #1a237e; border-radius: 4px; display: flex; align-items: center; justify-content: center; color: #999; font-size: 8px;">No Photo</div>`
+        }
         </div>
         <div class="applicant-details">
             <div class="applicant-name">${escapeHtml(applicationData.applicantName || 'Applicant')}</div>
@@ -438,7 +447,6 @@ async function generateApplicationPDF(applicationData, profileData) {
             </div>
         </div>
     </div>
-    ` : ''}
     
     <div class="content">
         ${sectionsHtml}
