@@ -1,6 +1,7 @@
 const nodemailer = require("nodemailer");
 const fs = require("fs");
 const path = require("path");
+const os = require("os");
 const pool = require("../config/database");
 const ExcelJS = require("exceljs");
 const puppeteer = require("puppeteer");
@@ -397,6 +398,8 @@ function getCurrentMonthYear() {
   return date.toLocaleString("default", { month: "long", year: "numeric" });
 }
 
+const os = require('os');
+
 /**
  * Generate a report file
  * @param {string} reportName - The name of the report
@@ -404,11 +407,8 @@ function getCurrentMonthYear() {
  * @returns {string} - Path to the generated file
  */
 async function generateReportFile(reportName, config) {
-  // Create a temporary directory if it doesn't exist
-  const tempDir = path.join(__dirname, "../temp");
-  if (!fs.existsSync(tempDir)) {
-    fs.mkdirSync(tempDir);
-  }
+  // Use system temp directory which is writable in Azure
+  const tempDir = os.tmpdir();
 
   // Create a unique filename
   const filename = `report_${Date.now()}.xlsx`;
