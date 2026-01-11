@@ -398,8 +398,6 @@ function getCurrentMonthYear() {
   return date.toLocaleString("default", { month: "long", year: "numeric" });
 }
 
-const os = require('os');
-
 /**
  * Generate a report file
  * @param {string} reportName - The name of the report
