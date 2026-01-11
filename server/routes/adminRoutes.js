@@ -620,7 +620,8 @@ rp.*,
            ELSE DATE_FORMAT(rp.last_action_at, '%Y-%m-%d %H:%i:%s')
 END as formatted_update_time,
   ru.email,
-  ru.username
+  ru.username,
+  ru.phone
        FROM registration_progress rp
        LEFT JOIN registered_users ru ON rp.user_id = ru.id
        LEFT JOIN users staff ON rp.last_updated_by = staff.id AND rp.last_updated_by IS NOT NULL
@@ -650,6 +651,7 @@ VALUES(?, 'review', ?, 'pending', 'under_review')`,
       username: applicationInfo[0].username,
       last_updated_by: applicationInfo[0].last_updated_by || null,
       last_action_at: applicationInfo[0].formatted_update_time || null,
+      phone: applicationInfo[0].phone,
     };
 
     // Get form sections with responses

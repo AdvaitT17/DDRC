@@ -928,6 +928,68 @@
 /* Status badge in header */
 .application-header .status-badge {
   margin: 0;
+  transition: opacity 0.3s ease-in-out;
+}
+
+/* Contact info container */
+.contact-info {
+  display: flex;
+  gap: 1rem;
+  align-items: center;
+  padding: 0.5rem 1rem;
+  background: linear-gradient(135deg, #f8fafc 0%, #ffffff 100%);
+  border-radius: 8px;
+  border: 1px solid #e2e8f0;
+  transition: opacity 0.3s ease-in-out;
+  /* Match status badge height but allow width to expand */
+  min-height: 38px;
+  box-sizing: border-box;
+  width: auto;
+  flex-shrink: 0;
+}
+
+.contact-item {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.875rem;
+  color: #0f172a;
+  font-weight: 500;
+  white-space: nowrap;
+}
+
+.contact-item svg {
+  color: var(--primary-color);
+  flex-shrink: 0;
+}
+
+/* Ensure status badge has consistent sizing */
+.application-header .status-badge {
+  margin: 0;
+  transition: opacity 0.3s ease-in-out;
+  min-height: 38px;
+  box-sizing: border-box;
+}
+
+#contactBtn.active {
+  background-color: rgba(255, 255, 255, 0.2);
+}
+
+#contactBtn {
+  background: transparent;
+  border: none;
+  color: white;
+  cursor: pointer;
+  padding: 8px;
+  border-radius: 4px;
+  transition: background-color 0.2s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+#contactBtn:hover {
+  background-color: rgba(255, 255, 255, 0.1);
 }
 
 /* Bottom section with meta info */
@@ -1243,6 +1305,37 @@
 
   .modal-footer .btn {
     flex: 1;
+  }
+
+  /* Hide Application ID and Submitted when contact info is shown on mobile/tablet */
+  .application-header.contact-visible .app-id-section,
+  .application-header.contact-visible .app-date-section {
+    display: none !important;
+  }
+
+  .application-header.contact-visible .app-status-section {
+    flex: 1;
+    max-width: 100%;
+  }
+
+  /* Stack contact items vertically on mobile to prevent cutoff */
+  .contact-info {
+    flex-direction: column;
+    gap: 0.5rem;
+    align-items: flex-start;
+    padding: 0.75rem 1rem;
+    width: 100%;
+  }
+
+  .contact-item {
+    font-size: 0.8125rem;
+    white-space: normal;
+    word-break: break-all;
+    max-width: 100%;
+  }
+
+  .contact-item span {
+    word-break: break-all;
   }
 }
 

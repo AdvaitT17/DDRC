@@ -1462,6 +1462,10 @@ class DashboardManager {
         data.submittedAt
       ).toLocaleDateString();
 
+      // Update contact info
+      document.getElementById("modalEmail").textContent = data.email || "Not available";
+      document.getElementById("modalPhone").textContent = data.phone || "Not available";
+
       // Update status badge - rely on CSS for styling
       const statusBadge = document.getElementById("modalStatus");
       // Reset any inline styles that might have been applied
@@ -1548,6 +1552,57 @@ class DashboardManager {
       } else {
         alert("Failed to load application details. Please refresh the page.");
       }
+    }
+  }
+
+  toggleContactInfo() {
+    const statusBadge = document.getElementById("modalStatus");
+    const contactInfo = document.getElementById("contactInfo");
+    const contactBtn = document.getElementById("contactBtn");
+    const appHeader = document.querySelector(".application-header");
+
+    // Clear any existing timeout
+    if (this.contactInfoTimeout) {
+      clearTimeout(this.contactInfoTimeout);
+      this.contactInfoTimeout = null;
+    }
+
+    // Check if contact info is currently visible
+    const isContactVisible = contactInfo.style.display !== "none";
+
+    if (isContactVisible) {
+      // Hide contact info, show status badge
+      contactInfo.style.opacity = "0";
+      setTimeout(() => {
+        contactInfo.style.display = "none";
+        statusBadge.style.display = "inline-flex";
+        statusBadge.style.opacity = "0";
+        setTimeout(() => {
+          statusBadge.style.opacity = "1";
+        }, 50);
+        // Remove class for responsive hiding
+        if (appHeader) appHeader.classList.remove("contact-visible");
+      }, 300);
+      contactBtn.classList.remove("active");
+    } else {
+      // Hide status badge, show contact info
+      statusBadge.style.opacity = "0";
+      setTimeout(() => {
+        statusBadge.style.display = "none";
+        contactInfo.style.display = "flex";
+        contactInfo.style.opacity = "0";
+        setTimeout(() => {
+          contactInfo.style.opacity = "1";
+        }, 50);
+        // Add class for responsive hiding
+        if (appHeader) appHeader.classList.add("contact-visible");
+      }, 300);
+      contactBtn.classList.add("active");
+
+      // Auto-revert after 60 seconds
+      this.contactInfoTimeout = setTimeout(() => {
+        this.toggleContactInfo();
+      }, 60000);
     }
   }
 
