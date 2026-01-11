@@ -230,27 +230,53 @@ router.get("/download-pdf", authenticateToken, async (req, res) => {
     );
 
     // Find disabled_photo for PDF
+    let photoBase64 = null;
     let disabledPhotoPath = null;
     const photoField = responses.find(r => r.name === 'disabled_photo' && r.value);
+
     if (photoField && photoField.value) {
+      const storageService = require('../services/storageService');
       const path = require('path');
-      const fs = require('fs');
-      // Construct full path - files are stored in server/uploads/ (DB stores "forms/..." but actual path is "uploads/forms/...")
-      let photoPath = photoField.value;
-      if (!photoPath.startsWith('/')) {
-        // Try server/uploads/ first (where files are actually stored)
-        photoPath = path.join(__dirname, '../uploads', photoPath);
-        if (!fs.existsSync(photoPath)) {
-          // Try server folder
-          photoPath = path.join(__dirname, '../', photoField.value);
+
+      try {
+        console.log('Dashboard - Fetching photo for PDF:', photoField.value);
+
+        // Check if file exists in storage (Azure/Local)
+        // Clean path (remove 'uploads/' prefix if present)
+        const relativePath = photoField.value.replace(/^\/?uploads\//, '');
+
+        // Helper to convert stream to buffer
+        const streamToBuffer = async (readableStream) => {
+          return new Promise((resolve, reject) => {
+            const chunks = [];
+            readableStream.on('data', (data) => chunks.push(data instanceof Buffer ? data : Buffer.from(data)));
+            readableStream.on('end', () => resolve(Buffer.concat(chunks)));
+            readableStream.on('error', reject);
+          });
+        };
+
+        const fileStream = await storageService.getFileStream(relativePath);
+        if (fileStream) {
+          const buffer = await streamToBuffer(fileStream);
+          const ext = path.extname(relativePath).toLowerCase();
+          const mimeType = ext === '.png' ? 'image/png' : 'image/jpeg';
+          photoBase64 = `data:${mimeType};base64,${buffer.toString('base64')}`;
+          console.log('Dashboard - Photo fetched and converted to base64');
+        } else {
+          console.warn('Dashboard - Photo stream not available for:', relativePath);
+          // Fallback logic for legacy/local paths if not found in storage service
+          const fs = require('fs');
+          let localPath = photoField.value;
+          if (!localPath.startsWith('/')) {
+            localPath = path.join(__dirname, '../uploads', relativePath);
+          }
+          if (fs.existsSync(localPath)) {
+            disabledPhotoPath = localPath; // Legacy behavior
+            console.log('Dashboard - Found local fallback:', localPath);
+          }
         }
-        if (!fs.existsSync(photoPath)) {
-          // Fallback to public folder
-          photoPath = path.join(__dirname, '../../public', photoField.value);
-        }
-      }
-      if (fs.existsSync(photoPath)) {
-        disabledPhotoPath = photoPath;
+      } catch (err) {
+        console.error('Dashboard - Error fetching photo for PDF:', err.message);
       }
     }
 
@@ -286,6 +312,7 @@ router.get("/download-pdf", authenticateToken, async (req, res) => {
       submittedDate: application.completed_at,
       lastUpdated: application.updated_at,
       disabledPhoto: disabledPhotoPath,
+      photoBase64: photoBase64,
       applicantName: applicantName
     };
 
