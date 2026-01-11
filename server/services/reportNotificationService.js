@@ -177,11 +177,23 @@ class ReportNotificationService {
       }
 
       // Validate all email addresses
+      const seenEmails = new Set();
+      const uniqueRecipients = [];
+
       for (const recipient of recipients) {
         if (!validateEmail(recipient.email)) {
           throw new Error(`Invalid email address: ${recipient.email}`);
         }
+
+        // Skip duplicates
+        if (!seenEmails.has(recipient.email)) {
+          seenEmails.add(recipient.email);
+          uniqueRecipients.push(recipient);
+        }
       }
+
+      // Use unique recipients for processing
+      recipients = uniqueRecipients;
 
       // Calculate next scheduled date (first day of next month)
       const now = new Date();
