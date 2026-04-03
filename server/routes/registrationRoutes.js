@@ -1,6 +1,7 @@
 const express = require("express");
 const router = express.Router();
 const multer = require("multer");
+const rateLimit = require("express-rate-limit");
 const { uploadsDir, generateUniqueFilename } = require("../config/upload");
 const { authenticateToken } = require("../middleware/authMiddleware");
 const pool = require("../config/database");
@@ -8,7 +9,10 @@ const path = require("path");
 const fs = require("fs");
 const validationService = require("../services/validationService");
 const storageService = require("../services/storageService");
-const { generateNextApplicationId } = require("../utils/applicationId");
+const {
+  generateNextApplicationId,
+  MAX_ID_GENERATION_RETRIES,
+} = require("../utils/applicationId");
 
 // Use memory storage - files are saved via storageService
 const storage = multer.memoryStorage();
@@ -18,6 +22,19 @@ const upload = multer({
   limits: {
     fileSize: 50 * 1024 * 1024, // 50MB max file size
   },
+});
+
+// Rate limiter for final form submission
+const submitRegistrationLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000, // 15 minutes
+  max: 5,
+  message: {
+    message:
+      "Too many submission attempts. Please wait a few minutes and try again.",
+    code: "RATE_LIMIT_EXCEEDED",
+  },
+  standardHeaders: true,
+  legacyHeaders: false,
 });
 
 // Get registration progress
@@ -142,7 +159,7 @@ router.post("/progress", authenticateToken, upload.any(), async (req, res) => {
 });
 
 // Submit form
-router.post("/submit", authenticateToken, async (req, res) => {
+router.post("/submit", submitRegistrationLimiter, authenticateToken, async (req, res) => {
   try {
     // Check for existing completed registration
     const [existingReg] = await pool.query(
@@ -200,7 +217,7 @@ router.post("/submit", authenticateToken, async (req, res) => {
       let completed = false;
 
       // Retry on duplicate key to handle concurrent submissions safely.
-      for (let attempt = 0; attempt < 5; attempt++) {
+      for (let attempt = 0; attempt < MAX_ID_GENERATION_RETRIES; attempt++) {
         applicationId = await generateNextApplicationId(conn);
 
         try {
@@ -222,7 +239,9 @@ router.post("/submit", authenticateToken, async (req, res) => {
       }
 
       if (!completed) {
-        throw new Error("Unable to generate a unique application ID. Please retry.");
+        throw new Error(
+          "Failed to generate application ID due to high concurrent activity. Please contact support if this persists."
+        );
       }
 
       await conn.commit();

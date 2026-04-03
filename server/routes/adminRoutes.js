@@ -11,7 +11,10 @@ const path = require("path");
 const fs = require("fs");
 const { uploadsDir, generateUniqueFilename } = require("../config/upload");
 const storageService = require("../services/storageService");
-const { generateNextApplicationId } = require("../utils/applicationId");
+const {
+  generateNextApplicationId,
+  MAX_ID_GENERATION_RETRIES,
+} = require("../utils/applicationId");
 
 // Generate temporary file access URL
 router.get(
@@ -1367,7 +1370,7 @@ router.post(
         let completed = false;
 
         // Retry on duplicate key to handle concurrent completions safely.
-        for (let attempt = 0; attempt < 5; attempt++) {
+        for (let attempt = 0; attempt < MAX_ID_GENERATION_RETRIES; attempt++) {
           applicationId = await generateNextApplicationId(conn);
 
           try {
