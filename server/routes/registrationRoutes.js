@@ -1,7 +1,7 @@
 const express = require("express");
 const router = express.Router();
 const multer = require("multer");
-const rateLimit = require("express-rate-limit");
+
 const { uploadsDir, generateUniqueFilename } = require("../config/upload");
 const { authenticateToken } = require("../middleware/authMiddleware");
 const pool = require("../config/database");
@@ -24,18 +24,7 @@ const upload = multer({
   },
 });
 
-// Rate limiter for final form submission
-const submitRegistrationLimiter = rateLimit({
-  windowMs: 15 * 60 * 1000, // 15 minutes
-  max: 5,
-  message: {
-    message:
-      "Too many submission attempts. Please wait a few minutes and try again.",
-    code: "RATE_LIMIT_EXCEEDED",
-  },
-  standardHeaders: true,
-  legacyHeaders: false,
-});
+
 
 // Get registration progress
 router.get("/progress", authenticateToken, async (req, res) => {
@@ -159,7 +148,7 @@ router.post("/progress", authenticateToken, upload.any(), async (req, res) => {
 });
 
 // Submit form
-router.post("/submit", submitRegistrationLimiter, authenticateToken, async (req, res) => {
+router.post("/submit", authenticateToken, async (req, res) => {
   try {
     // Check for existing completed registration
     const [existingReg] = await pool.query(
