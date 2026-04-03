@@ -11,6 +11,7 @@ const path = require("path");
 const fs = require("fs");
 const { uploadsDir, generateUniqueFilename } = require("../config/upload");
 const storageService = require("../services/storageService");
+const { generateNextApplicationId } = require("../utils/applicationId");
 
 // Generate temporary file access URL
 router.get(
@@ -1362,26 +1363,12 @@ router.post(
       try {
         await conn.beginTransaction();
 
-        const date = new Date();
-        const year = date.getFullYear();
-        const month = String(date.getMonth() + 1).padStart(2, "0");
         let applicationId = null;
         let completed = false;
 
         // Retry on duplicate key to handle concurrent completions safely.
         for (let attempt = 0; attempt < 5; attempt++) {
-          const [maxIdResult] = await conn.query(
-            `SELECT COALESCE(
-                MAX(CAST(SUBSTRING_INDEX(application_id, '-', -1) AS UNSIGNED)),
-                0
-              ) AS last_num
-             FROM registration_progress
-             WHERE application_id REGEXP '^[0-9]{4}-[0-9]{2}-[0-9]{4}$'`
-          );
-
-          const lastNum = maxIdResult[0]?.last_num || 0;
-          const appNum = String(lastNum + 1).padStart(4, "0");
-          applicationId = `${year}-${month}-${appNum}`;
+          applicationId = await generateNextApplicationId(conn);
 
           try {
             await conn.query(
