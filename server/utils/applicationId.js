@@ -11,7 +11,8 @@ async function generateNextApplicationId(conn, date = new Date()) {
         0
       ) AS last_num
      FROM registration_progress
-     WHERE application_id REGEXP '^[0-9]{4}-[0-9]{2}-[0-9]{4}$'
+     WHERE status = 'completed'
+       AND application_id REGEXP '^[0-9]{4}-[0-9]{2}-[0-9]{4}$'
        AND application_id LIKE ?`,
     [`${prefix}-%`]
   );
