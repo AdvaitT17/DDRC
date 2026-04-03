@@ -1362,37 +1362,30 @@ router.post(
       try {
         await conn.beginTransaction();
 
-        // Generate application ID (Year-Month-Sequential Number)
-        // Get the last application ID that follows the YYYY-MM-NNNN format (not MIG- format)
-        const [lastApp] = await conn.query(
-          `SELECT application_id FROM registration_progress 
-           WHERE application_id IS NOT NULL 
-           AND application_id NOT LIKE 'MIG-%'
-           ORDER BY id DESC LIMIT 1`
-        );
-
         const date = new Date();
         const year = date.getFullYear();
         const month = String(date.getMonth() + 1).padStart(2, "0");
+        let applicationId = null;
+        let completed = false;
 
-        // Parse the last sequential number from YYYY-MM-NNNN format
-        let lastNum = 0;
-        if (lastApp.length && lastApp[0].application_id) {
-          const parts = lastApp[0].application_id.split("-");
-          if (parts.length === 3) {
-            const parsed = parseInt(parts[2]);
-            if (!isNaN(parsed)) {
-              lastNum = parsed;
-            }
-          }
-        }
+        // Retry on duplicate key to handle concurrent completions safely.
+        for (let attempt = 0; attempt < 5; attempt++) {
+          const [maxIdResult] = await conn.query(
+            `SELECT COALESCE(
+                MAX(CAST(SUBSTRING_INDEX(application_id, '-', -1) AS UNSIGNED)),
+                0
+              ) AS last_num
+             FROM registration_progress
+             WHERE application_id REGEXP '^[0-9]{4}-[0-9]{2}-[0-9]{4}$'`
+          );
 
-        const appNum = String(lastNum + 1).padStart(4, "0");
-        const applicationId = `${year}-${month}-${appNum}`;
+          const lastNum = maxIdResult[0]?.last_num || 0;
+          const appNum = String(lastNum + 1).padStart(4, "0");
+          applicationId = `${year}-${month}-${appNum}`;
 
-        // Update the registration status to completed
-        await conn.query(
-          `UPDATE registration_progress SET
+          try {
+            await conn.query(
+              `UPDATE registration_progress SET
 status = 'completed',
   service_status = 'pending',
   completed_at = CURRENT_TIMESTAMP,
@@ -1400,8 +1393,22 @@ status = 'completed',
   last_action_at = CURRENT_TIMESTAMP,
   application_id = ?
     WHERE id = ? `,
-          [userId, applicationId, id]
-        );
+              [userId, applicationId, id]
+            );
+            completed = true;
+            break;
+          } catch (error) {
+            if (error.code !== "ER_DUP_ENTRY") {
+              throw error;
+            }
+          }
+        }
+
+        if (!completed) {
+          throw new Error(
+            "Unable to generate a unique application ID. Please retry."
+          );
+        }
 
         // Log the action
         await conn.query(
@@ -2062,4 +2069,3 @@ router.delete(
 );
 
 module.exports = router;
-
