@@ -13,11 +13,11 @@ async function generateNextApplicationId(conn, date = new Date()) {
      FROM registration_progress
      WHERE status = 'completed'
        AND application_id REGEXP '^[0-9]{4}-[0-9]{2}-[0-9]{4}$'
-       AND application_id LIKE ?`,
+       AND application_id LIKE ? FOR UPDATE`,
     [`${prefix}-%`]
   );
 
-  const lastNum = maxIdResult[0]?.last_num || 0;
+  const lastNum = parseInt(maxIdResult[0]?.last_num || 0, 10);
   const appNum = String(lastNum + 1).padStart(4, "0");
 
   return `${prefix}-${appNum}`;
