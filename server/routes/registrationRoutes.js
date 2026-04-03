@@ -8,6 +8,7 @@ const path = require("path");
 const fs = require("fs");
 const validationService = require("../services/validationService");
 const storageService = require("../services/storageService");
+const { generateNextApplicationId } = require("../utils/applicationId");
 
 // Use memory storage - files are saved via storageService
 const storage = multer.memoryStorage();
@@ -195,43 +196,34 @@ router.post("/submit", authenticateToken, async (req, res) => {
     try {
       await conn.beginTransaction();
 
-      // Generate application ID (Year-Month-Sequential Number)
-      // Get the last application ID that follows the YYYY-MM-NNNN format (not MIG- format)
-      const [lastApp] = await conn.query(
-        `SELECT application_id FROM registration_progress 
-         WHERE application_id IS NOT NULL 
-         AND application_id NOT LIKE 'MIG-%'
-         ORDER BY id DESC LIMIT 1`
-      );
+      let applicationId = null;
+      let completed = false;
 
-      const date = new Date();
-      const year = date.getFullYear();
-      const month = String(date.getMonth() + 1).padStart(2, "0");
+      // Retry on duplicate key to handle concurrent submissions safely.
+      for (let attempt = 0; attempt < 5; attempt++) {
+        applicationId = await generateNextApplicationId(conn);
 
-      // Parse the last sequential number from YYYY-MM-NNNN format
-      let lastNum = 0;
-      if (lastApp.length && lastApp[0].application_id) {
-        const parts = lastApp[0].application_id.split("-");
-        if (parts.length === 3) {
-          const parsed = parseInt(parts[2]);
-          if (!isNaN(parsed)) {
-            lastNum = parsed;
+        try {
+          await conn.query(
+            `UPDATE registration_progress 
+             SET status = 'completed', 
+                 application_id = ?,
+                 completed_at = CURRENT_TIMESTAMP 
+             WHERE id = ?`,
+            [applicationId, progress[0].id]
+          );
+          completed = true;
+          break;
+        } catch (error) {
+          if (error.code !== "ER_DUP_ENTRY") {
+            throw error;
           }
         }
       }
 
-      const appNum = String(lastNum + 1).padStart(4, "0");
-      const applicationId = `${year}-${month}-${appNum}`;
-
-      // Update registration status
-      await conn.query(
-        `UPDATE registration_progress 
-         SET status = 'completed', 
-             application_id = ?,
-             completed_at = CURRENT_TIMESTAMP 
-         WHERE id = ?`,
-        [applicationId, progress[0].id]
-      );
+      if (!completed) {
+        throw new Error("Unable to generate a unique application ID. Please retry.");
+      }
 
       await conn.commit();
       res.json({
